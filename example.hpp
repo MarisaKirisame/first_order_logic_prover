@@ -4,6 +4,7 @@
 #include <memory>
 #include <utility>
 #include <cassert>
+#include <vector>
 namespace gentzen_system
 {
 	using namespace std;
@@ -33,7 +34,175 @@ namespace gentzen_system
 				return true;
 			}
 			example_tree( const map< const shared_ptr< in_proposition >, bool > & sequent, const map< string, bool > & expanded_symbol ) :
-				sequent( sequent ), expanded_symbol( expanded_symbol ) { }
+				sequent( sequent )+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+			+++++++++++++++++++++++, expanded_symbol( expanded_symbol ) { }
 			example_tree( map< const shared_ptr< in_proposition >, bool > && sequent ) : sequent( sequent ) { }
 			example_tree new_tree( const shared_ptr< in_proposition > p, bool b )
 			{
@@ -45,55 +214,62 @@ namespace gentzen_system
 			{
 				while ( ! sequent.empty( ) )
 				{
-					auto current_expand = sequent.begin( );
-					const shared_ptr< in_proposition > prop = current_expand->first;
-					const bool need_satisfy = current_expand->second;
-					sequent.erase( current_expand );
-					if ( prop->s == single_symbol )
+					std::vector< bool > sb { false, true };
+					for ( bool branching_allow : sb )
 					{
-						auto res = expanded_symbol.insert( make_pair( prop->str, need_satisfy ) );
-						if ( ( ! res.second ) && res.first->second != need_satisfy ) { return false; }
-					}
-					else if ( prop->s == logical_and )
-					{
-						if ( current_expand->second )
+						auto current_expand = sequent.begin( );
+						const shared_ptr< in_proposition > prop = current_expand->first;
+						const bool need_satisfy = current_expand->second;
+						sequent.erase( current_expand );
+						if ( prop->s == single_symbol )
 						{
-							if ( ( ! insert( prop->p.first, true ) ) ||
-									 ( ! insert( prop->p.second, true ) ) )
-							{ return false; }
+							auto res = expanded_symbol.insert( make_pair( prop->str, need_satisfy ) );
+							if ( ( ! res.second ) && res.first->second != need_satisfy ) { return false; }
+						}
+						else if ( prop->s == logical_and )
+						{
+							if ( current_expand->second )
+							{
+								if ( ( ! insert( prop->p.first, true ) ) ||
+										 ( ! insert( prop->p.second, true ) ) )
+								{ return false; }
+							}
+							else if ( branching_allow )
+							{
+								try
+								{
+									if ( new_tree( prop->p.first, false ).is_satisfiable( ) )
+									{ return true; }
+								}
+								catch ( insert_faliure & ) { }
+								if ( ! insert( prop->p.second, false ) ) { return false; }
+							}
+						}
+						else if ( prop->s == logical_or )
+						{
+							if ( current_expand->second )
+							{
+								if ( branching_allow )
+								{
+									try
+									{
+										if ( new_tree( prop->p.first, true ).is_satisfiable( ) )
+										{ return true; }
+									}
+									catch ( insert_faliure & ) { }
+									if ( ! insert( prop->p.second, true ) ) { return false; }
+								}
+							}
+							else
+							{
+								if ( ( ! insert( prop->p.first, false ) ) ||
+										 ( ! insert( prop->p.second, false ) ) )
+								{ return false; }
+							}
 						}
 						else
-						{
-							try
-							{
-								if ( new_tree( prop->p.first, false ).is_satisfiable( ) )
-								{ return true; }
-							}
-							catch ( insert_faliure & ) { }
-							if ( ! insert( prop->p.second, false ) ) { return false; }
-						}
+						{ if ( ! insert( prop->p.first, ! need_satisfy ) ) { return false; } }
 					}
-					else if ( prop->s == logical_or )
-					{
-						if ( current_expand->second )
-						{
-							try
-							{
-								if ( new_tree( prop->p.first, true ).is_satisfiable( ) )
-								{ return true; }
-							}
-							catch ( insert_faliure & ) { }
-							if ( ! insert( prop->p.second, true ) ) { return false; }
-						}
-						else
-						{
-							if ( ( ! insert( prop->p.first, false ) ) ||
-									 ( ! insert( prop->p.second, false ) ) )
-							{ return false; }
-						}
-					}
-					else
-					{ if ( ! insert( prop->p.first, ! need_satisfy ) ) { return false; } }
 				}
 				return true;
 			}
@@ -131,15 +307,18 @@ namespace gentzen_system
 
 	int example( )
 	{
-		proposition A( new in_proposition( "A" ) );
-		proposition not_a( make_not( A ) );
-		proposition valid_prop( make_or( A, not_a ) );
+		proposition A( new in_proposition( "A" ) );//A
+		proposition B( new in_proposition( "B" ) );//B
+		proposition C( new in_proposition( "C" ) );//C
+		proposition not_a( make_not( A ) );//!A
+		proposition valid_prop( make_or( A, not_a ) );//A or ! A( valid )
 		proposition unsatisfiable_prop( make_and( A, not_a ) );
+		proposition associativity_law_prop( make_imply( make_or( make_or( A, B ), C ), make_or( make_or( B, C ), A ) ) );
 		auto res1 = A.get_satisfiability( );
 		auto res2 = valid_prop.get_satisfiability( );
 		auto res3 = unsatisfiable_prop.get_satisfiability( );
 		if ( res1 == satisfiable && res2 == valid && res3 == unsatisfiable && make_equal( A, A ).get_satisfiability( ) == valid &&
-				 make_and( make_not( make_imply( A, not_a ) ), not_a ).get_satisfiability( ) == unsatisfiable )
+				 make_and( make_not( make_imply( A, not_a ) ), not_a ).get_satisfiability( ) == unsatisfiable && associativity_law_prop.get_satisfiability( ) == valid )
 		{ cout << "Hello World!" << endl; }
 		return 0;
 	}
