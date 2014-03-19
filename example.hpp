@@ -16,8 +16,17 @@ namespace gentzen_system
 		auto res1 = A->get_satisfiability( A );
 		auto res2 = valid_prop->get_satisfiability( valid_prop );
 		auto res3 = unsatisfiable_prop->get_satisfiability( unsatisfiable_prop );
-		if ( res1 == satisfiable && res2 == valid && res3 == unsatisfiable &&
-				 associativity_law_prop->get_satisfiability( associativity_law_prop ) == valid && valid_prop2->get_satisfiability( valid_prop2 ) == valid )
+		auto cnf = to_CNF( unsatisfiable_prop );
+		auto cnf2 = to_CNF( make_not( associativity_law_prop ) );
+		auto cnf3 = to_CNF( associativity_law_prop );
+		if (
+				res1 == satisfiable &&
+				res2 == valid &&
+				res3 == unsatisfiable &&
+				associativity_law_prop->get_satisfiability( associativity_law_prop ) == valid &&
+				valid_prop2->get_satisfiability( valid_prop2 ) == valid &&
+				is_unsatisfiable( cnf ) && is_unsatisfiable( cnf2 ) && ! is_unsatisfiable( cnf3 )
+				)
 		{ std::cout << "Hello World!" << std::endl; }
 		return 0;
 	}
