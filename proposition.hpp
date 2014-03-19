@@ -255,8 +255,12 @@ namespace gentzen_system
 			{
 				try
 				{
-					cnf.data.insert( i->join( * ii ) );
-					goto double_for_break;
+					auto k = i->join( * ii );
+					if ( cnf.data.count( k ) == 0 )
+					{
+						cnf.data.insert( k );
+						goto double_for_break;
+					}
 				}
 				catch ( clause::join_faliure & ) { }
 			}
