@@ -2,16 +2,15 @@
 #define GENTZEN_SYSTEM_DEDUCTION_TREE
 #include "propositional_combine.hpp"
 #include "propositional_letter.hpp"
+#include "value_less.hpp"
 namespace gentzen_system
 {
-	struct insert_faliure{ };
 	enum satisfiability
 	{ valid, satisfiable, unsatisfiable };
-
 	template< typename proposition >
 	struct deduction_tree
 	{
-		std::map< const std::shared_ptr< proposition >, bool > sequent;
+		std::map< const std::shared_ptr< proposition >, bool, value_less< std::shared_ptr< proposition > > > sequent;
 		std::map< std::string, bool > expanded_symbol;
 		bool insert( const std::shared_ptr< proposition > p, bool b )
 		{
@@ -19,21 +18,21 @@ namespace gentzen_system
 			if ( ( ! res.second ) && res.first->second != b ) { return false; }
 			return true;
 		}
-		deduction_tree( const std::map< const std::shared_ptr< proposition >, bool > & sequent, const std::map< std::string, bool > & expanded_symbol ) :
+		deduction_tree( const std::map< const std::shared_ptr< proposition >, bool, value_less< std::shared_ptr< proposition > > > & sequent, const std::map< std::string, bool > & expanded_symbol ) :
 			sequent( sequent ), expanded_symbol( expanded_symbol ) { }
-		deduction_tree( std::map< const std::shared_ptr< proposition >, bool > && sequent ) : sequent( sequent ) { }
-		deduction_tree new_tree( const std::shared_ptr< proposition > p, bool b )
+		deduction_tree( std::map< const std::shared_ptr< proposition >, bool, value_less< std::shared_ptr< proposition > > > && sequent ) : sequent( sequent ) { }
+		bool is_satisfiable( const std::shared_ptr< proposition > & p, bool b )
 		{
-			deduction_tree nt( sequent, expanded_symbol );
-			if ( ! nt.insert( p, b ) ) { insert_faliure i_f; throw i_f; }
-			return nt;
+			deduction_tree nt( * this );
+			if ( ! nt.insert( p, b ) ) { return false; }
+			return nt.is_satisfiable( );
 		}
 
 		static bool need_branching( const std::shared_ptr< proposition > & prop, bool need_satisfy )
 		{
 			return ( ! prop->is_atom ) &&
-					( ( boost::get< proposition_combine< const std::shared_ptr< proposition >  > >( prop->data ).s == logical_or && need_satisfy ) ||
-					( boost::get< proposition_combine< const std::shared_ptr< proposition >  > >( prop->data ).s == logical_and && ! need_satisfy ) );
+					( ( boost::get< proposition_combine< const std::shared_ptr< proposition >  > >( prop->data ).s == propositional_symbol::logical_or && need_satisfy ) ||
+					( boost::get< proposition_combine< const std::shared_ptr< proposition >  > >( prop->data ).s == propositional_symbol::logical_and && ! need_satisfy ) );
 		}
 
 		bool is_satisfiable( )
@@ -69,7 +68,7 @@ namespace gentzen_system
 					else
 					{
 						auto & p = boost::get< proposition_combine< const std::shared_ptr< proposition >  > >( prop->data );
-						if ( p.s == logical_and )
+						if ( p.s == propositional_symbol::logical_and )
 						{
 							if ( current_expand->second )
 							{
@@ -79,27 +78,17 @@ namespace gentzen_system
 							}
 							else if ( branching_allow )
 							{
-								try
-								{
-									if ( new_tree( p.p.first, false ).is_satisfiable( ) )
-									{ return true; }
-								}
-								catch ( insert_faliure & ) { }
+								if ( is_satisfiable( p.p.first, false ) ) { return true; }
 								if ( ! insert( p.p.second, false ) ) { return false; }
 							}
 						}
-						else if ( p.s == logical_or )
+						else if ( p.s == propositional_symbol::logical_or )
 						{
 							if ( current_expand->second )
 							{
 								if ( branching_allow )
 								{
-									try
-									{
-										if ( new_tree( p.p.first, true ).is_satisfiable( ) )
-										{ return true; }
-									}
-									catch ( insert_faliure & ) { }
+									if ( is_satisfiable( p.p.first, true ) ) { return true; }
 									if ( ! insert( p.p.second, true ) ) { return false; }
 								}
 							}
