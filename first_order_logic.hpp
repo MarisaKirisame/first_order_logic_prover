@@ -106,104 +106,155 @@ namespace gentzen_system
 				return ret;
 			}
 			std::map< std::shared_ptr< term >, bool, value_less< std::shared_ptr< term > > > sequent;
-			std::map< std::shared_ptr< term >, std::set< std::shared_ptr< term >, value_less< std::shared_ptr< term > > >, value_less< std::shared_ptr< term > > > term_map;
+			std::map< std::shared_ptr< term >, bool, value_less< std::shared_ptr< term > > > temp_sequent;
+			std::map
+			<
+				std::shared_ptr< term >,
+				std::set< std::shared_ptr< term >, value_less< std::shared_ptr< term > > >,
+				value_less< std::shared_ptr< term > >
+			> term_map;
 			std::map< std::shared_ptr< term >, bool, value_less< std::shared_ptr< term > > > expanded;
 			size_t unused = 0;
 
 			bool is_valid( std::shared_ptr< term > t, bool b )
 			{
 				deduction_tree dt( * this );
-				if ( dt.sequent.insert( std::make_pair( t, b ) ).second != b ) { return true; }
+				try { dt.try_insert( dt.sequent, t, b ); }
+				catch ( contradiction & ) { return true; }
 				return dt.is_valid( );
+			}
+
+			struct contradiction { };
+			void try_insert(
+					std::map< std::shared_ptr< term >, bool, value_less< std::shared_ptr< term > > > & m,
+					const std::shared_ptr< term > & t,
+					bool b )			{
+				if ( m.insert( std::make_pair( t, b ) ).first->second != b )
+				{
+					contradiction con;
+					throw con;
+				}
 			}
 
 			bool is_valid( )
 			{
-				while ( ! sequent.empty( ) )
+				try
 				{
-					auto t = * sequent.begin( );
-					sequent.erase( sequent.begin( ) );
-					if ( t.first->name == "variable" ) { if ( expanded.insert( t ).second != t.second ) { return true; } }
-					else if ( t.first->name == "constant" ) { throw std::runtime_error( "invalid sequent." ); }
-					else if ( t.first->is_quantifiers( ) )
+					while ( ! sequent.empty( ) || ! temp_sequent.empty( ) )
 					{
-						assert( t.first->arguments.size( ) == 2 );
-						if ( t.first->name == "all" )
+						if ( sequent.empty( ) ) { sequent.swap( temp_sequent ); }
+						while ( ! sequent.empty( ) )
 						{
-							if ( t.second )
+							auto t = * sequent.begin( );
+							sequent.erase( sequent.begin( ) );
+							if ( t.first->name == "variable" ) { try_insert( expanded, t.first, t.second ); }
+							else if ( t.first->name == "constant" ) { throw std::runtime_error( "invalid sequent." ); }
+							else if ( t.first->is_quantifiers( ) )
 							{
-								std::for_each( term_map.begin( ), term_map.end( ),
-															 [&]( std::pair< const std::shared_ptr< term >, std::set< std::shared_ptr< term >, value_less< std::shared_ptr< term > > > > & s )
+								assert( t.first->arguments.size( ) == 2 );
+								if ( t.first->name == "all" )
 								{
-									if ( s.second.count( t.first ) == 0 )
+									if ( t.second )
 									{
-										s.second.insert( t.first );
-										sequent.insert( std::make_pair( t.first->rebound( t.first->arguments[0], s.first ), true ) );
+										std::for_each( term_map.begin( ), term_map.end( ),
+																	 [&](
+																	 std::pair
+																	 <
+																		const std::shared_ptr< term >,
+																		std::set
+																		<
+																			std::shared_ptr< term >,
+																			value_less< std::shared_ptr< term > >
+																		>
+																	 > & s )
+										{
+											if ( s.second.count( t.first ) == 0 )
+											{
+												s.second.insert( t.first );
+												try_insert( sequent, t.first->rebound( t.first->arguments[0], s.first ), true );
+											}
+										} );
+										try_insert( temp_sequent, t.first, true );
 									}
-								} );
-								sequent.insert( std::make_pair( t.first, true ) );
+									else { try_insert( sequent, t.first->rebound( t.first->arguments[0], not_used( ) ), false ); }
+								}
+								else
+								{
+									assert( t.first->name == "some" );
+									if ( t.second ) { try_insert( sequent, t.first->rebound( t.first->arguments[0], not_used( ) ), true ); }
+									else
+									{
+										std::for_each( term_map.begin( ), term_map.end( ),
+																	 [&](
+																	 std::pair
+																	 <
+																		const std::shared_ptr< term >,
+																		std::set
+																		<
+																			std::shared_ptr< term >,
+																			value_less< std::shared_ptr< term > >
+																		>
+																	 > & s )
+										{
+											if ( s.second.count( t.first ) == 0 )
+											{
+												s.second.insert( t.first );
+												try_insert( sequent, t.first->rebound( t.first->arguments[0], s.first ), false );
+											}
+										} );
+										try_insert( temp_sequent, t.first, false );
+									}
+								}
 							}
-							else { sequent.insert( std::make_pair( t.first->rebound( t.first->arguments[0], not_used( ) ), false ) ); }
-						}
-						else
-						{
-							assert( t.first->name == "some" );
-							if ( t.second ) { sequent.insert( std::make_pair( t.first->rebound( t.first->arguments[0], not_used( ) ), true ) ); }
 							else
 							{
-								std::for_each( term_map.begin( ), term_map.end( ),
-															 [&]( std::pair< const std::shared_ptr< term >, std::set< std::shared_ptr< term >, value_less< std::shared_ptr< term > > > > & s )
+								if ( t.first->name == "not" )
 								{
-									if ( s.second.count( t.first ) == 0 )
+									assert( t.first->arguments.size( ) == 1 );
+									try_insert( sequent, t.first->arguments[0], ! t.second );
+								}
+								else if ( t.first->name == "and" )
+								{
+									assert( t.first->arguments.size( ) == 2 );
+									if ( t.second )
 									{
-										s.second.insert( t.first );
-										sequent.insert( std::make_pair( t.first->rebound( t.first->arguments[0], s.first ), false ) );
+										try_insert( sequent, t.first->arguments[0], true );
+										try_insert( sequent, t.first->arguments[1], true );
 									}
-								} );
-								sequent.insert( std::make_pair( t.first, false ) );
+									else
+									{
+										if ( ! is_valid( t.first->arguments[0], false ) ) { return false; }
+										try_insert( sequent, t.first->arguments[1], false );
+									}
+								}
+								else if ( t.first->name == "or" )
+								{
+									assert( t.first->arguments.size( ) == 2 );
+									if ( t.second )
+									{
+										if ( ! is_valid( t.first->arguments[0], true ) ) { return false; }
+										try_insert( sequent, t.first->arguments[1], true );
+									}
+									else
+									{
+										try_insert( sequent, t.first->arguments[0], false );
+										try_insert( sequent, t.first->arguments[1], false );
+									}
+								}
+								else
+								{
+									try_insert( expanded, t.first, t.second );
+								}
 							}
 						}
 					}
-					else
-					{
-						if ( t.first->name == "not" )
-						{
-							assert( t.first->arguments.size( ) == 1 );
-							if ( sequent.insert( std::make_pair( t.first->arguments[0], ! t.second ) ).second == t.second ) { return true; }
-						}
-						else if ( t.first->name == "and" )
-						{
-							assert( t.first->arguments.size( ) == 2 );
-							if ( t.second )
-							{
-								if ( sequent.insert( std::make_pair( t.first->arguments[0], true ) ).second != true ) { return true; }
-								if ( sequent.insert( std::make_pair( t.first->arguments[1], true ) ).second != true ) { return true; }
-							}
-							else
-							{
-								if ( is_valid( t.first->arguments[0], false ) ) { return true; }
-								if ( sequent.insert( std::make_pair( t.first->arguments[1], false ) ).second != false ) { return true; }
-							}
-						}
-						else if ( t.first->name == "or" )
-						{
-							assert( t.first->arguments.size( ) == 2 );
-							if ( t.second )
-							{
-								if ( is_valid( t.first->arguments[0], true ) ) { return true; }
-								if ( sequent.insert( std::make_pair( t.first->arguments[1], true ) ).second != true ) { return true; }
-							}
-							else
-							{
-								if ( sequent.insert( std::make_pair( t.first->arguments[0], false ) ).second != false ) { return true; }
-								if ( sequent.insert( std::make_pair( t.first->arguments[1], false ) ).second != false ) { return true; }
-							}
-						}
-						else { throw std::runtime_error( "unknown option" ); }
-					}
+					return false;
 				}
-				return false;
+				catch ( contradiction & ) { return true; }
 			}
+			static std::shared_ptr< term > make_function( const std::string & s, const std::vector< std::shared_ptr< term > > & t )
+			{ return std::shared_ptr< term >( new term( s, t ) ); }
+
 			static std::shared_ptr< term > make_constant( const std::string & s )
 			{ return std::shared_ptr< term >( new term( std::string( "constant" ), { std::shared_ptr< term >( new term( s, { } ) ) } ) ); }
 
@@ -215,6 +266,9 @@ namespace gentzen_system
 
 			static std::shared_ptr< term > make_or( const std::shared_ptr< term > & l, const std::shared_ptr< term > & r )
 			{ return std::shared_ptr< term >( new term( std::string( "or" ), { l, r } ) ); }
+
+			static std::shared_ptr< term > make_imply( const std::shared_ptr< term > & l, const std::shared_ptr< term > & r )
+			{ return make_or( make_not( l ), r ); }
 
 			static std::shared_ptr< term > make_all( const std::shared_ptr< term > & l, const std::shared_ptr< term > & r )
 			{ return std::shared_ptr< term >( new term( std::string( "all" ), { l, r } ) ); }
@@ -241,6 +295,7 @@ namespace gentzen_system
 			deduction_tree t( shared_from_this( ) );
 			return t.is_valid( );
 		}
+
 		bool operator < ( const term & comp ) const
 		{
 			if ( name < comp.name ) { return true; }
@@ -254,8 +309,8 @@ namespace gentzen_system
 					size_t i = 0;
 					while ( i < arity( ) )
 					{
-						if ( arguments[i] < comp.arguments[i] ) { return true; }
-						else if ( comp.arguments[i] < arguments[i] ) { return false; }
+						if ( * arguments[i] < * comp.arguments[i] ) { return true; }
+						else if ( * comp.arguments[i] < * arguments[i] ) { return false; }
 						++i;
 					}
 					return false;

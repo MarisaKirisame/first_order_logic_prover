@@ -28,7 +28,39 @@ namespace gentzen_system
 		auto cnf = to_CNF( unsatisfiable_prop );
 		auto cnf2 = to_CNF( proposition::make_not( associativity_law_prop ) );
 		auto cnf3 = to_CNF( associativity_law_prop );
-		auto fol = term::deduction_tree::make_or( term::deduction_tree::make_variable( "A" ), term::deduction_tree::make_not( term::deduction_tree::make_variable( "A" ) ) );
+		auto fol = term::deduction_tree::make_or(
+								 term::deduction_tree::make_variable( "A" ),
+								 term::deduction_tree::make_not(
+									 term::deduction_tree::make_variable( "A" ) ) );
+		auto fol2 = term::deduction_tree::make_imply(
+									term::deduction_tree::make_some(
+										term::deduction_tree::make_variable( "x" ),
+										term::deduction_tree::make_imply(
+											term::deduction_tree::make_variable( "p" ),
+											term::deduction_tree::make_function( "Q", { term::deduction_tree::make_variable( "x" ) } )
+											)
+										),
+									term::deduction_tree::make_imply(
+										term::deduction_tree::make_variable( "p" ),
+										term::deduction_tree::make_some(
+											term::deduction_tree::make_variable( "z" ),
+											term::deduction_tree::make_function( "Q", { term::deduction_tree::make_variable( "z" ) } ) ) )
+									);
+		auto fol3 = term::deduction_tree::make_imply(
+									term::deduction_tree::make_and(
+										term::deduction_tree::make_all(
+											term::deduction_tree::make_variable( "x" ),
+											term::deduction_tree::make_function( "P", { term::deduction_tree::make_variable( "x" ) } ) ),
+										term::deduction_tree::make_some(
+											term::deduction_tree::make_variable( "y" ),
+											term::deduction_tree::make_function( "Q", { term::deduction_tree::make_variable( "y" ) } ) ) ),
+									term::deduction_tree::make_and(
+										term::deduction_tree::make_function(
+											"P",
+											{ term::deduction_tree::make_function( "F",  { term::deduction_tree::make_variable( "v" ) } ) } ),
+										term::deduction_tree::make_some(
+											term::deduction_tree::make_variable( "z" ),
+											term::deduction_tree::make_function( "Q", { term::deduction_tree::make_variable( "z" ) } ) ) ) );
 		if (
 				res1 == satisfiable &&
 				res2 == valid &&
@@ -36,7 +68,7 @@ namespace gentzen_system
 				associativity_law_prop->get_satisfiability( ) == valid &&
 				valid_prop2->get_satisfiability( ) == valid &&
 				is_unsatisfiable( cnf ) && is_unsatisfiable( cnf2 ) && ! is_unsatisfiable( cnf3 ) &&
-				fol->is_valid( )
+				fol->is_valid( ) && fol2->is_valid( ) && fol3->is_valid( )
 				)
 		{ std::cout << "Hello World!" << std::endl; }
 		return 0;
