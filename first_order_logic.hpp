@@ -27,6 +27,13 @@ namespace gentzen_system
 		set_inserter & operator * ( ) { return * this; }
 	};
 
+	struct function
+	{
+		std::string name;
+		size_t arity;
+		function( const std::string & name, size_t arity ) : name( name ), arity( arity ) { }
+		bool operator < ( const function & f ) const { return name < f.name || ( name == f.name && arity < f.arity ); }
+	};
 	struct term : std::enable_shared_from_this< term >
 	{
 		std::string name;
@@ -49,7 +56,8 @@ namespace gentzen_system
 			else
 			{
 				std::set< std::shared_ptr< term >, value_less< std::shared_ptr< term > > > ret;
-				std::transform( arguments.begin( ), arguments.end( ), set_inserter< term >( ret ), [&]( const std::shared_ptr< term > & t ){ return t->constants( ); } );
+				std::transform( arguments.begin( ), arguments.end( ), set_inserter< term >( ret ),
+												[&]( const std::shared_ptr< term > & t ){ return t->constants( ); } );
 				return ret;
 			}
 		}
@@ -70,11 +78,28 @@ namespace gentzen_system
 			else
 			{
 				std::set< std::shared_ptr< term >, value_less< std::shared_ptr< term > > > ret;
-				std::transform( arguments.begin( ), arguments.end( ), set_inserter< term >( ret ), [&]( const std::shared_ptr< term > & t ){ return t->free_variables( ); } );
+				std::transform( arguments.begin( ), arguments.end( ),
+												set_inserter< term >( ret ), [&]( const std::shared_ptr< term > & t ){ return t->free_variables( ); } );
 				return ret;
 			}
 		}
-
+		std::set< function > functions( )
+		{
+			if ( name == "variable" ) { return { }; }
+			else if ( name == "constant" ) { return { }; }
+			else if ( is_quantifiers( ) ) { return arguments[1]->functions( ); }
+			else
+			{
+				std::set< function > ret( { function( name, arity( ) ) } );
+				std::for_each( arguments.begin( ), arguments.end( ),
+											 [&]( const std::shared_ptr< term > & t )
+				{
+					auto func = t->functions( );
+					std::for_each( func.begin( ), func.end( ), [&]( const function & t ){ ret.insert( t ); } );
+				} );
+				return ret;
+			}
+		}
 		bool operator == ( const term & comp ) const { return ! ( * this < comp ) && ! ( comp < * this ); }
 		std::shared_ptr< term > rebound( const std::shared_ptr< term > & old_term, const std::shared_ptr< term > & new_term )
 		{
@@ -97,9 +122,81 @@ namespace gentzen_system
 			}
 		}
 
+		struct term_generator
+		{
+			size_t arity;
+			std::map
+			<
+				std::shared_ptr< term >,
+				std::set< std::shared_ptr< term >, value_less< std::shared_ptr< term > > >,
+				value_less< std::shared_ptr< term > >
+			> & cv;
+			std::map
+			<
+				std::shared_ptr< term >,
+				std::pair< term_generator, term_generator >,
+				value_less< std::shared_ptr< term > >
+			> term_map;
+			std::set
+			<
+				std::shared_ptr< term >,
+				value_less< std::shared_ptr< term > >
+			> & functions;
+			term_generator( size_t arity, decltype( cv ) & cv, decltype( functions ) & functions ) : arity( arity ), cv( cv ), functions( functions ) { }
+			decltype( term_map.begin( ) ) i;
+
+			std::vector< std::shared_ptr< term > > generate( decltype( term_map.begin( ) ) it )
+			{
+				auto f = it->second.first.generate( );
+				auto s = it->second.second.generate( );
+				f.reserve( f.size( ) + s.size( ) );
+				std::copy( s.begin( ), s.end( ), std::back_inserter( f ) );
+				return f;
+			}
+
+			term_generator generate_term_generator( size_t a ) { return term_generator( a, cv, functions ); }
+
+			std::vector< std::shared_ptr< term > > generate( )
+			{
+				if ( arity == 0 ) { return { }; }
+				else
+				{
+					for ( auto it : cv )
+					{
+						if ( term_map.count( it.first ) == 0 )
+						{
+							term_map.insert( std::make_pair(
+																					 it.first,
+																					 std::make_pair(
+																						 generate_term_generator( arity - 1 ),
+																						 generate_term_generator( it.first->arity( ) ) ) ) );
+							return generate( term_map.find( it.first ) );
+						}
+					}
+					for ( auto it : functions )
+					{
+						if ( term_map.count( it ) == 0 )
+						{
+							term_map.insert( std::make_pair(
+																 it,
+																 std::make_pair(
+																	 generate_term_generator( arity - 1 ),
+																	 generate_term_generator( it->arity( ) ) ) ) );
+							return generate( term_map.find( it ) );
+						}
+					}
+					if ( i == term_map.end( ) ) { }
+					i = term_map.begin( );
+					auto ret = generate( i );
+					++i;
+					return ret;
+				}
+			}
+		};
+
 		struct deduction_tree
 		{
-			std::shared_ptr< term > not_used( )
+			std::shared_ptr< term > new_variable( )
 			{
 				auto ret = make_variable( std::to_string( unused++ ) );
 				term_map.insert( std::make_pair( ret,  std::set< std::shared_ptr< term >, value_less< std::shared_ptr< term > > >( ) ) );
@@ -115,7 +212,12 @@ namespace gentzen_system
 			> term_map;
 			std::map< std::shared_ptr< term >, bool, value_less< std::shared_ptr< term > > > expanded;
 			size_t unused = 0;
-
+			std::set
+			<
+				std::shared_ptr< term >,
+				value_less< std::shared_ptr< term > >
+			> functions;
+			term_generator tg;
 			bool is_valid( std::shared_ptr< term > t, bool b )
 			{
 				deduction_tree dt( * this );
@@ -142,7 +244,13 @@ namespace gentzen_system
 				{
 					while ( ! sequent.empty( ) || ! temp_sequent.empty( ) )
 					{
-						if ( sequent.empty( ) ) { sequent.swap( temp_sequent ); }
+						if ( sequent.empty( ) )
+						{
+							sequent.swap( temp_sequent );
+							auto f = tg.generate( );
+							assert( f.size( ) == 1 );
+							term_map.insert( std::make_pair( f[0], std::set< std::shared_ptr< term >, value_less< std::shared_ptr< term > > >( ) ) );
+						}
 						while ( ! sequent.empty( ) )
 						{
 							auto t = * sequent.begin( );
@@ -176,12 +284,12 @@ namespace gentzen_system
 										} );
 										try_insert( temp_sequent, t.first, true );
 									}
-									else { try_insert( sequent, t.first->rebound( t.first->arguments[0], not_used( ) ), false ); }
+									else { try_insert( sequent, t.first->rebound( t.first->arguments[0], new_variable( ) ), false ); }
 								}
 								else
 								{
 									assert( t.first->name == "some" );
-									if ( t.second ) { try_insert( sequent, t.first->rebound( t.first->arguments[0], not_used( ) ), true ); }
+									if ( t.second ) { try_insert( sequent, t.first->rebound( t.first->arguments[0], new_variable( ) ), true ); }
 									else
 									{
 										std::for_each( term_map.begin( ), term_map.end( ),
@@ -279,14 +387,23 @@ namespace gentzen_system
 			static std::shared_ptr< term > make_some( const std::shared_ptr< term > & l, const std::shared_ptr< term > & r )
 			{ return std::shared_ptr< term >( new term( std::string( "some" ), { l, r } ) ); }
 
-			deduction_tree( const std::shared_ptr< term > & t ) : sequent( { { t, false } } )
+			deduction_tree( const deduction_tree & t ) :
+				sequent( t.sequent ),
+				temp_sequent( t.temp_sequent ),
+				term_map( t.term_map ),
+				expanded( t.expanded ),
+				unused( t.unused ),
+				functions( t.functions ),
+				tg( 1, term_map, functions ) { }
+			deduction_tree( const std::shared_ptr< term > & t ) : sequent( { { t, false } } ), tg( 1, term_map, functions )
 			{
 				const auto fv = t->free_variables( );
 				const auto con = t->constants( );
+				const auto func = t->functions( );
 				auto r = boost::range::join( boost::make_iterator_range( fv.begin( ), fv.end( ) ), boost::make_iterator_range( con.begin( ), con.end( ) ) );
 				std::transform( r.begin( ), r.end( ), std::inserter( term_map, term_map.begin( ) ), [ ]( const std::shared_ptr< term > & s )
 				{ return std::make_pair( s, std::set< std::shared_ptr< term >, value_less< std::shared_ptr< term > > >( ) ); } );
-				if ( term_map.empty( ) ) { not_used( ); }
+				if ( term_map.empty( ) ) { new_variable( ); }
 			}
 		};
 
