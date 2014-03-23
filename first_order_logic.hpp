@@ -38,7 +38,7 @@ namespace gentzen_system
 	{
 		std::string name;
 		size_t arity( ) const { return arguments.size( ); }
-		bool is_quantifiers( ) const { return name == "some" || name == "all"; }
+		bool is_quantifier( ) const { return name == "some" || name == "all"; }
 		std::vector< std::shared_ptr< term > > arguments;
 		std::set< std::shared_ptr< term >, value_less< std::shared_ptr< term > > > constants( )
 		{
@@ -48,7 +48,7 @@ namespace gentzen_system
 				return { };
 			}
 			else if ( name == "constant" ) { return { shared_from_this( ) }; }
-			else if ( is_quantifiers( ) )
+			else if ( is_quantifier( ) )
 			{
 				assert( arity( ) == 2 );
 				return arguments[1]->constants( );
@@ -68,7 +68,7 @@ namespace gentzen_system
 		{
 			if ( name == "variable" ) { return { shared_from_this( ) }; }
 			else if ( name == "constant" ) { return { }; }
-			else if ( is_quantifiers( ) )
+			else if ( is_quantifier( ) )
 			{
 				assert( arity( ) == 2 );
 				auto ret = arguments[1]->free_variables( );
@@ -87,10 +87,11 @@ namespace gentzen_system
 		{
 			if ( name == "variable" ) { return { }; }
 			else if ( name == "constant" ) { return { }; }
-			else if ( is_quantifiers( ) ) { return arguments[1]->functions( ); }
+			else if ( is_quantifier( ) ) { return arguments[1]->functions( ); }
 			else
 			{
-				std::set< function > ret( { function( name, arity( ) ) } );
+				std::set< function > ret;
+				if ( name != "and" && name != "or" && name != "not" ) { ret.insert( function( name, arity( ) ) ); }
 				std::for_each( arguments.begin( ), arguments.end( ),
 											 [&]( const std::shared_ptr< term > & t )
 				{
@@ -109,7 +110,7 @@ namespace gentzen_system
 				else { return shared_from_this( ); }
 			}
 			else if ( name == "constant" ) { return shared_from_this( ); }
-			else if ( is_quantifiers( ) && * old_term == * arguments[0] )
+			else if ( is_quantifier( ) && * old_term == * arguments[0] )
 			{
 				assert( arity( ) == 2 );
 				return arguments[1]->rebound( old_term, new_term );
@@ -131,27 +132,37 @@ namespace gentzen_system
 				std::set< std::shared_ptr< term >, value_less< std::shared_ptr< term > > >,
 				value_less< std::shared_ptr< term > >
 			> & cv;
-			std::map
-			<
-				std::shared_ptr< term >,
-				std::pair< term_generator, term_generator >,
-				value_less< std::shared_ptr< term > >
-			> term_map;
 			std::set
 			<
 				std::shared_ptr< term >,
 				value_less< std::shared_ptr< term > >
-			> & functions;
-			term_generator( size_t arity, decltype( cv ) & cv, decltype( functions ) & functions ) : arity( arity ), cv( cv ), functions( functions ) { }
-			decltype( term_map.begin( ) ) i;
+			> term_map;
+			std::map< function, std::pair< term_generator, term_generator > > functions;
+			term_generator( size_t arity, decltype( cv ) & cv, const decltype( functions ) & functions )
+				: arity( arity ), cv( cv ), functions( functions ), i( this->functions.begin( ) ) { }
 
-			std::vector< std::shared_ptr< term > > generate( decltype( term_map.begin( ) ) it )
+			term_generator( size_t arity, decltype( cv ) & cv, const std::set< function > & functions )
+				: arity( arity ), cv( cv ), i( this->functions.begin( ) )
+			{
+				std::transform(
+							functions.begin( ),
+							functions.end( ),
+							std::inserter( this->functions, this->functions.end( ) ),
+							[this]( const function & f ){ return std::make_pair( f, std::make_pair( generate_term_generator( f.arity - 1 ), generate_term_generator( 1 ) ) ); } );
+			}
+			decltype( functions.begin( ) ) i;
+			std::vector< std::shared_ptr< term > > generate( decltype( functions.begin( ) ) it )
 			{
 				auto f = it->second.first.generate( );
 				auto s = it->second.second.generate( );
 				f.reserve( f.size( ) + s.size( ) );
 				std::copy( s.begin( ), s.end( ), std::back_inserter( f ) );
-				return f;
+				if ( arity == 1 ) { return { deduction_tree::make_function( it->first.name,  f ) }; }
+				else
+				{
+					assert( f.size( ) == arity );
+					return f;
+				}
 			}
 
 			term_generator generate_term_generator( size_t a ) { return term_generator( a, cv, functions ); }
@@ -163,32 +174,19 @@ namespace gentzen_system
 				{
 					for ( auto it : cv )
 					{
+						assert( ! it.first->is_quantifier( ) );
 						if ( term_map.count( it.first ) == 0 )
 						{
-							term_map.insert( std::make_pair(
-																					 it.first,
-																					 std::make_pair(
-																						 generate_term_generator( arity - 1 ),
-																						 generate_term_generator( it.first->arity( ) ) ) ) );
-							return generate( term_map.find( it.first ) );
+							term_map.insert( it.first );
+							return { it.first };
 						}
 					}
-					for ( auto it : functions )
-					{
-						if ( term_map.count( it ) == 0 )
-						{
-							term_map.insert( std::make_pair(
-																 it,
-																 std::make_pair(
-																	 generate_term_generator( arity - 1 ),
-																	 generate_term_generator( it->arity( ) ) ) ) );
-							return generate( term_map.find( it ) );
-						}
-					}
-					if ( i == term_map.end( ) ) { }
-					i = term_map.begin( );
+					if ( i == functions.end( ) ) { i = functions.begin( ); }
+					assert( i != functions.end( ) );
 					auto ret = generate( i );
-					++i;
+					if ( i != functions.end( ) ) { ++i; }
+					assert( ret.size( ) == arity );
+					assert( ! ret[0]->is_quantifier( ) );
 					return ret;
 				}
 			}
@@ -199,7 +197,7 @@ namespace gentzen_system
 			std::shared_ptr< term > new_variable( )
 			{
 				auto ret = make_variable( std::to_string( unused++ ) );
-				term_map.insert( std::make_pair( ret,  std::set< std::shared_ptr< term >, value_less< std::shared_ptr< term > > >( ) ) );
+				cv_map.insert( std::make_pair( ret,  std::set< std::shared_ptr< term >, value_less< std::shared_ptr< term > > >( ) ) );
 				return ret;
 			}
 			std::map< std::shared_ptr< term >, bool, value_less< std::shared_ptr< term > > > sequent;
@@ -209,14 +207,10 @@ namespace gentzen_system
 				std::shared_ptr< term >,
 				std::set< std::shared_ptr< term >, value_less< std::shared_ptr< term > > >,
 				value_less< std::shared_ptr< term > >
-			> term_map;
+			> cv_map, term_map;
 			std::map< std::shared_ptr< term >, bool, value_less< std::shared_ptr< term > > > expanded;
 			size_t unused = 0;
-			std::set
-			<
-				std::shared_ptr< term >,
-				value_less< std::shared_ptr< term > >
-			> functions;
+			std::set< function > functions;
 			term_generator tg;
 			bool is_valid( std::shared_ptr< term > t, bool b )
 			{
@@ -249,7 +243,11 @@ namespace gentzen_system
 							sequent.swap( temp_sequent );
 							auto f = tg.generate( );
 							assert( f.size( ) == 1 );
-							term_map.insert( std::make_pair( f[0], std::set< std::shared_ptr< term >, value_less< std::shared_ptr< term > > >( ) ) );
+							assert( ! f[0]->is_quantifier( ) );
+							term_map.insert(
+										std::make_pair(
+											f[0],
+											std::set< std::shared_ptr< term >, value_less< std::shared_ptr< term > > >( ) ) );
 						}
 						while ( ! sequent.empty( ) )
 						{
@@ -257,7 +255,7 @@ namespace gentzen_system
 							sequent.erase( sequent.begin( ) );
 							if ( t.first->name == "variable" ) { try_insert( expanded, t.first, t.second ); }
 							else if ( t.first->name == "constant" ) { throw std::runtime_error( "invalid sequent." ); }
-							else if ( t.first->is_quantifiers( ) )
+							else if ( t.first->is_quantifier( ) )
 							{
 								assert( t.first->arguments.size( ) == 2 );
 								if ( t.first->name == "all" )
@@ -390,20 +388,21 @@ namespace gentzen_system
 			deduction_tree( const deduction_tree & t ) :
 				sequent( t.sequent ),
 				temp_sequent( t.temp_sequent ),
+				cv_map( t.cv_map ),
 				term_map( t.term_map ),
 				expanded( t.expanded ),
 				unused( t.unused ),
 				functions( t.functions ),
-				tg( 1, term_map, functions ) { }
-			deduction_tree( const std::shared_ptr< term > & t ) : sequent( { { t, false } } ), tg( 1, term_map, functions )
+				tg( 1, cv_map, functions ) { }
+			deduction_tree( const std::shared_ptr< term > & t ) : sequent( { { t, false } } ), functions( t->functions( ) ), tg( 1, cv_map, functions )
 			{
 				const auto fv = t->free_variables( );
 				const auto con = t->constants( );
-				const auto func = t->functions( );
 				auto r = boost::range::join( boost::make_iterator_range( fv.begin( ), fv.end( ) ), boost::make_iterator_range( con.begin( ), con.end( ) ) );
-				std::transform( r.begin( ), r.end( ), std::inserter( term_map, term_map.begin( ) ), [ ]( const std::shared_ptr< term > & s )
+				std::transform( r.begin( ), r.end( ), std::inserter( cv_map, cv_map.begin( ) ), [ ]( const std::shared_ptr< term > & s )
 				{ return std::make_pair( s, std::set< std::shared_ptr< term >, value_less< std::shared_ptr< term > > >( ) ); } );
-				if ( term_map.empty( ) ) { new_variable( ); }
+				term_map = cv_map;
+				if ( cv_map.empty( ) ) { new_variable( ); }
 			}
 		};
 
