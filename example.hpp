@@ -1,12 +1,13 @@
 #ifndef THEOREM_PROVER_EXAMPLE
 #define THEOREM_PROVER_EXAMPLE
-#include "proposition.hpp"
-#include "first_order_logic.hpp"
-#include "resolution_method.hpp"
+#include "propositional_logic/proposition.hpp"
+#include "first_order_logic/first_order_logic.hpp"
+#include "propositional_logic/resolution_method.hpp"
 namespace theorem_prover
 {
-	int example( )
+	void propositional_logic_test( )
 	{
+		using namespace propositional_logic;
 		std::shared_ptr< proposition > A( new proposition( "A" ) );//A
 		std::shared_ptr< proposition > B( new proposition( "B" ) );//B
 		std::shared_ptr< proposition > C( new proposition( "C" ) );//C
@@ -28,49 +29,59 @@ namespace theorem_prover
 		auto cnf = to_CNF( unsatisfiable_prop );
 		auto cnf2 = to_CNF( proposition::make_not( associativity_law_prop ) );
 		auto cnf3 = to_CNF( associativity_law_prop );
-		auto fol = term::deduction_tree::make_or(
-								 term::deduction_tree::make_variable( "A" ),
-								 term::deduction_tree::make_not(
-									 term::deduction_tree::make_variable( "A" ) ) );
-		auto fol2 = term::deduction_tree::make_imply(
-									term::deduction_tree::make_some(
-										term::deduction_tree::make_variable( "x" ),
-										term::deduction_tree::make_imply(
-											term::deduction_tree::make_variable( "p" ),
-											term::deduction_tree::make_function( "Q", { term::deduction_tree::make_variable( "x" ) } )
+		assert(
+					res1 == satisfiable &&
+					res2 == valid &&
+					res3 == unsatisfiable &&
+					associativity_law_prop->get_satisfiability( ) == valid &&
+					valid_prop2->get_satisfiability( ) == valid &&
+					is_unsatisfiable( cnf ) && is_unsatisfiable( cnf2 ) && ! is_unsatisfiable( cnf3 ) );
+	}
+
+	void first_order_logic_test( )
+	{
+		using namespace first_order_logic;
+		auto fol = make_or(
+								 make_variable( "A" ),
+								 make_not(
+									 make_variable( "A" ) ) );
+		auto fol2 = make_imply(
+									make_some(
+										make_variable( "x" ),
+										make_imply(
+											make_variable( "p" ),
+											make_function( "Q", { make_variable( "x" ) } )
 											)
 										),
-									term::deduction_tree::make_imply(
-										term::deduction_tree::make_variable( "p" ),
-										term::deduction_tree::make_some(
-											term::deduction_tree::make_variable( "z" ),
-											term::deduction_tree::make_function( "Q", { term::deduction_tree::make_variable( "z" ) } ) ) )
+									make_imply(
+										make_variable( "p" ),
+										make_some(
+											make_variable( "z" ),
+											make_function( "Q", { make_variable( "z" ) } ) ) )
 									);
-		auto fol3 = term::deduction_tree::make_imply(
-									term::deduction_tree::make_and(
-										term::deduction_tree::make_all(
-											term::deduction_tree::make_variable( "x" ),
-											term::deduction_tree::make_function( "P", { term::deduction_tree::make_variable( "x" ) } ) ),
-										term::deduction_tree::make_some(
-											term::deduction_tree::make_variable( "y" ),
-											term::deduction_tree::make_function( "Q", { term::deduction_tree::make_variable( "y" ) } ) ) ),
-									term::deduction_tree::make_and(
-										term::deduction_tree::make_function(
+		auto fol3 = make_imply(
+									make_and(
+										make_all(
+											make_variable( "x" ),
+											make_function( "P", { make_variable( "x" ) } ) ),
+										make_some(
+											make_variable( "y" ),
+											make_function( "Q", { make_variable( "y" ) } ) ) ),
+									make_and(
+										make_function(
 											"P",
-											{ term::deduction_tree::make_function( "F",  { term::deduction_tree::make_variable( "v" ) } ) } ),
-										term::deduction_tree::make_some(
-											term::deduction_tree::make_variable( "z" ),
-											term::deduction_tree::make_function( "Q", { term::deduction_tree::make_variable( "z" ) } ) ) ) );
-		if (
-				res1 == satisfiable &&
-				res2 == valid &&
-				res3 == unsatisfiable &&
-				associativity_law_prop->get_satisfiability( ) == valid &&
-				valid_prop2->get_satisfiability( ) == valid &&
-				is_unsatisfiable( cnf ) && is_unsatisfiable( cnf2 ) && ! is_unsatisfiable( cnf3 ) &&
-				fol->is_valid( ) && fol2->is_valid( ) && fol3->is_valid( )
-				)
-		{ std::cout << "Hello World!" << std::endl; }
+											{ make_function( "F",  { make_variable( "v" ) } ) } ),
+										make_some(
+											make_variable( "z" ),
+											make_function( "Q", { make_variable( "z" ) } ) ) ) );
+
+		assert( fol->is_valid( ) && fol2->is_valid( ) && fol3->is_valid( ) );
+	}
+
+	int example( )
+	{
+		propositional_logic_test( );
+		first_order_logic_test( );
 		return 0;
 	}
 
