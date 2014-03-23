@@ -1,5 +1,5 @@
-#ifndef GENTZEN_SYSTEM_FIRST_ORDER_LOGIC
-#define GENTZEN_SYSTEM_FIRST_ORDER_LOGIC
+#ifndef THEOREM_PROVER_FIRST_ORDER_LOGIC
+#define THEOREM_PROVER_FIRST_ORDER_LOGIC
 #include  <string>
 #include "boost/variant.hpp"
 #include <vector>
@@ -10,7 +10,7 @@
 #include <boost/range/join.hpp>
 #include <utility>
 #include "value_less.hpp"
-namespace gentzen_system
+namespace theorem_prover
 {
 	template< typename term >
 	struct set_inserter
@@ -138,18 +138,12 @@ namespace gentzen_system
 				value_less< std::shared_ptr< term > >
 			> term_map;
 			std::map< function, std::pair< term_generator, term_generator > > functions;
-			term_generator( size_t arity, decltype( cv ) & cv, const decltype( functions ) & functions )
-				: arity( arity ), cv( cv ), functions( functions ), i( this->functions.begin( ) ) { }
-
+			const std::set< function > & original_functions;
+			term_generator( const term_generator & tg ) : arity( tg.arity ), cv( tg.cv ), term_map( tg.term_map ), original_functions( tg.original_functions ), i( this->functions.begin( ) )
+			{ }
 			term_generator( size_t arity, decltype( cv ) & cv, const std::set< function > & functions )
-				: arity( arity ), cv( cv ), i( this->functions.begin( ) )
-			{
-				std::transform(
-							functions.begin( ),
-							functions.end( ),
-							std::inserter( this->functions, this->functions.end( ) ),
-							[this]( const function & f ){ return std::make_pair( f, std::make_pair( generate_term_generator( f.arity - 1 ), generate_term_generator( 1 ) ) ); } );
-			}
+				: arity( arity ), cv( cv ), original_functions( functions ), i( this->functions.begin( ) ) { }
+
 			decltype( functions.begin( ) ) i;
 			std::vector< std::shared_ptr< term > > generate( decltype( functions.begin( ) ) it )
 			{
@@ -165,7 +159,7 @@ namespace gentzen_system
 				}
 			}
 
-			term_generator generate_term_generator( size_t a ) { return term_generator( a, cv, functions ); }
+			term_generator generate_term_generator( size_t a ) { return term_generator( a, cv, original_functions ); }
 
 			std::vector< std::shared_ptr< term > > generate( )
 			{
@@ -180,6 +174,18 @@ namespace gentzen_system
 							term_map.insert( it.first );
 							return { it.first };
 						}
+					}
+					if ( functions.size( ) != original_functions.size( ) )
+					{
+						std::transform(
+									original_functions.begin( ),
+									original_functions.end( ),
+									std::inserter( functions, functions.end( ) ),
+									[this]( const function & f )
+						{
+							assert( f.arity != 0 );
+							return std::make_pair( f, std::make_pair( generate_term_generator( f.arity - 1 ), generate_term_generator( 1 ) ) );
+						} );
 					}
 					if ( i == functions.end( ) ) { i = functions.begin( ); }
 					assert( i != functions.end( ) );
@@ -435,4 +441,4 @@ namespace gentzen_system
 		}
 	};
 }
-#endif //GENTZEN_SYSTEM_FIRST_ORDER_LOGIC
+#endif //THEOREM_PROVER_FIRST_ORDER_LOGIC

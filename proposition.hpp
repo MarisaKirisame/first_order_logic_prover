@@ -1,5 +1,5 @@
-#ifndef GENTZEN_SYSTEM_PROPOSITION
-#define GENTZEN_SYSTEM_PROPOSITION
+#ifndef THEOREM_PROVER_PROPOSITION
+#define THEOREM_PROVER_PROPOSITION
 #include <iostream>
 #include <map>
 #include <memory>
@@ -11,7 +11,8 @@
 #include <set>
 #include "initializer_list"
 #include <algorithm>
-namespace gentzen_system
+#include "value_less.hpp"
+namespace theorem_prover
 {
 	struct proposition : std::enable_shared_from_this< proposition >
 	{
@@ -77,4 +78,4 @@ namespace gentzen_system
 		}
 	};
 }
-#endif //GENTZEN_SYSTEM_PROPOSITION
+#endif //THEOREM_PROVER_PROPOSITION

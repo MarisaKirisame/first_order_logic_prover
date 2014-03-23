@@ -1,9 +1,9 @@
-#ifndef GENTZEN_SYSTEM_EXAMPLE
-#define GENTZEN_SYSTEM_EXAMPLE
+#ifndef THEOREM_PROVER_EXAMPLE
+#define THEOREM_PROVER_EXAMPLE
 #include "proposition.hpp"
 #include "first_order_logic.hpp"
 #include "resolution_method.hpp"
-namespace gentzen_system
+namespace theorem_prover
 {
 	int example( )
 	{
@@ -75,4 +75,4 @@ namespace gentzen_system
 	}
 
 }
-#endif //GENTZEN_SYSTEM_EXAMPLE
+#endif //THEOREM_PROVER_EXAMPLE

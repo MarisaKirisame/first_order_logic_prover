@@ -1,7 +1,7 @@
-#ifndef GENTZEN_SYSTEM_RESOLUTION_METHOD
-#define GENTZEN_SYSTEM_RESOLUTION_METHOD
+#ifndef THEOREM_PROVER_RESOLUTION_METHOD
+#define THEOREM_PROVER_RESOLUTION_METHOD
 #include "proposition.hpp"
-namespace gentzen_system
+namespace theorem_prover
 {
 	std::shared_ptr< proposition > move_negation_in( const std::shared_ptr< proposition > & prop )
 	{
@@ -221,4 +221,4 @@ namespace gentzen_system
 		else { return CNF( flatten( move_or_in( move_negation_in( prop ) ) ) ); }
 	}
 }
-#endif //GENTZEN_SYSTEM_RESOLUTION_METHOD
+#endif //THEOREM_PROVER_RESOLUTION_METHOD

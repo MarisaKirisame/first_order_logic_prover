@@ -1,9 +1,9 @@
-#ifndef GENTZEN_SYSTEM_DEDUCTION_TREE
-#define GENTZEN_SYSTEM_DEDUCTION_TREE
+#ifndef THEOREM_PROVER_DEDUCTION_TREE
+#define THEOREM_PROVER_DEDUCTION_TREE
 #include "propositional_combine.hpp"
 #include "propositional_letter.hpp"
 #include "value_less.hpp"
-namespace gentzen_system
+namespace theorem_prover
 {
 	enum satisfiability
 	{ valid, satisfiable, unsatisfiable };
@@ -109,4 +109,4 @@ namespace gentzen_system
 		}
 	};
 }
-#endif //GENTZEN_SYSTEM_DEDUCTION_TREE
+#endif //THEOREM_PROVER_DEDUCTION_TREE

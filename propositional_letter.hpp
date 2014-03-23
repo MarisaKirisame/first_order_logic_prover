@@ -1,7 +1,7 @@
-#ifndef GENTZEN_SYSTEM_PROPOSITIONAL_LETTER
-#define GENTZEN_SYSTEM_PROPOSITIONAL_LETTER
+#ifndef THEOREM_PROVER_PROPOSITIONAL_LETTER
+#define THEOREM_PROVER_PROPOSITIONAL_LETTER
 #include <string>
-namespace gentzen_system
+namespace theorem_prover
 {
 	struct propositional_letter
 	{
@@ -12,4 +12,4 @@ namespace gentzen_system
 		bool operator == ( const propositional_letter & comp ) const { return data == comp.data; }
 	};
 }
-#endif //GENTZEN_SYSTEM_PROPOSITIONAL_LETTER
+#endif //THEOREM_PROVER_PROPOSITIONAL_LETTER
