@@ -55,6 +55,17 @@ namespace theorem_prover
 					return ret;
 				}
 			}
+
+			bool have_equal( ) const
+			{
+				if ( name == "equal" ) { return true; }
+				else
+				{
+					for ( auto i : arguments ) { if ( i->have_equal( ) ) { return true; } }
+					return false;
+				}
+			}
+
 			std::set< function > functions( )
 			{
 				if ( name == "variable" ) { return { }; }
@@ -63,7 +74,7 @@ namespace theorem_prover
 				else
 				{
 					std::set< function > ret;
-					if ( name != "and" && name != "or" && name != "not" ) { ret.insert( function( name, arity( ) ) ); }
+					if ( name != "and" && name != "or" && name != "not" && name != "equal" ) { ret.insert( function( name, arity( ) ) ); }
 					std::for_each( arguments.begin( ), arguments.end( ),
 												 [&]( const std::shared_ptr< term > & t )
 					{
@@ -90,7 +101,10 @@ namespace theorem_prover
 				else
 				{
 					std::vector< std::shared_ptr< term > > ret;
-					std::transform( arguments.begin( ), arguments.end( ), std::back_inserter( ret ), [&]( const std::shared_ptr< term > & t ){ return t->rebound( old_term, new_term ); } );
+					std::transform( arguments.begin( ),
+													arguments.end( ),
+													std::back_inserter( ret ),
+													[&]( const std::shared_ptr< term > & t ){ return t->rebound( old_term, new_term ); } );
 					return std::shared_ptr< term >( new term( name, ret ) );
 				}
 			}

@@ -23,15 +23,17 @@ namespace theorem_prover
 		std::shared_ptr< term > make_imply( const std::shared_ptr< term > & l, const std::shared_ptr< term > & r )
 		{ return make_or( make_not( l ), r ); }
 
-		std::shared_ptr< term > make_all( const std::shared_ptr< term > & l, const std::shared_ptr< term > & r )
-		{ return std::shared_ptr< term >( new term( std::string( "all" ), { l, r } ) ); }
+		std::shared_ptr< term > make_all( const std::string & l, const std::shared_ptr< term > & r )
+		{ return std::shared_ptr< term >( new term( std::string( "all" ), { make_variable( l ), r } ) ); }
 
 		std::shared_ptr< term > make_variable( const std::string & s )
 		{ return std::shared_ptr< term >( new term( std::string( "variable" ), { std::shared_ptr< term >( new term( s, { } ) ) } ) ); }
 
-		std::shared_ptr< term > make_some( const std::shared_ptr< term > & l, const std::shared_ptr< term > & r )
-		{ return std::shared_ptr< term >( new term( std::string( "some" ), { l, r } ) ); }
+		std::shared_ptr< term > make_some( const std::string & l, const std::shared_ptr< term > & r )
+		{ return std::shared_ptr< term >( new term( std::string( "some" ), { make_variable( l ), r } ) ); }
 
+		std::shared_ptr< term > make_equal( const std::shared_ptr< term > & l, const std::shared_ptr< term > & r )
+		{ return std::shared_ptr< term >( new term( std::string( "equal" ), { l, r } ) ); }
 	}
 }
 #endif //THEOREM_PROVER_FIRST_ORDER_LOGIC_FIRST_ORDER_LOGIC

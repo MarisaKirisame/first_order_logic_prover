@@ -47,7 +47,7 @@ namespace theorem_prover
 									 make_variable( "A" ) ) );
 		auto fol2 = make_imply(
 									make_some(
-										make_variable( "x" ),
+										"x",
 										make_imply(
 											make_variable( "p" ),
 											make_function( "Q", { make_variable( "x" ) } )
@@ -56,26 +56,32 @@ namespace theorem_prover
 									make_imply(
 										make_variable( "p" ),
 										make_some(
-											make_variable( "z" ),
+											"z",
 											make_function( "Q", { make_variable( "z" ) } ) ) )
 									);
 		auto fol3 = make_imply(
 									make_and(
 										make_all(
-											make_variable( "x" ),
+											"x",
 											make_function( "P", { make_variable( "x" ) } ) ),
 										make_some(
-											make_variable( "y" ),
+											"y",
 											make_function( "Q", { make_variable( "y" ) } ) ) ),
 									make_and(
 										make_function(
 											"P",
 											{ make_function( "F",  { make_variable( "v" ) } ) } ),
 										make_some(
-											make_variable( "z" ),
+											"z",
 											make_function( "Q", { make_variable( "z" ) } ) ) ) );
-
-		assert( fol->is_valid( ) && fol2->is_valid( ) && fol3->is_valid( ) );
+		auto fol4 = make_imply(
+									make_and(
+										make_function( "p", { make_variable( "x" ) } ),
+										make_and(
+											make_equal( make_variable( "x" ), make_function( "f", { make_variable( "x" ) } ) ),
+											make_equal( make_function( "f", { make_variable( "x" ) } ), make_variable( "x" ) ) ) ),
+									make_function( "p", { make_function( "f", { make_variable( "x" ) } ) } ) );
+		assert( fol->is_valid( ) && fol2->is_valid( ) && fol3->is_valid( ) && fol4->is_valid( ) );
 	}
 
 	int example( )
