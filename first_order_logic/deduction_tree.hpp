@@ -172,6 +172,31 @@ namespace theorem_prover
 										true );
 				try_insert( sequent,
 										make_all(
+											"s1",
+											make_all(
+												"t1",
+												make_all(
+													"s2",
+													make_all(
+														"t2",
+														make_imply(
+															make_and(
+																make_and(
+																	make_equal(
+																		make_variable( "s1" ),
+																		make_variable( "t1" ) ),
+																	make_equal(
+																		make_variable( "s2" ),
+																		make_variable( "t2" ) ) ),
+																make_equal(
+																	make_variable( "s1" ),
+																	make_variable( "s2" ) ) ),
+															make_equal(
+																make_variable( "t1" ),
+																make_variable( "t2" ) ) ) ) ) ) ),
+										true );
+				try_insert( sequent,
+										make_all(
 											"s",
 											make_all(
 												"t",
@@ -325,7 +350,7 @@ namespace theorem_prover
 			{
 				const auto fv = t->free_variables( );
 				const auto con = t->constants( );
-				auto r = boost::range::join( boost::make_iterator_range( fv.begin( ), fv.end( ) ), boost::make_iterator_range( con.begin( ), con.end( ) ) );
+				auto r = boost::range::join( fv, con );
 				std::transform( r.begin( ), r.end( ), std::inserter( cv_map, cv_map.begin( ) ), [ ]( const std::shared_ptr< term > & s )
 				{ return std::make_pair( s, std::set< std::shared_ptr< term >, value_less< std::shared_ptr< term > > >( ) ); } );
 				term_map = cv_map;

@@ -8,11 +8,11 @@ namespace theorem_prover
 	void propositional_logic_test( )
 	{
 		using namespace propositional_logic;
-		std::shared_ptr< proposition > A( new proposition( "A" ) );//A
-		std::shared_ptr< proposition > B( new proposition( "B" ) );//B
-		std::shared_ptr< proposition > C( new proposition( "C" ) );//C
-		std::shared_ptr< proposition > not_a( proposition::make_not( A ) );//!A
-		std::shared_ptr< proposition > valid_prop( proposition::make_or( A, not_a ) );//A or ! A( valid )
+		std::shared_ptr< proposition > A( new proposition( "A" ) );
+		std::shared_ptr< proposition > B( new proposition( "B" ) );
+		std::shared_ptr< proposition > C( new proposition( "C" ) );
+		std::shared_ptr< proposition > not_a( proposition::make_not( A ) );
+		std::shared_ptr< proposition > valid_prop( proposition::make_or( A, not_a ) );
 		std::shared_ptr< proposition > unsatisfiable_prop( proposition::make_and( A, not_a ) );
 		std::shared_ptr< proposition > associativity_law_prop(
 					proposition::make_equal(

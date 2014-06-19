@@ -14,5 +14,4 @@
 
 .directory
 main.cpp
-*.pro
 *.pro.user

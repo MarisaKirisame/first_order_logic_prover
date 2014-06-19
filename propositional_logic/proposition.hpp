@@ -10,7 +10,7 @@
 #include <set>
 #include "initializer_list"
 #include <algorithm>
-#include "value_less.hpp"
+#include "../value_less.hpp"
 #include "propositional_combine.hpp"
 #include "propositional_letter.hpp"
 namespace theorem_prover

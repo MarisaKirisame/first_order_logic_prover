@@ -8,6 +8,9 @@ namespace theorem_prover
 		std::shared_ptr< term > make_function( const std::string & s, const std::vector< std::shared_ptr< term > > & t )
 		{ return std::shared_ptr< term >( new term( s, t ) ); }
 
+		std::shared_ptr< term > make_predicate( const std::string & s, const std::vector< std::shared_ptr< term > > & t )
+		{ return std::shared_ptr< term >( new term( s, t ) ); }
+
 		std::shared_ptr< term > make_constant( const std::string & s )
 		{ return std::shared_ptr< term >( new term( std::string( "constant" ), { std::shared_ptr< term >( new term( s, { } ) ) } ) ); }
 

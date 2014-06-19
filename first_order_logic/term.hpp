@@ -6,13 +6,24 @@ namespace theorem_prover
 {
 	namespace first_order_logic
 	{
+
 		struct term : std::enable_shared_from_this< term >
 		{
+			struct term_sort
+			{
+				bool operator ( )( const std::shared_ptr< term > & lhs, const std::shared_ptr< term > & rhs ) const
+				{
+					size_t l1 = lhs->length( ), l2 = rhs->length( );
+					if ( l1 < l2 ) { return true; }
+					if ( l2 < l1 ) { return false; }
+					return * lhs < * rhs;
+				}
+			};
 			std::string name;
 			size_t arity( ) const { return arguments.size( ); }
 			bool is_quantifier( ) const { return name == "some" || name == "all"; }
 			std::vector< std::shared_ptr< term > > arguments;
-			std::set< std::shared_ptr< term >, value_less< std::shared_ptr< term > > > constants( )
+			std::set< std::shared_ptr< term >, term_sort > constants( )
 			{
 				if ( name == "variable" )
 				{
@@ -27,8 +38,8 @@ namespace theorem_prover
 				}
 				else
 				{
-					std::set< std::shared_ptr< term >, value_less< std::shared_ptr< term > > > ret;
-					std::transform( arguments.begin( ), arguments.end( ), set_inserter< term >( ret ),
+					std::set< std::shared_ptr< term >, term_sort > ret;
+					std::transform( arguments.begin( ), arguments.end( ), set_inserter< term, term_sort >( ret ),
 													[&]( const std::shared_ptr< term > & t ){ return t->constants( ); } );
 					return ret;
 				}
@@ -36,7 +47,19 @@ namespace theorem_prover
 
 			term( const std::string & s, std::initializer_list< std::shared_ptr< term > > il ) : name( s ), arguments( il ) { }
 			term( const std::string & s, const std::vector< std::shared_ptr< term > > & il ) : name( s ), arguments( il ) { }
-			std::set< std::shared_ptr< term >, value_less< std::shared_ptr< term > > > free_variables( )
+
+			size_t length( ) const
+			{
+				if ( name == "variable" ) { return 1; }
+				else if ( name == "constant" ) { return 1; }
+				else
+				{
+					return std::accumulate( arguments.begin( ), arguments.end( ), 0,
+													[&]( size_t s, const std::shared_ptr< term > & t ){ return s + t->length( ); } );
+				}
+			}
+
+			std::set< std::shared_ptr< term >, term_sort > free_variables( )
 			{
 				if ( name == "variable" ) { return { shared_from_this( ) }; }
 				else if ( name == "constant" ) { return { }; }
@@ -49,9 +72,9 @@ namespace theorem_prover
 				}
 				else
 				{
-					std::set< std::shared_ptr< term >, value_less< std::shared_ptr< term > > > ret;
+					std::set< std::shared_ptr< term >, term_sort > ret;
 					std::transform( arguments.begin( ), arguments.end( ),
-													set_inserter< term >( ret ), [&]( const std::shared_ptr< term > & t ){ return t->free_variables( ); } );
+													set_inserter< term, term_sort >( ret ), [&]( const std::shared_ptr< term > & t ){ return t->free_variables( ); } );
 					return ret;
 				}
 			}
