@@ -89,21 +89,44 @@ namespace theorem_prover
 				}
 			}
 
-			std::set< function > functions( )
+			std::set< function > functions( bool met_predicate_before = false )
 			{
 				if ( name == "variable" ) { return { }; }
 				else if ( name == "constant" ) { return { }; }
-				else if ( is_quantifier( ) ) { return arguments[1]->functions( ); }
+				else if ( is_quantifier( ) ) { return arguments[1]->functions( met_predicate_before ); }
+				else
+				{
+					std::set< function > ret;
+					bool function_or_predicate = ( name != "and" && name != "or" && name != "not" && name != "equal" );
+					if ( function_or_predicate && met_predicate_before ) { ret.insert( function( name, arity( ) ) ); }
+					std::for_each( arguments.begin( ), arguments.end( ),
+												 [&]( const std::shared_ptr< term > & t )
+					{
+						auto func = t->functions( met_predicate_before || function_or_predicate );
+						std::for_each( func.begin( ), func.end( ), [&]( const function & t ){ ret.insert( t ); } );
+					} );
+					return ret;
+				}
+			}
+
+			std::set< function > predicates( )
+			{
+				if ( name == "variable" ) { return { }; }
+				else if ( name == "constant" ) { return { }; }
+				else if ( is_quantifier( ) ) { return arguments[1]->predicates( ); }
 				else
 				{
 					std::set< function > ret;
 					if ( name != "and" && name != "or" && name != "not" && name != "equal" ) { ret.insert( function( name, arity( ) ) ); }
-					std::for_each( arguments.begin( ), arguments.end( ),
-												 [&]( const std::shared_ptr< term > & t )
+					else
 					{
-						auto func = t->functions( );
-						std::for_each( func.begin( ), func.end( ), [&]( const function & t ){ ret.insert( t ); } );
-					} );
+						std::for_each( arguments.begin( ), arguments.end( ),
+													 [&]( const std::shared_ptr< term > & t )
+						{
+							auto func = t->predicates( );
+							std::for_each( func.begin( ), func.end( ), [&]( const function & t ){ ret.insert( t ); } );
+						} );
+					}
 					return ret;
 				}
 			}

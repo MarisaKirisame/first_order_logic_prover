@@ -77,9 +77,7 @@ namespace theorem_prover
 		auto fol4 = make_imply(
 									make_and(
 										make_function( "p", { make_variable( "x" ) } ),
-										make_and(
-											make_equal( make_variable( "x" ), make_function( "f", { make_variable( "x" ) } ) ),
-											make_equal( make_function( "f", { make_variable( "x" ) } ), make_variable( "x" ) ) ) ),
+											make_equal( make_function( "f", { make_variable( "x" ) } ), make_variable( "x" ) ) ),
 									make_function( "p", { make_function( "f", { make_variable( "x" ) } ) } ) );
 		assert( fol->is_valid( ) && fol2->is_valid( ) && fol3->is_valid( ) && fol4->is_valid( ) );
 	}

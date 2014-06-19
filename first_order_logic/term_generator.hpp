@@ -12,13 +12,13 @@ namespace theorem_prover
 			std::map
 			<
 				std::shared_ptr< term >,
-				std::set< std::shared_ptr< term >, value_less< std::shared_ptr< term > > >,
-				value_less< std::shared_ptr< term > >
+				std::set< std::shared_ptr< term >, typename term::term_sort >,
+				typename term::term_sort
 			> & cv;
 			std::set
 			<
 				std::shared_ptr< term >,
-				value_less< std::shared_ptr< term > >
+				typename term::term_sort
 			> term_map;
 			std::map< function, std::pair< term_generator, term_generator > > functions;
 			const std::set< function > & original_functions;

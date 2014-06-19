@@ -26,20 +26,21 @@ namespace theorem_prover
 			std::shared_ptr< term > new_variable( )
 			{
 				auto ret = make_variable( std::to_string( unused++ ) );
-				cv_map.insert( std::make_pair( ret,  std::set< std::shared_ptr< term >, value_less< std::shared_ptr< term > > >( ) ) );
+				cv_map.insert( std::make_pair( ret,  std::set< std::shared_ptr< term >, typename term::term_sort >( ) ) );
 				return ret;
 			}
-			std::map< std::shared_ptr< term >, bool, value_less< std::shared_ptr< term > > > sequent;
-			std::map< std::shared_ptr< term >, bool, value_less< std::shared_ptr< term > > > temp_sequent;
+			std::map< std::shared_ptr< term >, bool, typename term::term_sort > sequent;
+			std::map< std::shared_ptr< term >, bool, typename term::term_sort > temp_sequent;
 			std::map
 			<
 				std::shared_ptr< term >,
-				std::set< std::shared_ptr< term >, value_less< std::shared_ptr< term > > >,
-				value_less< std::shared_ptr< term > >
+				std::set< std::shared_ptr< term >, typename term::term_sort >,
+				typename term::term_sort
 			> cv_map, term_map;
-			std::map< std::shared_ptr< term >, bool, value_less< std::shared_ptr< term > > > expanded;
+			std::map< std::shared_ptr< term >, bool, typename term::term_sort > expanded;
 			size_t unused = 0;
 			std::set< function > functions;
+			std::set< function > predicates;
 			term_generator< term > tg;
 			bool is_valid( std::shared_ptr< term > t, bool b )
 			{
@@ -51,7 +52,7 @@ namespace theorem_prover
 
 			struct contradiction { };
 			void try_insert(
-					std::map< std::shared_ptr< term >, bool, value_less< std::shared_ptr< term > > > & m,
+					std::map< std::shared_ptr< term >, bool, typename term::term_sort > & m,
 					const std::shared_ptr< term > & t,
 					bool b )
 			{
@@ -211,6 +212,7 @@ namespace theorem_prover
 														make_variable( "t" ) ) ) ) ),
 										true );
 				std::for_each( functions.begin( ), functions.end( ), [this]( const function & f ){ return add_equal_generator( f ); } );
+				std::for_each( predicates.begin( ), predicates.end( ), [this]( const function & f ){ return add_equal_generator( f ); } );
 			}
 
 			bool is_valid( )
@@ -228,7 +230,7 @@ namespace theorem_prover
 							term_map.insert(
 										std::make_pair(
 											f[0],
-											std::set< std::shared_ptr< term >, value_less< std::shared_ptr< term > > >( ) ) );
+											std::set< std::shared_ptr< term >, typename term::term_sort >( ) ) );
 						}
 						while ( ! sequent.empty( ) )
 						{
@@ -251,7 +253,7 @@ namespace theorem_prover
 																		std::set
 																		<
 																			std::shared_ptr< term >,
-																			value_less< std::shared_ptr< term > >
+																			typename term::term_sort
 																		>
 																	 > & s )
 										{
@@ -279,7 +281,7 @@ namespace theorem_prover
 																		std::set
 																		<
 																			std::shared_ptr< term >,
-																			value_less< std::shared_ptr< term > >
+																			typename term::term_sort
 																		>
 																	 > & s )
 										{
@@ -328,6 +330,12 @@ namespace theorem_prover
 										try_insert( sequent, t.first->arguments[1], false );
 									}
 								}
+								else if ( t.first->name == "equal" )
+								{
+									assert( t.first->arguments.size( ) == 2 );
+									try_insert( expanded, t.first, t.second );
+									try_insert( expanded, make_equal( t.first->arguments[1], t.first->arguments[0] ), t.second );
+								}
 								else { try_insert( expanded, t.first, t.second ); }
 							}
 						}
@@ -345,14 +353,16 @@ namespace theorem_prover
 				expanded( t.expanded ),
 				unused( t.unused ),
 				functions( t.functions ),
+				predicates( t.predicates ),
 				tg( 1, cv_map, functions ) { }
-			deduction_tree( const std::shared_ptr< term > & t ) : sequent( { { t, false } } ), functions( t->functions( ) ), tg( 1, cv_map, functions )
+			deduction_tree( const std::shared_ptr< term > & t ) :
+				sequent( { { t, false } } ), functions( t->functions( ) ), predicates( t->predicates( ) ), tg( 1, cv_map, functions )
 			{
 				const auto fv = t->free_variables( );
 				const auto con = t->constants( );
 				auto r = boost::range::join( fv, con );
 				std::transform( r.begin( ), r.end( ), std::inserter( cv_map, cv_map.begin( ) ), [ ]( const std::shared_ptr< term > & s )
-				{ return std::make_pair( s, std::set< std::shared_ptr< term >, value_less< std::shared_ptr< term > > >( ) ); } );
+				{ return std::make_pair( s, std::set< std::shared_ptr< term >, typename term::term_sort >( ) ); } );
 				term_map = cv_map;
 				if ( cv_map.empty( ) ) { new_variable( ); }
 				if ( t->have_equal( ) ) { add_equal_generator( ); }
