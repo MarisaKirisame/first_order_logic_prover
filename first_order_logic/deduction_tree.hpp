@@ -1,5 +1,6 @@
 #ifndef THEOREM_PROVER_FIRST_ORDER_LOGIC_DEDUCTION_TREE
 #define THEOREM_PROVER_FIRST_ORDER_LOGIC_DEDUCTION_TREE
+#include "predicate.hpp"
 #include "memory"
 #include "utility"
 #include "term_generator.hpp"
@@ -7,6 +8,8 @@
 #include "boost/range.hpp"
 #include "boost/range/join.hpp"
 #include "boost/iterator/counting_iterator.hpp"
+#include "function.hpp"
+#include "predicate.hpp"
 namespace theorem_prover
 {
 	namespace first_order_logic
@@ -20,6 +23,7 @@ namespace theorem_prover
 		std::shared_ptr< term > make_imply( const std::shared_ptr< term > & l, const std::shared_ptr< term > & r );
 		std::shared_ptr< term > make_not( const std::shared_ptr< term > & s );
 		std::shared_ptr< term > make_function( const std::string & s, const std::vector< std::shared_ptr< term > > & t );
+		std::shared_ptr< term > make_predicate( const std::string & s, const std::vector< std::shared_ptr< term > > & t );
 		template< class term >
 		struct deduction_tree
 		{
@@ -40,7 +44,7 @@ namespace theorem_prover
 			std::map< std::shared_ptr< term >, bool, typename term::term_sort > expanded;
 			size_t unused = 0;
 			std::set< function > functions;
-			std::set< function > predicates;
+			std::set< predicate > predicates;
 			term_generator< term > tg;
 			bool is_valid( std::shared_ptr< term > t, bool b )
 			{
@@ -81,19 +85,6 @@ namespace theorem_prover
 															make_function( f.name, { make_variable( "s" ) } ),
 															make_function( f.name, { make_variable( "t" ) } ) ) ) ) ),
 											true );
-					try_insert( sequent,
-											make_all(
-												"s",
-												make_all(
-													"t",
-													make_imply(
-														make_and(
-															make_equal(
-																make_variable( "s" ),
-																make_variable( "t" ) ),
-															make_function( f.name, { make_variable( "s" ) } ) ),
-														make_function( f.name, { make_variable( "t" ) } ) ) ) ),
-											true );
 				}
 				else
 				{
@@ -114,10 +105,45 @@ namespace theorem_prover
 					auto add = make_imply( and_stack, make_equal( make_function( f.name, args ), make_function( f.name, argt ) ) );
 					for ( size_t i = 0; i < f.arity; ++i ) { add = make_all( args[i]->name, make_all( argt[i]->name, add ) ); }
 					try_insert( sequent, add, true );
-					try_insert( sequent, make_imply( make_and( and_stack, make_function( f.name, args ) ), make_function( f.name, argt ) ), true );
 				}
 			}
-
+			void add_equal_generator( const predicate & f )
+			{
+				assert( f.arity >= 1 );
+				if ( f.arity == 1 )
+				{
+					try_insert( sequent,
+											make_all(
+												"s",
+												make_all(
+													"t",
+													make_imply(
+														make_and(
+															make_equal(
+																make_variable( "s" ),
+																make_variable( "t" ) ),
+															make_predicate( f.name, { make_variable( "s" ) } ) ),
+														make_predicate( f.name, { make_variable( "t" ) } ) ) ) ),
+											true );
+				}
+				else
+				{
+					std::vector< std::shared_ptr< term > > args, argt;
+					args.reserve( f.arity );
+					argt.reserve( f.arity );
+					std::for_each(
+								boost::counting_iterator< size_t >( 0 ),
+								boost::counting_iterator< size_t >( f.arity ),
+								[&]( size_t i ){
+						args.push_back( make_variable( "s" + std::to_string( i ) ) );
+						argt.push_back( make_variable( "t" + std::to_string( i ) ) ); } );
+					std::shared_ptr< term > and_stack =
+							make_and(
+								make_equal( args[0], argt[0] ),
+								make_equal( args[1], argt[1] ) );
+					try_insert( sequent, make_imply( make_and( and_stack, make_predicate( f.name, args ) ), make_predicate( f.name, argt ) ), true );
+				}
+			}
 			void add_equal_generator( )
 			{
 				try_insert( sequent, make_all( "t", make_equal( make_variable( "t" ), make_variable( "t" ) ) ), true );
@@ -211,8 +237,8 @@ namespace theorem_prover
 													make_not(
 														make_variable( "t" ) ) ) ) ),
 										true );
-				std::for_each( functions.begin( ), functions.end( ), [this]( const function & f ){ return add_equal_generator( f ); } );
-				std::for_each( predicates.begin( ), predicates.end( ), [this]( const function & f ){ return add_equal_generator( f ); } );
+				std::for_each( functions.begin( ), functions.end( ), [this]( const function & f ){ add_equal_generator( f ); } );
+				std::for_each( predicates.begin( ), predicates.end( ), [this]( const predicate & f ){ add_equal_generator( f ); } );
 			}
 
 			bool is_valid( )

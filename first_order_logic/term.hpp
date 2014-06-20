@@ -2,6 +2,8 @@
 #define THEOREM_PROVER_FIRST_ORDER_LOGIC_TERM
 #include "deduction_tree.hpp"
 #include "set_inserter.hpp"
+#include "function.hpp"
+#include "predicate.hpp"
 namespace theorem_prover
 {
 	namespace first_order_logic
@@ -109,22 +111,22 @@ namespace theorem_prover
 				}
 			}
 
-			std::set< function > predicates( )
+			std::set< predicate > predicates( )
 			{
 				if ( name == "variable" ) { return { }; }
 				else if ( name == "constant" ) { return { }; }
 				else if ( is_quantifier( ) ) { return arguments[1]->predicates( ); }
 				else
 				{
-					std::set< function > ret;
-					if ( name != "and" && name != "or" && name != "not" && name != "equal" ) { ret.insert( function( name, arity( ) ) ); }
+					std::set< predicate > ret;
+					if ( name != "and" && name != "or" && name != "not" && name != "equal" ) { ret.insert( predicate( name, arity( ) ) ); }
 					else
 					{
 						std::for_each( arguments.begin( ), arguments.end( ),
 													 [&]( const std::shared_ptr< term > & t )
 						{
 							auto func = t->predicates( );
-							std::for_each( func.begin( ), func.end( ), [&]( const function & t ){ ret.insert( t ); } );
+							std::for_each( func.begin( ), func.end( ), [&]( const predicate & t ){ ret.insert( t ); } );
 						} );
 					}
 					return ret;

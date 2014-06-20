@@ -18,7 +18,8 @@ HEADERS += \
     propositional_logic/proposition.hpp \
     propositional_logic/propositional_combine.hpp \
     propositional_logic/propositional_letter.hpp \
-    propositional_logic/resolution_method.hpp
+    propositional_logic/resolution_method.hpp \
+    first_order_logic/predicate.hpp
 
 OTHER_FILES += \
     theorem_prover.pro.user \
