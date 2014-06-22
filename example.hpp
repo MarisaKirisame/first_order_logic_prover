@@ -3,6 +3,7 @@
 #include "propositional_logic/proposition.hpp"
 #include "first_order_logic/first_order_logic.hpp"
 #include "propositional_logic/resolution_method.hpp"
+#include "first_order_logic/praser.hpp"
 namespace theorem_prover
 {
 	void propositional_logic_test( )
@@ -84,8 +85,9 @@ namespace theorem_prover
 
 	int example( )
 	{
-		propositional_logic_test( );
-		first_order_logic_test( );
+		std::string str = "a ->a";
+		auto res = first_order_logic::prase( str );
+		std::cout << res->is_valid( ) << std::endl;
 		return 0;
 	}
 

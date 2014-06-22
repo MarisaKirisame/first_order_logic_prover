@@ -26,6 +26,9 @@ namespace theorem_prover
 		std::shared_ptr< term > make_imply( const std::shared_ptr< term > & l, const std::shared_ptr< term > & r )
 		{ return make_or( make_not( l ), r ); }
 
+		std::shared_ptr< term > make_iff( const std::shared_ptr< term > & l, const std::shared_ptr< term > & r )
+		{ return make_or( make_and( l, r ), make_and( make_not( l ), make_not( r ) ) ); }
+
 		std::shared_ptr< term > make_all( const std::string & l, const std::shared_ptr< term > & r )
 		{ return std::shared_ptr< term >( new term( std::string( "all" ), { make_variable( l ), r } ) ); }
 
