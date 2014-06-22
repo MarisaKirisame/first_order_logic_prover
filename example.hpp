@@ -85,7 +85,7 @@ namespace theorem_prover
 
 	int example( )
 	{
-		std::string str = "a ->a";
+		std::string str = u8"∃a a=a";
 		auto res = first_order_logic::prase( str );
 		std::cout << res->is_valid( ) << std::endl;
 		return 0;
