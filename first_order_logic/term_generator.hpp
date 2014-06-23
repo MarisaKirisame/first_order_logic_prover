@@ -1,6 +1,8 @@
 #ifndef THEOREM_PROVER_FIRST_ORDER_LOGIC_TERM_GENERATOR
 #define THEOREM_PROVER_FIRST_ORDER_LOGIC_TERM_GENERATOR
 #include "function.hpp"
+#include <set>
+#include <cassert>
 namespace theorem_prover
 {
 	namespace first_order_logic

@@ -4,7 +4,6 @@
 #include "memory"
 #include "utility"
 #include "term_generator.hpp"
-#include "first_order_logic.hpp"
 #include "boost/range.hpp"
 #include "boost/range/join.hpp"
 #include "boost/iterator/counting_iterator.hpp"
