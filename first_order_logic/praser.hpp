@@ -88,8 +88,7 @@ namespace theorem_prover
 				qi::rule< IT, std::string( ), encoding::space_type> text;
 			};
 		}
-		template< typename STR >
-		std::shared_ptr< term > prase( const STR & s )
+		std::shared_ptr< term > prase( const std::string & s )
 		{
 			auto i = s.begin( );
 			auto e = s.end( );
