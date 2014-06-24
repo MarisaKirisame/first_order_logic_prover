@@ -62,9 +62,9 @@ namespace theorem_prover
 					with_implication =
 										 with_quantifier[ _val = _1 ] >> *
 										 (
-											( lit( "->" ) >> with_not )[ _val = bind( make_imply, _1, _val ) ] |
-											 ( lit( "<-" ) >> with_not )[ _val = bind( make_imply, _val, _1 ) ] |
-											 ( lit( "<->" ) >> with_not )[ _val = bind( make_iff, _1, _val ) ] );
+											( lit( "->" ) >> with_quantifier )[ _val = bind( make_imply, _1, _val ) ] |
+											 ( lit( "<-" ) >> with_quantifier )[ _val = bind( make_imply, _val, _1 ) ] |
+											 ( lit( "<->" ) >> with_quantifier )[ _val = bind( make_iff, _1, _val ) ] );
 					expression =
 													( lit( "∃" ) >> text >> expression )[ _val = bind( make_some, _1, _2 ) ] |
 													( lit( "∀" ) >> text >> expression )[ _val = bind( make_all, _1, _2 ) ] |

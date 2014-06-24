@@ -88,6 +88,8 @@ namespace theorem_prover
 		std::string str = u8"∃a a=a";
 		auto res = first_order_logic::prase( str );
 		std::cout << res->is_valid( ) << std::endl;
+		auto ptr = res->pt;
+		std::cout << ptr->str;
 		return 0;
 	}
 

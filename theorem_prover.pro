@@ -20,7 +20,8 @@ HEADERS += \
     propositional_logic/propositional_letter.hpp \
     propositional_logic/resolution_method.hpp \
     first_order_logic/predicate.hpp \
-    first_order_logic/praser.hpp
+    first_order_logic/praser.hpp \
+    first_order_logic/proof_tree.hpp
 
 OTHER_FILES += \
     theorem_prover.pro.user \

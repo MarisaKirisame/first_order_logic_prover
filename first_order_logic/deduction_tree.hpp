@@ -9,6 +9,7 @@
 #include "boost/iterator/counting_iterator.hpp"
 #include "function.hpp"
 #include "predicate.hpp"
+#include "proof_tree.hpp"
 namespace theorem_prover
 {
 	namespace first_order_logic
@@ -26,6 +27,7 @@ namespace theorem_prover
 		template< class term >
 		struct deduction_tree
 		{
+			std::shared_ptr< proof_tree > pt;
 			std::shared_ptr< term > new_variable( )
 			{
 				auto ret = make_variable( std::to_string( unused++ ) );
@@ -45,15 +47,22 @@ namespace theorem_prover
 			std::set< function > functions;
 			std::set< predicate > predicates;
 			term_generator< term > tg;
-			bool is_valid( std::shared_ptr< term > t, bool b )
+
+			bool is_valid( std::shared_ptr< proof_tree > & pt, std::shared_ptr< term > t, bool b )
 			{
 				deduction_tree dt( * this );
 				try { dt.try_insert( dt.sequent, t, b ); }
-				catch ( contradiction & ) { return true; }
-				return dt.is_valid( );
+				catch ( contradiction & con )
+				{
+					join( pt, con.pt );
+					return true;
+				}
+				auto res = dt.is_valid( );
+				join( pt, dt.pt );
+				return res;
 			}
 
-			struct contradiction { };
+			struct contradiction { std::shared_ptr< proof_tree > pt; };
 			void try_insert(
 					std::map< std::shared_ptr< term >, bool, typename term::term_sort > & m,
 					const std::shared_ptr< term > & t,
@@ -62,8 +71,24 @@ namespace theorem_prover
 				if ( m.insert( std::make_pair( t, b ) ).first->second != b )
 				{
 					contradiction con;
+					auto res = pair_str( );
+					std::string & str = b ? res.first : res.second;
+					if ( ! str.empty( ) ) { str += ","; }
+					str += t->to_string( );
+					con.pt.reset( new proof_tree( res.first + "-->" + res.second ) );
 					throw con;
 				}
+			}
+
+			std::shared_ptr< proof_tree > join( std::shared_ptr< proof_tree > & parent, std::shared_ptr< proof_tree > child )
+			{
+				child->parent = parent.get( );
+				if ( child->str != parent->str )
+				{
+					parent->child.push_back( child );
+					return child;
+				}
+				return parent;
 			}
 
 			void add_equal_generator( const function & f )
@@ -240,8 +265,31 @@ namespace theorem_prover
 				std::for_each( predicates.begin( ), predicates.end( ), [this]( const predicate & f ){ add_equal_generator( f ); } );
 			}
 
+			std::string to_str( ) const
+			{
+				auto res = pair_str( );
+				return res.first + "-->" + res.second;
+			}
+
+			std::pair< std::string, std::string > pair_str( ) const
+			{
+				std::string postive, negative;
+				auto function = [&]( const std::pair< std::shared_ptr< term >, bool > & val )
+				{
+					std::string & str = val.second ? postive : negative;
+					if ( ! str.empty( ) ) { str += ","; }
+					str += val.first->to_string( );
+				};
+				std::for_each( temp_sequent.begin( ), temp_sequent.end( ), function );
+				std::for_each( sequent.begin( ), sequent.end( ), function );
+				std::for_each( expanded.begin( ), expanded.end( ), function );
+				return std::make_pair( postive, negative );
+			}
+
 			bool is_valid( )
 			{
+				pt.reset( new proof_tree( to_str( ) ) );
+				std::shared_ptr< proof_tree > leaf = pt;
 				try
 				{
 					while ( ! sequent.empty( ) || ! temp_sequent.empty( ) )
@@ -337,7 +385,7 @@ namespace theorem_prover
 									}
 									else
 									{
-										if ( ! is_valid( t.first->arguments[0], false ) ) { return false; }
+										if ( ! is_valid( leaf, t.first->arguments[0], false ) ) { return false; }
 										try_insert( sequent, t.first->arguments[1], false );
 									}
 								}
@@ -346,7 +394,7 @@ namespace theorem_prover
 									assert( t.first->arguments.size( ) == 2 );
 									if ( t.second )
 									{
-										if ( ! is_valid( t.first->arguments[0], true ) ) { return false; }
+										if ( ! is_valid( leaf, t.first->arguments[0], true ) ) { return false; }
 										try_insert( sequent, t.first->arguments[1], true );
 									}
 									else
@@ -363,11 +411,16 @@ namespace theorem_prover
 								}
 								else { try_insert( expanded, t.first, t.second ); }
 							}
+							leaf = join( leaf, std::shared_ptr< proof_tree >( new proof_tree( to_str( ), { } ) ) );
 						}
 					}
 					return false;
 				}
-				catch ( contradiction & ) { return true; }
+				catch ( contradiction & con )
+				{
+					join( leaf, con.pt );
+					return true;
+				}
 			}
 
 			deduction_tree( const deduction_tree & t ) :

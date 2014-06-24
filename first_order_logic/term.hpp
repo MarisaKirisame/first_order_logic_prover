@@ -4,6 +4,8 @@
 #include "set_inserter.hpp"
 #include "function.hpp"
 #include "predicate.hpp"
+#include "proof_tree.hpp"
+#include <boost/optional.hpp>
 namespace theorem_prover
 {
 	namespace first_order_logic
@@ -160,7 +162,9 @@ namespace theorem_prover
 			bool is_valid( )
 			{
 				deduction_tree< term > t( shared_from_this( ) );
-				return t.is_valid( );
+				bool res = t.is_valid( );
+				pt = t.pt;
+				return res;
 			}
 
 			bool operator < ( const term & comp ) const
@@ -184,6 +188,58 @@ namespace theorem_prover
 					}
 				}
 			}
+
+			std::shared_ptr< proof_tree > pt;
+			std::string to_string( ) const
+			{
+				if ( name == "and" )
+				{
+					assert( arguments.size( ) == 2 );
+					return "(" + arguments[0]->to_string( ) + "/\\" + arguments[1]->to_string( ) + ")";
+				}
+				else if ( name == "not" )
+				{
+					assert( arguments.size( ) == 1 );
+					return std::string( "(" ) + "!" + arguments[0]->to_string( ) + ")";
+				}
+				else if ( name == "or" )
+				{
+					assert( arguments.size( ) == 2 );
+					return "(" + arguments[0]->to_string( ) + "\\/" + arguments[1]->to_string( ) + ")";
+				}
+				else if ( name == "variable" || name == "constant" )
+				{
+					assert( arguments.size( ) == 1 );
+					return arguments[0]->name;
+				}
+				else if ( name == "equal" )
+				{
+					assert( arguments.size( ) == 2 );
+					return "(" + arguments[0]->to_string( ) + "=" + arguments[1]->to_string( ) + ")";
+				}
+				else if ( name == "all" )
+				{
+					assert( arguments.size( ) == 2 );
+					return "∀" + arguments[0]->to_string( ) + " " + arguments[1]->to_string( );
+				}
+				else if ( name == "some" )
+				{
+					assert( arguments.size( ) == 2 );
+					return "∃" + arguments[0]->to_string( ) + " " + arguments[1]->to_string( );
+				}
+				else
+				{
+					std::string stack;
+					for ( const auto & i : arguments )
+					{
+						if( ! stack.empty( ) ) { stack += ", "; };
+						stack += i->to_string( );
+					}
+					return name + "(" + stack + ")";
+				}
+				throw std::runtime_error( "unknown name : " + name );
+			}
+
 		};
 	}
 }
