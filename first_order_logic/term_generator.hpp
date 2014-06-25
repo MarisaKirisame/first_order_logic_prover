@@ -7,9 +7,10 @@ namespace theorem_prover
 {
 	namespace first_order_logic
 	{
-		template< class term >
+		template< class term, class deduction_tree >
 		struct term_generator
 		{
+			deduction_tree * that;
 			size_t arity;
 			std::map
 			<
@@ -25,9 +26,10 @@ namespace theorem_prover
 			std::map< function, std::pair< term_generator, term_generator > > functions;
 			const std::set< function > & original_functions;
 			term_generator( const term_generator & tg ) :
-				arity( tg.arity ), cv( tg.cv ), term_map( tg.term_map ), original_functions( tg.original_functions ), i( this->functions.begin( ) )	{ }
-			term_generator( size_t arity, decltype( cv ) & cv, const std::set< function > & functions )
-				: arity( arity ), cv( cv ), original_functions( functions ), i( this->functions.begin( ) ) { }
+				that( tg.that ), arity( tg.arity ), cv( tg.cv ), term_map( tg.term_map ),
+				original_functions( tg.original_functions ), i( this->functions.begin( ) )	{ }
+			term_generator( deduction_tree * that, size_t arity, decltype( cv ) & cv, const std::set< function > & functions )
+				: that( that), arity( arity ), cv( cv ), original_functions( functions ), i( this->functions.begin( ) ) { }
 
 			decltype( functions.begin( ) ) i;
 			std::vector< std::shared_ptr< term > > generate( decltype( functions.begin( ) ) it )
@@ -44,7 +46,7 @@ namespace theorem_prover
 				}
 			}
 
-			term_generator generate_term_generator( size_t a ) { return term_generator( a, cv, original_functions ); }
+			term_generator generate_term_generator( size_t a ) { return term_generator( that, a, cv, original_functions ); }
 
 			std::vector< std::shared_ptr< term > > generate( )
 			{
@@ -73,7 +75,7 @@ namespace theorem_prover
 						} );
 					}
 					if ( i == functions.end( ) ) { i = functions.begin( ); }
-					assert( i != functions.end( ) );
+					if ( i == functions.end( ) ) { return { that->new_variable( ) }; }
 					auto ret = generate( i );
 					if ( i != functions.end( ) ) { ++i; }
 					assert( ret.size( ) == arity );

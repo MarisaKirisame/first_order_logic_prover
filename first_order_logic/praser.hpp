@@ -58,17 +58,17 @@ namespace theorem_prover
 										 (
 											( lit( "/\\" ) >> with_not )[ _val = bind( make_and, _1, _val ) ] |
 											 ( lit( "\\/" ) >> with_not )[ _val = bind( make_or, _1, _val ) ] );
-					with_quantifier %= with_binary;
+					with_quantifier =
+													( lit( "∃" ) >> text >> expression )[ _val = bind( make_some, _1, _2 ) ] |
+													( lit( "∀" ) >> text >> expression )[ _val = bind( make_all, _1, _2 ) ] |
+													with_binary[ _val = _1 ];
 					with_implication =
 										 with_quantifier[ _val = _1 ] >> *
 										 (
 											( lit( "->" ) >> with_quantifier )[ _val = bind( make_imply, _1, _val ) ] |
 											 ( lit( "<-" ) >> with_quantifier )[ _val = bind( make_imply, _val, _1 ) ] |
 											 ( lit( "<->" ) >> with_quantifier )[ _val = bind( make_iff, _1, _val ) ] );
-					expression =
-													( lit( "∃" ) >> text >> expression )[ _val = bind( make_some, _1, _2 ) ] |
-													( lit( "∀" ) >> text >> expression )[ _val = bind( make_all, _1, _2 ) ] |
-													with_implication[ _val = _1 ];
+					expression %= with_implication;
 					term_exp = function[ _val = _1 ] | text[ _val = bind( make_variable, _1 ) ];
 					function = ( text >> lit( '(' ) >> ( term_exp % ',' ) >> lit( ')' ) )[ _val = bind( make_function, _1, _2 ) ];
 					variable = text[ _val = bind( make_variable, _1 ) ];

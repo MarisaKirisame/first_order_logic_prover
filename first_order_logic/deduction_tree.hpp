@@ -46,7 +46,7 @@ namespace theorem_prover
 			size_t unused = 0;
 			std::set< function > functions;
 			std::set< predicate > predicates;
-			term_generator< term > tg;
+			term_generator< term, deduction_tree > tg;
 
 			bool is_valid( std::shared_ptr< proof_tree > & pt, std::shared_ptr< term > t, bool b )
 			{
@@ -432,9 +432,9 @@ namespace theorem_prover
 				unused( t.unused ),
 				functions( t.functions ),
 				predicates( t.predicates ),
-				tg( 1, cv_map, functions ) { }
+				tg( this, 1, cv_map, functions ) { }
 			deduction_tree( const std::shared_ptr< term > & t ) :
-				sequent( { { t, false } } ), functions( t->functions( ) ), predicates( t->predicates( ) ), tg( 1, cv_map, functions )
+				sequent( { { t, false } } ), functions( t->functions( ) ), predicates( t->predicates( ) ), tg( this, 1, cv_map, functions )
 			{
 				const auto fv = t->free_variables( );
 				const auto con = t->constants( );

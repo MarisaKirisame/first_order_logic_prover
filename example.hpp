@@ -42,18 +42,14 @@ namespace theorem_prover
 	void first_order_logic_test( )
 	{
 		using namespace first_order_logic;
-		auto fol = make_or(
-								 make_variable( "A" ),
-								 make_not(
-									 make_variable( "A" ) ) );
+		auto fol = make_all( "x", make_variable( "s" ) );
 		auto fol2 = make_imply(
 									make_some(
 										"x",
 										make_imply(
 											make_variable( "p" ),
 											make_function( "Q", { make_variable( "x" ) } )
-											)
-										),
+											) ),
 									make_imply(
 										make_variable( "p" ),
 										make_some(
@@ -80,16 +76,12 @@ namespace theorem_prover
 										make_function( "p", { make_variable( "x" ) } ),
 											make_equal( make_function( "f", { make_variable( "x" ) } ), make_variable( "x" ) ) ),
 									make_function( "p", { make_function( "f", { make_variable( "x" ) } ) } ) );
-		assert( fol->is_valid( ) && fol2->is_valid( ) && fol3->is_valid( ) && fol4->is_valid( ) );
+		assert( ( ! fol->is_valid( ) ) && fol2->is_valid( ) && fol3->is_valid( ) && fol4->is_valid( ) );
 	}
 
 	int example( )
 	{
-		std::string str = u8"∃a a=a";
-		auto res = first_order_logic::prase( str );
-		std::cout << res->is_valid( ) << std::endl;
-		auto ptr = res->pt;
-		std::cout << ptr->str;
+		first_order_logic_test( );
 		return 0;
 	}
 
