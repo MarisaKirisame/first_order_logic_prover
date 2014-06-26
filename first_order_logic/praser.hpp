@@ -95,7 +95,7 @@ namespace theorem_prover
 			std::shared_ptr< term > ret;
 			FOL_grammar< decltype( i ) > fol;
 			bool succeed = boost::spirit::qi::phrase_parse( i, e, fol, boost::spirit::unicode::space, ret );
-			assert( succeed && i == e );
+			if ( succeed && i == e ) { ret.reset( ); }
 			return ret;
 		}
 	}
