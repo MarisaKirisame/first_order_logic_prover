@@ -1,5 +1,6 @@
 #ifndef FIRST_ORDER_LOGIC_SET_INSERTER
 #define FIRST_ORDER_LOGIC_SET_INSERTER
+#include <set>
 namespace first_order_logic
 {
 	template< typename term >

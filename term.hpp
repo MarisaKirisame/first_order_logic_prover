@@ -1,11 +1,11 @@
 #ifndef FIRST_ORDER_LOGIC_TERM
 #define FIRST_ORDER_LOGIC_TERM
-#include "deduction_tree.hpp"
 #include "set_inserter.hpp"
 #include "function.hpp"
 #include "predicate.hpp"
 #include "proof_tree.hpp"
 #include <boost/optional.hpp>
+#include <set>
 namespace first_order_logic
 {
 	struct term
@@ -222,13 +222,6 @@ namespace first_order_logic
 		};
 		std::shared_ptr< internal > data;
 		std::shared_ptr< proof_tree > pt;
-		bool is_valid( )
-		{
-			deduction_tree< term > t( * this );
-			bool res = t.is_valid( );
-			pt = t.pt;
-			return res;
-		}
 		internal * operator ->( ) const { return data.get( ); }
 		internal & operator * ( ) const { return * data; }
 		bool operator < ( const term & comp ) const

@@ -5,6 +5,7 @@
 #include <boost/test/unit_test.hpp>
 #include "first_order_logic.hpp"
 #include "praser.hpp"
+#include "gentzen_system.hpp"
 namespace first_order_logic
 {
 	BOOST_AUTO_TEST_CASE( first_order_logic_test )
@@ -45,10 +46,10 @@ namespace first_order_logic
 									make_function( "p", { make_variable( "x" ) } ),
 										make_equal( make_function( "f", { make_variable( "x" ) } ), make_variable( "x" ) ) ),
 								make_function( "p", { make_function( "f", { make_variable( "x" ) } ) } ) );
-		BOOST_CHECK( fol.is_valid( ) );
-		BOOST_CHECK( fol2.is_valid( ) );
-		BOOST_CHECK( fol3.is_valid( ) );
-		BOOST_CHECK( fol4.is_valid( ) );
+		BOOST_CHECK( gentzen_system::is_valid( fol ) );
+		BOOST_CHECK( gentzen_system::is_valid( fol2 ) );
+		BOOST_CHECK( gentzen_system::is_valid( fol3 ) );
+		BOOST_CHECK( gentzen_system::is_valid( fol4 ) );
 	}
 }
 #endif //THEOREM_PROVER_EXAMPLE

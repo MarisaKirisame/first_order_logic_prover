@@ -10,6 +10,7 @@
 #include "function.hpp"
 #include "predicate.hpp"
 #include "proof_tree.hpp"
+#include "term.hpp"
 namespace first_order_logic
 {
 	struct term;
@@ -22,8 +23,7 @@ namespace first_order_logic
 	term make_not( const term & s );
 	term make_function( const std::string & s, const std::vector< term > & t );
 	term make_predicate( const std::string & s, const std::vector< term > & t );
-	template< class term >
-	struct deduction_tree
+	struct gentzen_system
 	{
 		std::shared_ptr< proof_tree > pt;
 		term new_variable( )
@@ -43,10 +43,10 @@ namespace first_order_logic
 		size_t unused = 0;
 		std::set< function > functions;
 		std::set< predicate > predicates;
-		term_generator< term, deduction_tree > tg;
+		term_generator< term, gentzen_system > tg;
 		bool is_valid( std::shared_ptr< proof_tree > & pt, term t, bool b )
 		{
-			deduction_tree dt( * this );
+			gentzen_system dt( * this );
 			try { dt.try_insert( dt.sequent, t, b ); }
 			catch ( contradiction & con )
 			{
@@ -406,7 +406,7 @@ namespace first_order_logic
 				return true;
 			}
 		}
-		deduction_tree( const deduction_tree & t ) :
+		gentzen_system( const gentzen_system & t ) :
 			sequent( t.sequent ),
 			temp_sequent( t.temp_sequent ),
 			cv_map( t.cv_map ),
@@ -416,7 +416,7 @@ namespace first_order_logic
 			functions( t.functions ),
 			predicates( t.predicates ),
 			tg( this, 1, cv_map, functions ) { }
-		deduction_tree( const term & t ) :
+		gentzen_system( const term & t ) :
 			sequent( { { t, false } } ), functions( t->functions( ) ), predicates( t->predicates( ) ), tg( this, 1, cv_map, functions )
 		{
 			const auto fv = t->free_variables( );
@@ -427,6 +427,13 @@ namespace first_order_logic
 			term_map = cv_map;
 			if ( cv_map.empty( ) ) { new_variable( ); }
 			if ( t->have_equal( ) ) { add_equal_generator( ); }
+		}
+		static bool is_valid( term & te )
+		{
+			gentzen_system t( te );
+			bool res = t.is_valid( );
+			te.pt = t.pt;
+			return res;
 		}
 	};
 }

@@ -6,7 +6,6 @@ CONFIG += C++11
 SOURCES += main.cpp
 LIBS += -lboost_unit_test_framework
 HEADERS += \
-    deduction_tree.hpp \
     first_order_logic.hpp \
     function.hpp \
     praser.hpp \
@@ -15,7 +14,8 @@ HEADERS += \
     set_inserter.hpp \
     term_generator.hpp \
     term.hpp \
-    test.hpp
+    test.hpp \
+    gentzen_system.hpp
 
 OTHER_FILES += \
     theorem_prover.pro.user \
