@@ -11,11 +11,11 @@ HEADERS += \
     praser.hpp \
     predicate.hpp \
     proof_tree.hpp \
-    set_inserter.hpp \
     term_generator.hpp \
     term.hpp \
     test.hpp \
-    gentzen_system.hpp
+    gentzen_system.hpp \
+    substitution.hpp
 
 OTHER_FILES += \
     theorem_prover.pro.user \

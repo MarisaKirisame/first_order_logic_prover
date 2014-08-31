@@ -1,11 +1,11 @@
 #ifndef FIRST_ORDER_LOGIC_TERM
 #define FIRST_ORDER_LOGIC_TERM
-#include "set_inserter.hpp"
 #include "function.hpp"
 #include "predicate.hpp"
 #include "proof_tree.hpp"
 #include <boost/optional.hpp>
 #include <set>
+#include <boost/function_output_iterator.hpp>
 namespace first_order_logic
 {
 	struct term
@@ -32,8 +32,10 @@ namespace first_order_logic
 				else
 				{
 					std::set< term > ret;
-					std::transform( arguments.begin( ), arguments.end( ), set_inserter< term >( ret ),
-													[&]( const term & t ){ return t->constants( ); } );
+					std::transform( arguments.begin( ),
+									arguments.end( ),
+									boost::make_function_output_iterator( [&]( const std::set< term > & s ){ ret.insert( s.begin( ), s.end( ) ); } ),
+									[&]( const term & t ){ return t->constants( ); } );
 					return ret;
 				}
 			}
@@ -67,7 +69,7 @@ namespace first_order_logic
 					std::set< term > ret;
 					std::transform( arguments.begin( ),
 									arguments.end( ),
-									set_inserter< term >( ret ),
+									boost::make_function_output_iterator( [&]( const std::set< term > & s ){ ret.insert( s.begin( ), s.end( ) ); } ),
 									[&]( const term & t ){ return t->free_variables( ); } );
 					return ret;
 				}

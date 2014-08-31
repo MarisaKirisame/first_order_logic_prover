@@ -31,7 +31,7 @@ namespace first_order_logic
 	{ return term( new term::internal( std::string( "variable" ), { term( new term::internal( s, { } ) ) } ) ); }
 
 	term make_all( const std::string & l, const term & r )
-	{ return term( new term::internal( std::string( "all" ), std::vector< term >( { make_variable( l ), r } ) ) ); }
+	{ return term( new term::internal( std::string( "all" ), { make_variable( l ), r } ) ); }
 
 	term make_some( const std::string & l, const term & r )
 	{ return term( new term::internal( std::string( "some" ), { make_variable( l ), r } ) ); }

@@ -6,9 +6,10 @@
 #include <map>
 #include <vector>
 #include <algorithm>
+#include "term.hpp"
 namespace first_order_logic
 {
-	template< class term, class deduction_tree >
+	template< class deduction_tree >
 	struct term_generator
 	{
 		deduction_tree * that;

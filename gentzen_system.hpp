@@ -43,7 +43,7 @@ namespace first_order_logic
 		size_t unused = 0;
 		std::set< function > functions;
 		std::set< predicate > predicates;
-		term_generator< term, gentzen_system > tg;
+		term_generator< gentzen_system > tg;
 		bool is_valid( std::shared_ptr< proof_tree > & pt, term t, bool b )
 		{
 			gentzen_system dt( * this );
