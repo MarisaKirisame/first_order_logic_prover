@@ -13,39 +13,38 @@
 namespace first_order_logic
 {
 	struct term;
-	std::shared_ptr< term > make_variable( const std::string & s );
-	std::shared_ptr< term > make_equal( const std::shared_ptr< term > & l, const std::shared_ptr< term > & r );
-	std::shared_ptr< term > make_all( const std::string & l, const std::shared_ptr< term > & r );
-	std::shared_ptr< term > make_and( const std::shared_ptr< term > & l, const std::shared_ptr< term > & r );
-	std::shared_ptr< term > make_or( const std::shared_ptr< term > & l, const std::shared_ptr< term > & r );
-	std::shared_ptr< term > make_imply( const std::shared_ptr< term > & l, const std::shared_ptr< term > & r );
-	std::shared_ptr< term > make_not( const std::shared_ptr< term > & s );
-	std::shared_ptr< term > make_function( const std::string & s, const std::vector< std::shared_ptr< term > > & t );
-	std::shared_ptr< term > make_predicate( const std::string & s, const std::vector< std::shared_ptr< term > > & t );
+	term make_variable( const std::string & s );
+	term make_equal( const term & l, const term & r );
+	term make_all( const std::string & l, const term & r );
+	term make_and( const term & l, const term & r );
+	term make_or( const term & l, const term & r );
+	term make_imply( const term & l, const term & r );
+	term make_not( const term & s );
+	term make_function( const std::string & s, const std::vector< term > & t );
+	term make_predicate( const std::string & s, const std::vector< term > & t );
 	template< class term >
 	struct deduction_tree
 	{
 		std::shared_ptr< proof_tree > pt;
-		std::shared_ptr< term > new_variable( )
+		term new_variable( )
 		{
 			auto ret = make_variable( std::to_string( unused++ ) );
-			cv_map.insert( std::make_pair( ret,  std::set< std::shared_ptr< term >, typename term::term_sort >( ) ) );
+			cv_map.insert( std::make_pair( ret,  std::set< term >( ) ) );
 			return ret;
 		}
-		std::map< std::shared_ptr< term >, bool, typename term::term_sort > sequent;
-		std::map< std::shared_ptr< term >, bool, typename term::term_sort > temp_sequent;
+		std::map< term, bool > sequent;
+		std::map< term, bool > temp_sequent;
 		std::map
 		<
-			std::shared_ptr< term >,
-			std::set< std::shared_ptr< term >, typename term::term_sort >,
-			typename term::term_sort
+			term,
+			std::set< term >
 		> cv_map, term_map;
-		std::map< std::shared_ptr< term >, bool, typename term::term_sort > expanded;
+		std::map< term, bool > expanded;
 		size_t unused = 0;
 		std::set< function > functions;
 		std::set< predicate > predicates;
 		term_generator< term, deduction_tree > tg;
-		bool is_valid( std::shared_ptr< proof_tree > & pt, std::shared_ptr< term > t, bool b )
+		bool is_valid( std::shared_ptr< proof_tree > & pt, term t, bool b )
 		{
 			deduction_tree dt( * this );
 			try { dt.try_insert( dt.sequent, t, b ); }
@@ -60,8 +59,8 @@ namespace first_order_logic
 		}
 		struct contradiction { std::shared_ptr< proof_tree > pt; };
 		void try_insert(
-				std::map< std::shared_ptr< term >, bool, typename term::term_sort > & m,
-				const std::shared_ptr< term > & t,
+				std::map< term, bool > & m,
+				const term & t,
 				bool b )
 		{
 			if ( m.insert( std::make_pair( t, b ) ).first->second != b )
@@ -106,7 +105,7 @@ namespace first_order_logic
 			}
 			else
 			{
-				std::vector< std::shared_ptr< term > > args, argt;
+				std::vector< term > args, argt;
 				args.reserve( f.arity );
 				argt.reserve( f.arity );
 				std::for_each(
@@ -115,7 +114,7 @@ namespace first_order_logic
 							[&]( size_t i ){
 					args.push_back( make_variable( "s" + std::to_string( i ) ) );
 					argt.push_back( make_variable( "t" + std::to_string( i ) ) ); } );
-				std::shared_ptr< term > and_stack =
+				term and_stack =
 						make_and(
 							make_equal( args[0], argt[0] ),
 							make_equal( args[1], argt[1] ) );
@@ -146,7 +145,7 @@ namespace first_order_logic
 			}
 			else
 			{
-				std::vector< std::shared_ptr< term > > args, argt;
+				std::vector< term > args, argt;
 				args.reserve( f.arity );
 				argt.reserve( f.arity );
 				std::for_each(
@@ -155,7 +154,7 @@ namespace first_order_logic
 							[&]( size_t i ){
 					args.push_back( make_variable( "s" + std::to_string( i ) ) );
 					argt.push_back( make_variable( "t" + std::to_string( i ) ) ); } );
-				std::shared_ptr< term > and_stack =
+				term and_stack =
 						make_and(
 							make_equal( args[0], argt[0] ),
 							make_equal( args[1], argt[1] ) );
@@ -266,7 +265,7 @@ namespace first_order_logic
 		std::pair< std::string, std::string > pair_str( ) const
 		{
 			std::string postive, negative;
-			auto function = [&]( const std::pair< std::shared_ptr< term >, bool > & val )
+			auto function = [&]( const std::pair< term, bool > & val )
 			{
 				std::string & str = val.second ? postive : negative;
 				if ( ! str.empty( ) ) { str += ","; }
@@ -294,7 +293,7 @@ namespace first_order_logic
 						term_map.insert(
 									std::make_pair(
 										f[0],
-										std::set< std::shared_ptr< term >, typename term::term_sort >( ) ) );
+										std::set< term >( ) ) );
 					}
 					while ( ! sequent.empty( ) )
 					{
@@ -313,12 +312,8 @@ namespace first_order_logic
 																 [&](
 																 std::pair
 																 <
-																	const std::shared_ptr< term >,
-																	std::set
-																	<
-																		std::shared_ptr< term >,
-																		typename term::term_sort
-																	>
+																	const term,
+																	std::set< term >
 																 > & s )
 									{
 										if ( s.second.count( t.first ) == 0 )
@@ -343,12 +338,8 @@ namespace first_order_logic
 												[&](
 													 std::pair
 													 <
-														const std::shared_ptr< term >,
-														std::set
-														<
-															std::shared_ptr< term >,
-															typename term::term_sort
-														>
+														const term,
+														std::set< term >
 													> & s )
 												{
 													if ( s.second.count( t.first ) == 0 )
@@ -425,14 +416,14 @@ namespace first_order_logic
 			functions( t.functions ),
 			predicates( t.predicates ),
 			tg( this, 1, cv_map, functions ) { }
-		deduction_tree( const std::shared_ptr< term > & t ) :
+		deduction_tree( const term & t ) :
 			sequent( { { t, false } } ), functions( t->functions( ) ), predicates( t->predicates( ) ), tg( this, 1, cv_map, functions )
 		{
 			const auto fv = t->free_variables( );
 			const auto con = t->constants( );
 			auto r = boost::range::join( fv, con );
-			std::transform( r.begin( ), r.end( ), std::inserter( cv_map, cv_map.begin( ) ), [ ]( const std::shared_ptr< term > & s )
-			{ return std::make_pair( s, std::set< std::shared_ptr< term >, typename term::term_sort >( ) ); } );
+			std::transform( r.begin( ), r.end( ), std::inserter( cv_map, cv_map.begin( ) ), [ ]( const term & s )
+			{ return std::make_pair( s, std::set< term >( ) ); } );
 			term_map = cv_map;
 			if ( cv_map.empty( ) ) { new_variable( ); }
 			if ( t->have_equal( ) ) { add_equal_generator( ); }

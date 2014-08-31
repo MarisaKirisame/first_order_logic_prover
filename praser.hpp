@@ -23,7 +23,7 @@ namespace first_order_logic
 		namespace qi = spirit::qi;
 		namespace encoding  = boost::spirit::unicode;
 		template< typename IT >
-		struct FOL_grammar : qi::grammar< IT, std::shared_ptr< term >( ), encoding::space_type >
+		struct FOL_grammar : qi::grammar< IT, term( ), encoding::space_type >
 		{
 			FOL_grammar( ) : FOL_grammar::base_type( expression )
 			{
@@ -71,7 +71,7 @@ namespace first_order_logic
 				function = ( text >> lit( '(' ) >> ( term_exp % ',' ) >> lit( ')' ) )[ _val = bind( make_function, _1, _2 ) ];
 				variable = text[ _val = bind( make_variable, _1 ) ];
 			}
-			qi::rule< IT, std::shared_ptr< term >( ), encoding::space_type >
+			qi::rule< IT, term( ), encoding::space_type >
 				 term_exp,
 				 variable,
 				 with_equality,
@@ -86,14 +86,14 @@ namespace first_order_logic
 			qi::rule< IT, std::string( ), encoding::space_type> text;
 		};
 	}
-	std::shared_ptr< term > prase( const std::string & s )
+	boost::optional< term > prase( const std::string & s )
 	{
 		auto i = s.begin( );
 		auto e = s.end( );
-		std::shared_ptr< term > ret;
+		term ret;
 		FOL_grammar< decltype( i ) > fol;
 		bool succeed = boost::spirit::qi::phrase_parse( i, e, fol, boost::spirit::unicode::space, ret );
-		if ( ! ( succeed && i == e ) ) { ret.reset( ); }
+		if ( ! ( succeed && i == e ) ) { return boost::optional< term >( ); }
 		return ret;
 	}
 }

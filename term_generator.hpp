@@ -13,17 +13,8 @@ namespace first_order_logic
 	{
 		deduction_tree * that;
 		size_t arity;
-		std::map
-		<
-			std::shared_ptr< term >,
-			std::set< std::shared_ptr< term >, typename term::term_sort >,
-			typename term::term_sort
-		> & cv;
-		std::set
-		<
-			std::shared_ptr< term >,
-			typename term::term_sort
-		> term_map;
+		std::map< term, std::set< term > > & cv;
+		std::set< term > term_map;
 		std::map< function, std::pair< term_generator, term_generator > > functions;
 		const std::set< function > & original_functions;
 		term_generator( const term_generator & tg ) :
@@ -32,7 +23,7 @@ namespace first_order_logic
 		term_generator( deduction_tree * that, size_t arity, decltype( cv ) & cv, const std::set< function > & functions )
 			: that( that), arity( arity ), cv( cv ), original_functions( functions ), i( this->functions.begin( ) ) { }
 		decltype( functions.begin( ) ) i;
-		std::vector< std::shared_ptr< term > > generate( decltype( functions.begin( ) ) it )
+		std::vector< term > generate( decltype( functions.begin( ) ) it )
 		{
 			auto f = it->second.first.generate( );
 			auto s = it->second.second.generate( );
@@ -46,7 +37,7 @@ namespace first_order_logic
 			}
 		}
 		term_generator generate_term_generator( size_t a ) const { return term_generator( that, a, cv, original_functions ); }
-		std::vector< std::shared_ptr< term > > generate( )
+		std::vector< term > generate( )
 		{
 			if ( arity == 0 ) { return { }; }
 			else

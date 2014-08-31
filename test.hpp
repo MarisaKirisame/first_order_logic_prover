@@ -45,10 +45,10 @@ namespace first_order_logic
 									make_function( "p", { make_variable( "x" ) } ),
 										make_equal( make_function( "f", { make_variable( "x" ) } ), make_variable( "x" ) ) ),
 								make_function( "p", { make_function( "f", { make_variable( "x" ) } ) } ) );
-		BOOST_CHECK( fol->is_valid( ) );
-		BOOST_CHECK( fol2->is_valid( ) );
-		BOOST_CHECK( fol3->is_valid( ) );
-		BOOST_CHECK( fol4->is_valid( ) );
+		BOOST_CHECK( fol.is_valid( ) );
+		BOOST_CHECK( fol2.is_valid( ) );
+		BOOST_CHECK( fol3.is_valid( ) );
+		BOOST_CHECK( fol4.is_valid( ) );
 	}
 }
 #endif //THEOREM_PROVER_EXAMPLE
