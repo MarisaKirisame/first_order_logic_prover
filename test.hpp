@@ -6,6 +6,7 @@
 #include "first_order_logic.hpp"
 #include "praser.hpp"
 #include "gentzen_system.hpp"
+#include "substitution.hpp"
 namespace first_order_logic
 {
 	BOOST_AUTO_TEST_CASE( first_order_logic_test )

@@ -2,7 +2,7 @@ TEMPLATE = app
 CONFIG += console
 CONFIG -= app_bundle
 CONFIG -= qt
-CONFIG += C++11
+QMAKE_CXXFLAGS += -std=c++1y
 SOURCES += main.cpp
 LIBS += -lboost_unit_test_framework
 HEADERS += \

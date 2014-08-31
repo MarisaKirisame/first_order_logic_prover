@@ -39,7 +39,6 @@ namespace first_order_logic
 					return ret;
 				}
 			}
-			internal( const std::string & s, std::initializer_list< term > il ) : name( s ), arguments( il ) { }
 			internal( const std::string & s, const std::vector< term > & il ) : name( s ), arguments( il ) { }
 			size_t length( ) const
 			{
@@ -148,7 +147,7 @@ namespace first_order_logic
 									arguments.end( ),
 									std::back_inserter( ret ),
 									[&]( const term & t ){ return t->rebound( old_term, new_term ); } );
-					return term( new internal( name, ret ) );
+					return term( name, ret );
 				}
 			}
 			bool operator < ( const internal & comp ) const
@@ -233,9 +232,9 @@ namespace first_order_logic
 			if ( l2 < l1 ) { return false; }
 			return * data < * comp.data;
 		}
-		term( const std::shared_ptr< internal > & ptr ) : data( ptr ) { }
-		term( internal * ptr ) : data( ptr ) { }
 		term( ) { }
+		term( const std::string & s, const std::vector< term > & il ) : data( new internal( s, il ) ) { }
+		term( const std::shared_ptr< internal > & ptr ) : data( ptr ) { }
 		term & operator = ( const term & t )
 		{
 			data = t.data;

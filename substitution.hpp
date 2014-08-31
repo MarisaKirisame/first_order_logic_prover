@@ -15,17 +15,9 @@ namespace first_order_logic
 			{
 				assert( t->arguments.size( ) == 0 );
 				auto it = data.find( t->arguments[0]->name );
-				return it == data.end( ) ? t : make_variable( it->second );
+				return it == data.end( ) ? t : make_variable( it->second->name );
 			}
-			else if ( t->name == "constant" ) { return term; }
-			else if ( t->is_quantifier( ) )
-			{
-				assert( t->arguments.size( ) == 2 );
-				assert( t->arguments[0]->name == "variable" );
-				assert( t->arguments[0]->arguments.size( ) == 1 );
-				auto it = data.find( t->arguments[0]->arguments[0]->name );
-				return it == data.end( ) ? t : term( new term::internal( ( *this )( t->arguments[1] ) ) );
-			}
+			else if ( t->name == "constant" ) { return t; }
 			else
 			{
 				std::vector< term > te;
@@ -35,5 +27,37 @@ namespace first_order_logic
 			}
 		}
 	};
+	substitution unify( const term & p, const term & q, const substitution & sub )
+	{
+
+	}
+	boost::optional< substitution > unify_variable( const std::string & var, const term & t, const substitution & sub )
+	{
+		{
+			auto it = sub.data.find( var );
+			if ( it != sub.data.end( ) )
+			{ return unify( it->second, t, sub ); }
+		}
+		if ( t->name == "variable" )
+		{
+			assert( t->arguments.size( ) == 1 );
+			auto it = sub.data.find( t->arguments[0]->name );
+			if ( it != sub.data.end( ) ) { return unify( make_variable( var ), it->second, sub ); }
+		}
+		auto occur_check =
+				[&]( const auto & self, const term & te )->bool
+				{
+					return
+							std::any_of(
+								te->arguments.begin( ),
+								te->arguments.end( ),
+								[&]( const term & te )
+								{ return ( te->name == "variable" && te->arguments[0]->name == var ) || self( self, te );; } );
+				};
+		if ( occur_check( occur_check, t ) ) { return boost::optional< substitution >( ); }
+		substitution ret;
+		ret.data.insert( { var, t } );
+		return ret;
+	}
 }
 #endif // SUBSTITUTION_HPP
