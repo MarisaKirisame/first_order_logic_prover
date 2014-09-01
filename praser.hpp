@@ -1,6 +1,7 @@
 #ifndef FIRST_ORDER_LOGIC_PRASER_HPP
 #define FIRST_ORDER_LOGIC_PRASER_HPP
-#include "term.hpp"
+#include "atomic_sentence.hpp"
+#include "complex_sentence.hpp"
 #include "first_order_logic.hpp"
 #include <memory>
 #define BOOST_SPIRIT_USE_PHOENIX_V3
@@ -23,7 +24,7 @@ namespace first_order_logic
 		namespace qi = spirit::qi;
 		namespace encoding  = boost::spirit::unicode;
 		template< typename IT >
-		struct FOL_grammar : qi::grammar< IT, term( ), encoding::space_type >
+		struct FOL_grammar : qi::grammar< IT, atomic_sentence( ), encoding::space_type >
 		{
 			FOL_grammar( ) : FOL_grammar::base_type( expression )
 			{
@@ -46,8 +47,8 @@ namespace first_order_logic
 				using phoenix::bind;
 				text %= lexeme[alpha>>*(alnum)];
 				bool_exp %= ( lit( '(' ) >> expression >> lit( ')' ) ) | with_equality | predicate | variable;
-				with_equality = ( term_exp >> lit( '=' ) >> term_exp )[ _val = bind( make_equal, _1, _2 ) ];
-				predicate = ( text >> lit( '(' ) >> ( term_exp % ',' ) >> lit( ')' ) )[ _val = bind( make_predicate, _1, _2 ) ];
+				with_equality = ( sentence_exp >> lit( '=' ) >> sentence_exp )[ _val = bind( make_equal, _1, _2 ) ];
+				predicate = ( text >> lit( '(' ) >> ( sentence_exp % ',' ) >> lit( ')' ) )[ _val = bind( make_predicate, _1, _2 ) ];
 				with_not =
 							 bool_exp[ _val = _1 ] |
 							 ( lit( '!' ) >> with_not )[ _val = bind( make_not, _1 ) ];
@@ -67,12 +68,12 @@ namespace first_order_logic
 										 ( lit( "<-" ) >> with_quantifier )[ _val = bind( make_imply, _1, _val ) ] |
 										 ( lit( "<->" ) >> with_quantifier )[ _val = bind( make_iff, _val, _1 ) ] );
 				expression %= with_implication;
-				term_exp = function[ _val = _1 ] | text[ _val = bind( make_variable, _1 ) ];
-				function = ( text >> lit( '(' ) >> ( term_exp % ',' ) >> lit( ')' ) )[ _val = bind( make_function, _1, _2 ) ];
+				sentence_exp = function[ _val = _1 ] | text[ _val = bind( make_variable, _1 ) ];
+				function = ( text >> lit( '(' ) >> ( sentence_exp % ',' ) >> lit( ')' ) )[ _val = bind( make_function, _1, _2 ) ];
 				variable = text[ _val = bind( make_variable, _1 ) ];
 			}
-			qi::rule< IT, term( ), encoding::space_type >
-				 term_exp,
+			qi::rule< IT, atomic_sentence( ), encoding::space_type >
+				 sentence_exp,
 				 variable,
 				 with_equality,
 				 predicate,
@@ -86,14 +87,14 @@ namespace first_order_logic
 			qi::rule< IT, std::string( ), encoding::space_type> text;
 		};
 	}
-	boost::optional< term > prase( const std::string & s )
+	boost::optional< atomic_sentence > prase( const std::string & s )
 	{
 		auto i = s.begin( );
 		auto e = s.end( );
-		term ret;
+		atomic_sentence ret;
 		FOL_grammar< decltype( i ) > fol;
 		bool succeed = boost::spirit::qi::phrase_parse( i, e, fol, boost::spirit::unicode::space, ret );
-		if ( ! ( succeed && i == e ) ) { return boost::optional< term >( ); }
+		if ( ! ( succeed && i == e ) ) { return boost::optional< atomic_sentence >( ); }
 		return ret;
 	}
 }

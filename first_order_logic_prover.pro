@@ -12,10 +12,12 @@ HEADERS += \
     predicate.hpp \
     proof_tree.hpp \
     term_generator.hpp \
-    term.hpp \
     test.hpp \
     gentzen_system.hpp \
-    substitution.hpp
+    substitution.hpp \
+    term.hpp \
+    atomic_sentence.hpp \
+    complex_sentence.hpp
 
 OTHER_FILES += \
     theorem_prover.pro.user \

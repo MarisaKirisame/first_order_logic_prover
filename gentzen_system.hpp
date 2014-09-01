@@ -10,41 +10,33 @@
 #include "function.hpp"
 #include "predicate.hpp"
 #include "proof_tree.hpp"
-#include "term.hpp"
+#include "atomic_sentence.hpp"
+#include "complex_sentence.hpp"
+#include "first_order_logic.hpp"
 namespace first_order_logic
 {
-	struct term;
-	term make_variable( const std::string & s );
-	term make_equal( const term & l, const term & r );
-	term make_all( const std::string & l, const term & r );
-	term make_and( const term & l, const term & r );
-	term make_or( const term & l, const term & r );
-	term make_imply( const term & l, const term & r );
-	term make_not( const term & s );
-	term make_function( const std::string & s, const std::vector< term > & t );
-	term make_predicate( const std::string & s, const std::vector< term > & t );
 	struct gentzen_system
 	{
 		std::shared_ptr< proof_tree > pt;
 		term new_variable( )
 		{
 			auto ret = make_variable( std::to_string( unused++ ) );
-			cv_map.insert( std::make_pair( ret,  std::set< term >( ) ) );
+			cv_map.insert( std::make_pair( ret,  std::set< atomic_sentence >( ) ) );
 			return ret;
 		}
-		std::map< term, bool > sequent;
-		std::map< term, bool > temp_sequent;
+		std::map< complex_sentence, bool > sequent;
+		std::map< complex_sentence, bool > temp_sequent;
 		std::map
 		<
 			term,
-			std::set< term >
-		> cv_map, term_map;
-		std::map< term, bool > expanded;
+			std::set< atomic_sentence >
+		> cv_map, sentence_map;
+		std::map< atomic_sentence, bool > expanded;
 		size_t unused = 0;
 		std::set< function > functions;
 		std::set< predicate > predicates;
-		term_generator< gentzen_system > tg;
-		bool is_valid( std::shared_ptr< proof_tree > & pt, term t, bool b )
+		sentence_generator< gentzen_system > tg;
+		bool is_valid( std::shared_ptr< proof_tree > & pt, atomic_sentence t, bool b )
 		{
 			gentzen_system dt( * this );
 			try { dt.try_insert( dt.sequent, t, b ); }
@@ -59,8 +51,8 @@ namespace first_order_logic
 		}
 		struct contradiction { std::shared_ptr< proof_tree > pt; };
 		void try_insert(
-				std::map< term, bool > & m,
-				const term & t,
+				std::map< complex_sentence, bool > & m,
+				const complex_sentence & t,
 				bool b )
 		{
 			if ( m.insert( std::make_pair( t, b ) ).first->second != b )
@@ -69,7 +61,7 @@ namespace first_order_logic
 				auto res = pair_str( );
 				std::string & str = b ? res.first : res.second;
 				if ( ! str.empty( ) ) { str += ","; }
-				str += static_cast< std::string >( * t );
+				str += static_cast< std::string >( t );
 				con.pt.reset( new proof_tree( res.first + "-->" + res.second ) );
 				throw con;
 			}
@@ -91,17 +83,17 @@ namespace first_order_logic
 			{
 				try_insert( sequent,
 							make_all(
-										"s",
-										make_all(
-													"t",
-													make_imply(
-														make_equal(
-															make_variable( "s" ),
-															make_variable( "t" ) ),
-														make_equal(
-															make_function( f.name, { make_variable( "s" ) } ),
-															make_function( f.name, { make_variable( "t" ) } ) ) ) ) ),
-										true );
+								"s",
+								make_all(
+									"t",
+									make_imply(
+											make_equal(
+												make_variable( "s" ),
+												make_variable( "t" ) ),
+											make_equal(
+												make_function( f.name, { make_variable( "s" ) } ),
+												make_function( f.name, { make_variable( "t" ) } ) ) ) ) ),
+							true );
 			}
 			else
 			{
@@ -111,10 +103,12 @@ namespace first_order_logic
 				std::for_each(
 							boost::counting_iterator< size_t >( 0 ),
 							boost::counting_iterator< size_t >( f.arity ),
-							[&]( size_t i ){
+							[&]( size_t i )
+				{
 					args.push_back( make_variable( "s" + std::to_string( i ) ) );
-					argt.push_back( make_variable( "t" + std::to_string( i ) ) ); } );
-				term and_stack =
+					argt.push_back( make_variable( "t" + std::to_string( i ) ) );
+				} );
+				complex_sentence and_stack =
 						make_and(
 							make_equal( args[0], argt[0] ),
 							make_equal( args[1], argt[1] ) );
@@ -154,7 +148,7 @@ namespace first_order_logic
 							[&]( size_t i ){
 					args.push_back( make_variable( "s" + std::to_string( i ) ) );
 					argt.push_back( make_variable( "t" + std::to_string( i ) ) ); } );
-				term and_stack =
+				complex_sentence and_stack =
 						make_and(
 							make_equal( args[0], argt[0] ),
 							make_equal( args[1], argt[1] ) );
@@ -166,94 +160,29 @@ namespace first_order_logic
 			try_insert( sequent, make_all( "t", make_equal( make_variable( "t" ), make_variable( "t" ) ) ), true );
 			try_insert( sequent,
 						make_all(
-									"s1",
+							"s1",
+							make_all(
+								"t1",
+								make_all(
+									"s2",
 									make_all(
-											"t1",
-											make_all(
-												"s2",
-												make_all(
-													"t2",
-													make_imply(
-														make_and(
-															make_and(
-																make_equal(
-																	make_variable( "s1" ),
-																	make_variable( "t1" ) ),
-																make_equal(
-																	make_variable( "s2" ),
-																	make_variable( "t2" ) ) ),
-															make_or(
-																make_variable( "s1" ),
-																make_variable( "s2" ) ) ),
-														make_or(
+										"t2",
+										make_imply(
+											make_and(
+												make_and(
+													make_equal(
+														make_variable( "s1" ),
+														make_variable( "t1" ) ),
+													make_equal(
+														make_variable( "s2" ),
+														make_variable( "t2" ) ) ),
+											make_equal(
+												make_variable( "s1" ),
+												make_variable( "s2" ) ) ),
+														make_equal(
 															make_variable( "t1" ),
 															make_variable( "t2" ) ) ) ) ) ) ),
-									true );
-			try_insert( sequent,
-						make_all(
-									"s1",
-									make_all(
-												"t1",
-												make_all(
-													"s2",
-													make_all(
-														"t2",
-														make_imply(
-															make_and(
-																make_and(
-																	make_equal(
-																		make_variable( "s1" ),
-																		make_variable( "t1" ) ),
-																	make_equal(
-																		make_variable( "s2" ),
-																		make_variable( "t2" ) ) ),
-																make_and(
-																	make_variable( "s1" ),
-																	make_variable( "s2" ) ) ),
-															make_and(
-																make_variable( "t1" ),
-																make_variable( "t2" ) ) ) ) ) ) ),
-										true );
-				try_insert( sequent,
-							make_all(
-										"s1",
-										make_all(
-												"t1",
-												make_all(
-													"s2",
-													make_all(
-														"t2",
-														make_imply(
-															make_and(
-																make_and(
-																	make_equal(
-																		make_variable( "s1" ),
-																		make_variable( "t1" ) ),
-																	make_equal(
-																		make_variable( "s2" ),
-																		make_variable( "t2" ) ) ),
-																make_equal(
-																	make_variable( "s1" ),
-																	make_variable( "s2" ) ) ),
-															make_equal(
-																make_variable( "t1" ),
-																make_variable( "t2" ) ) ) ) ) ) ),
-										true );
-			try_insert( sequent,
-						make_all(
-									"s",
-									make_all(
-												"t",
-												make_imply(
-													make_and(
-														make_equal(
-															make_variable( "s" ),
-															make_variable( "t" ) ),
-														make_not(
-															make_variable( "s" ) ) ),
-													make_not(
-														make_variable( "t" ) ) ) ) ),
-									true );
+						true );
 			std::for_each( functions.begin( ), functions.end( ), [this]( const function & f ){ add_equal_generator( f ); } );
 			std::for_each( predicates.begin( ), predicates.end( ), [this]( const predicate & f ){ add_equal_generator( f ); } );
 		}
@@ -265,11 +194,11 @@ namespace first_order_logic
 		std::pair< std::string, std::string > pair_str( ) const
 		{
 			std::string postive, negative;
-			auto function = [&]( const std::pair< term, bool > & val )
+			auto function = [&]( const std::pair< atomic_sentence, bool > & val )
 			{
 				std::string & str = val.second ? postive : negative;
 				if ( ! str.empty( ) ) { str += ","; }
-				str += static_cast< std::string >( * val.first );
+				str += static_cast< std::string >( val.first );
 			};
 			std::for_each( temp_sequent.begin( ), temp_sequent.end( ), function );
 			std::for_each( sequent.begin( ), sequent.end( ), function );
@@ -289,57 +218,52 @@ namespace first_order_logic
 						sequent.swap( temp_sequent );
 						auto f = tg.generate( );
 						assert( f.size( ) == 1 );
-						assert( ! f[0]->is_quantifier( ) );
-						term_map.insert(
+						sentence_map.insert(
 									std::make_pair(
 										f[0],
-										std::set< term >( ) ) );
+										std::set< atomic_sentence >( ) ) );
 					}
 					while ( ! sequent.empty( ) )
 					{
 						auto t = * sequent.begin( );
 						sequent.erase( sequent.begin( ) );
-						if ( t.first->name == "variable" ) { try_insert( expanded, t.first, t.second ); }
-						else if ( t.first->name == "constant" ) { throw std::runtime_error( "invalid sequent." ); }
-						else if ( t.first->is_quantifier( ) )
+						//if ( t.first->name == "variable" ) { try_insert( expanded, t.first, t.second ); }
+						/*else*/ if ( t.first.is_quantifier( ) )
 						{
 							assert( t.first->arguments.size( ) == 2 );
-							if ( t.first->name == "all" )
+							if ( t.first->cs_type == complex_sentence::type::all )
 							{
 								if ( t.second )
 								{
-									std::for_each( term_map.begin( ), term_map.end( ),
-																 [&](
-																 std::pair
-																 <
-																	const term,
-																	std::set< term >
-																 > & s )
-									{
-										if ( s.second.count( t.first ) == 0 )
-										{
-											s.second.insert( t.first );
-											try_insert( sequent, t.first->rebound( t.first->arguments[0], s.first ), true );
-										}
-									} );
+									std::for_each(
+												sentence_map.begin( ),
+												sentence_map.end( ),
+												[&]( auto & s )
+												{
+													if ( s.second.count( t.first ) == 0 )
+													{
+														s.second.insert( t.first );
+														try_insert( sequent, t.first->rebound( t.first->arguments[0], s.first ), true );
+													}
+												} );
 									try_insert( temp_sequent, t.first, true );
 								}
 								else { try_insert( sequent, t.first->rebound( t.first->arguments[0], new_variable( ) ), false ); }
 							}
 							else
 							{
-								assert( t.first->name == "some" );
+								assert( t.first->type  == complex_sentence::type::some );
 								if ( t.second ) { try_insert( sequent, t.first->rebound( t.first->arguments[0], new_variable( ) ), true ); }
 								else
 								{
 									std::for_each(
-												term_map.begin( ),
-												term_map.end( ),
+												sentence_map.begin( ),
+												sentence_map.end( ),
 												[&](
 													 std::pair
 													 <
-														const term,
-														std::set< term >
+														const atomic_sentence,
+														std::set< atomic_sentence >
 													> & s )
 												{
 													if ( s.second.count( t.first ) == 0 )
@@ -410,25 +334,25 @@ namespace first_order_logic
 			sequent( t.sequent ),
 			temp_sequent( t.temp_sequent ),
 			cv_map( t.cv_map ),
-			term_map( t.term_map ),
+			sentence_map( t.sentence_map ),
 			expanded( t.expanded ),
 			unused( t.unused ),
 			functions( t.functions ),
 			predicates( t.predicates ),
 			tg( this, 1, cv_map, functions ) { }
-		gentzen_system( const term & t ) :
+		gentzen_system( const atomic_sentence & t ) :
 			sequent( { { t, false } } ), functions( t->functions( ) ), predicates( t->predicates( ) ), tg( this, 1, cv_map, functions )
 		{
 			const auto fv = t->free_variables( );
 			const auto con = t->constants( );
 			auto r = boost::range::join( fv, con );
-			std::transform( r.begin( ), r.end( ), std::inserter( cv_map, cv_map.begin( ) ), [ ]( const term & s )
-			{ return std::make_pair( s, std::set< term >( ) ); } );
-			term_map = cv_map;
+			std::transform( r.begin( ), r.end( ), std::inserter( cv_map, cv_map.begin( ) ), [ ]( const atomic_sentence & s )
+			{ return std::make_pair( s, std::set< atomic_sentence >( ) ); } );
+			sentence_map = cv_map;
 			if ( cv_map.empty( ) ) { new_variable( ); }
 			if ( t->have_equal( ) ) { add_equal_generator( ); }
 		}
-		static bool is_valid( term & te )
+		static bool is_valid( atomic_sentence & te )
 		{
 			gentzen_system t( te );
 			bool res = t.is_valid( );
