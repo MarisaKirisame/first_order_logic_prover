@@ -41,7 +41,7 @@ namespace first_order_logic
 				}
 			}
 		}
-		size_t length( ) const { return std::accumulate( (*this)->arguments.begin( ), (*this)->arguments.end( ), 1, []( const term & t ){ return t.length( ); } ); }
+		size_t length( ) const { return std::accumulate( (*this)->arguments.begin( ), (*this)->arguments.end( ), 1, []( size_t s, const term & t ){ return s + t.length( ); } ); }
 		std::set< term > free_variables( )
 		{
 			switch ( (*this)->term_type )
@@ -70,7 +70,7 @@ namespace first_order_logic
 						(*this)->arguments.end( ),
 						[&]( const term & t )
 						{
-							auto tem = t.constants( );
+							auto tem = t.functions( );
 							ret.insert( tem.begin( ), tem.end( ) );
 						} );
 			return ret;
@@ -78,8 +78,10 @@ namespace first_order_logic
 		const internal * operator -> ( ) const { return data.get( ); }
 		explicit operator std::string( ) const
 		{
-
+			throw;
 		}
+		bool operator < ( const term & comp ) const { throw comp; }
+		term( ) { }
 	};
 }
 #endif // TERM_HPP

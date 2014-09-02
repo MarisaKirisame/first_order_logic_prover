@@ -21,7 +21,7 @@ namespace first_order_logic
 		term new_variable( )
 		{
 			auto ret = make_variable( std::to_string( unused++ ) );
-			cv_map.insert( std::make_pair( ret,  std::set< atomic_sentence >( ) ) );
+			cv_map.insert( std::make_pair( ret,  std::set< complex_sentence >( ) ) );
 			return ret;
 		}
 		std::map< complex_sentence, bool > sequent;
@@ -29,14 +29,14 @@ namespace first_order_logic
 		std::map
 		<
 			term,
-			std::set< atomic_sentence >
+			std::set< complex_sentence >
 		> cv_map, sentence_map;
 		std::map< atomic_sentence, bool > expanded;
 		size_t unused = 0;
 		std::set< function > functions;
 		std::set< predicate > predicates;
-		sentence_generator< gentzen_system > tg;
-		bool is_valid( std::shared_ptr< proof_tree > & pt, atomic_sentence t, bool b )
+		term_generator< gentzen_system > tg;
+		bool is_valid( std::shared_ptr< proof_tree > & pt, complex_sentence t, bool b )
 		{
 			gentzen_system dt( * this );
 			try { dt.try_insert( dt.sequent, t, b ); }
@@ -194,7 +194,7 @@ namespace first_order_logic
 		std::pair< std::string, std::string > pair_str( ) const
 		{
 			std::string postive, negative;
-			auto function = [&]( const std::pair< atomic_sentence, bool > & val )
+			auto function = [&]( const std::pair< complex_sentence, bool > & val )
 			{
 				std::string & str = val.second ? postive : negative;
 				if ( ! str.empty( ) ) { str += ","; }
@@ -221,7 +221,7 @@ namespace first_order_logic
 						sentence_map.insert(
 									std::make_pair(
 										f[0],
-										std::set< atomic_sentence >( ) ) );
+										std::set< complex_sentence >( ) ) );
 					}
 					while ( ! sequent.empty( ) )
 					{
@@ -236,40 +236,35 @@ namespace first_order_logic
 								if ( t.second )
 								{
 									std::for_each(
-												sentence_map.begin( ),
-												sentence_map.end( ),
-												[&]( auto & s )
-												{
-													if ( s.second.count( t.first ) == 0 )
-													{
-														s.second.insert( t.first );
-														try_insert( sequent, t.first->rebound( t.first->arguments[0], s.first ), true );
-													}
-												} );
+										sentence_map.begin( ),
+										sentence_map.end( ),
+										[&,this]( auto & s )
+										{
+											if ( s.second.count( t.first ) == 0 )
+											{
+												s.second.insert( t.first );
+												this->try_insert( sequent, t.first.rebound( boost::get< term >( t.first->arguments[0] ), s.first ), true );
+											}
+										} );
 									try_insert( temp_sequent, t.first, true );
 								}
-								else { try_insert( sequent, t.first->rebound( t.first->arguments[0], new_variable( ) ), false ); }
+								else { try_insert( sequent, t.first.rebound( boost::get< term >( t.first->arguments[0] ), new_variable( ) ), false ); }
 							}
 							else
 							{
-								assert( t.first->type  == complex_sentence::type::some );
-								if ( t.second ) { try_insert( sequent, t.first->rebound( t.first->arguments[0], new_variable( ) ), true ); }
+								assert( t.first->cs_type  == complex_sentence::type::some );
+								if ( t.second ) { try_insert( sequent, t.first.rebound( boost::get< term >( t.first->arguments[0] ), new_variable( ) ), true ); }
 								else
 								{
 									std::for_each(
 												sentence_map.begin( ),
 												sentence_map.end( ),
-												[&](
-													 std::pair
-													 <
-														const atomic_sentence,
-														std::set< atomic_sentence >
-													> & s )
+												[&,this]( auto & s )
 												{
 													if ( s.second.count( t.first ) == 0 )
 													{
 														s.second.insert( t.first );
-														try_insert( sequent, t.first->rebound( t.first->arguments[0], s.first ), false );
+														this->try_insert( sequent, t.first.rebound( boost::get< term >( t.first->arguments[0] ), s.first ), false );
 													}
 												} );
 									try_insert( temp_sequent, t.first, false );
@@ -278,46 +273,46 @@ namespace first_order_logic
 						}
 						else
 						{
-							if ( t.first->name == "not" )
+							if ( t.first->cs_type == complex_sentence::type::logical_not )
 							{
 								assert( t.first->arguments.size( ) == 1 );
-								try_insert( sequent, t.first->arguments[0], ! t.second );
+								try_insert( sequent, boost::get< complex_sentence >( t.first->arguments[0] ), ! t.second );
 							}
-							else if ( t.first->name == "and" )
+							else if ( t.first->cs_type == complex_sentence::type::logical_and )
 							{
 								assert( t.first->arguments.size( ) == 2 );
 								if ( t.second )
 								{
-									try_insert( sequent, t.first->arguments[0], true );
-									try_insert( sequent, t.first->arguments[1], true );
+									try_insert( sequent, boost::get< complex_sentence >( t.first->arguments[0] ), true );
+									try_insert( sequent, boost::get< complex_sentence >( t.first->arguments[1] ), true );
 								}
 								else
 								{
-									if ( ! is_valid( leaf, t.first->arguments[0], false ) ) { return false; }
-									try_insert( sequent, t.first->arguments[1], false );
+									if ( ! is_valid( leaf, boost::get< complex_sentence >( t.first->arguments[0] ), false ) ) { return false; }
+									try_insert( sequent, boost::get< complex_sentence >( t.first->arguments[1] ), false );
 								}
 							}
-							else if ( t.first->name == "or" )
+							else if ( t.first->cs_type == complex_sentence::type::logical_or )
 							{
 								assert( t.first->arguments.size( ) == 2 );
 								if ( t.second )
 								{
-									if ( ! is_valid( leaf, t.first->arguments[0], true ) ) { return false; }
-									try_insert( sequent, t.first->arguments[1], true );
+									if ( ! is_valid( leaf, boost::get< complex_sentence >( t.first->arguments[0] ), true ) ) { return false; }
+									try_insert( sequent, boost::get< complex_sentence >( t.first->arguments[1] ), true );
 								}
 								else
 								{
-									try_insert( sequent, t.first->arguments[0], false );
-									try_insert( sequent, t.first->arguments[1], false );
+									try_insert( sequent, boost::get< complex_sentence >( t.first->arguments[0] ), false );
+									try_insert( sequent, boost::get< complex_sentence >( t.first->arguments[1] ), false );
 								}
 							}
-							else if ( t.first->name == "equal" )
-							{
-								assert( t.first->arguments.size( ) == 2 );
-								try_insert( expanded, t.first, t.second );
-								try_insert( expanded, make_equal( t.first->arguments[1], t.first->arguments[0] ), t.second );
-							}
-							else { try_insert( expanded, t.first, t.second ); }
+							//else if ( t.first->cs_type == /*equal*/ )
+							//{
+							//	assert( t.first->arguments.size( ) == 2 );
+							//	try_insert( expanded, t.first, t.second );
+							//	try_insert( expanded, make_equal( t.first->arguments[1], t.first->arguments[0] ), t.second );
+							//}
+							//else { try_insert( expanded, t.first, t.second ); }
 						}
 						leaf = join( leaf, std::shared_ptr< proof_tree >( new proof_tree( static_cast< std::string >( * this ), { } ) ) );
 					}
@@ -340,19 +335,22 @@ namespace first_order_logic
 			functions( t.functions ),
 			predicates( t.predicates ),
 			tg( this, 1, cv_map, functions ) { }
-		gentzen_system( const atomic_sentence & t ) :
-			sequent( { { t, false } } ), functions( t->functions( ) ), predicates( t->predicates( ) ), tg( this, 1, cv_map, functions )
+		gentzen_system( const complex_sentence & t ) :
+			sequent( { { t, false } } ), functions( t.functions( ) ), predicates( t.predicates( ) ), tg( this, 1, cv_map, functions )
 		{
-			const auto fv = t->free_variables( );
-			const auto con = t->constants( );
+			const auto fv = t.free_variables( );
+			const auto con = t.constants( );
 			auto r = boost::range::join( fv, con );
-			std::transform( r.begin( ), r.end( ), std::inserter( cv_map, cv_map.begin( ) ), [ ]( const atomic_sentence & s )
-			{ return std::make_pair( s, std::set< atomic_sentence >( ) ); } );
+			std::transform(
+						r.begin( ),
+						r.end( ),
+						std::inserter( cv_map, cv_map.begin( ) ),
+						[]( const term & s ){ return std::make_pair( s, std::set< complex_sentence >( ) ); } );
 			sentence_map = cv_map;
 			if ( cv_map.empty( ) ) { new_variable( ); }
-			if ( t->have_equal( ) ) { add_equal_generator( ); }
+			if ( t.have_equal( ) ) { add_equal_generator( ); }
 		}
-		static bool is_valid( atomic_sentence & te )
+		static bool is_valid( complex_sentence & te )
 		{
 			gentzen_system t( te );
 			bool res = t.is_valid( );

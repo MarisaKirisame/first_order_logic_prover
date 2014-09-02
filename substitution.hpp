@@ -10,27 +10,16 @@ namespace first_order_logic
 	struct substitution
 	{
 		std::map< std::string, atomic_sentence > data;
-		atomic_sentence operator ( )( const atomic_sentence & t ) const
+		complex_sentence operator ( )( const complex_sentence & t ) const
 		{
-			if ( t->name == "variable" )
-			{
-				assert( t->arguments.size( ) == 0 );
-				auto it = data.find( t->arguments[0]->name );
-				return it == data.end( ) ? t : make_variable( it->second->name );
-			}
-			else if ( t->name == "constant" ) { return t; }
-			else
-			{
-				std::vector< atomic_sentence > te;
-				te.reserve( t->arguments.size( ) );
-				std::transform( t->arguments.begin( ), t->arguments.end( ), std::back_inserter( te ), [&,this]( const atomic_sentence & ter ){ return (*this)( ter ); } );
-				return atomic_sentence( t->name, te );
-			}
+			throw t;
 		}
 	};
 	substitution unify( const atomic_sentence & p, const atomic_sentence & q, const substitution & sub )
 	{
-
+		throw p;
+		throw q;
+		throw sub;
 	}
 	boost::optional< substitution > unify_variable( const std::string & var, const atomic_sentence & t, const substitution & sub )
 	{

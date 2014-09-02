@@ -11,21 +11,21 @@
 namespace first_order_logic
 {
 	template< class deduction_tree >
-	struct sentence_generator
+	struct term_generator
 	{
 		deduction_tree * that;
 		size_t arity;
-		std::map< atomic_sentence, std::set< term > > & cv;
-		std::set< atomic_sentence > sentence_map;
-		std::map< function, std::pair< sentence_generator, sentence_generator > > functions;
+		std::map< term, std::set< complex_sentence > > & cv;
+		std::set< term > term_map;
+		std::map< function, std::pair< term_generator, term_generator > > functions;
 		const std::set< function > & original_functions;
-		sentence_generator( const sentence_generator & tg ) :
-			that( tg.that ), arity( tg.arity ), cv( tg.cv ), sentence_map( tg.sentence_map ),
-			original_functions( tg.original_functions ), i( this->functions.begin( ) )	{ }
-		sentence_generator( deduction_tree * that, size_t arity, decltype( cv ) & cv, const std::set< function > & functions )
+		term_generator( const term_generator & tg ) :
+			that( tg.that ), arity( tg.arity ), cv( tg.cv ), term_map( tg.term_map ),
+			original_functions( tg.original_functions ), i( this->functions.begin( ) ) { }
+		term_generator( deduction_tree * that, size_t arity, decltype( cv ) & cv, const std::set< function > & functions )
 			: that( that), arity( arity ), cv( cv ), original_functions( functions ), i( this->functions.begin( ) ) { }
 		decltype( functions.begin( ) ) i;
-		std::vector< atomic_sentence > generate( decltype( functions.begin( ) ) it )
+		std::vector< term > generate( decltype( functions.begin( ) ) it )
 		{
 			auto f = it->second.first.generate( );
 			auto s = it->second.second.generate( );
@@ -38,7 +38,7 @@ namespace first_order_logic
 				return f;
 			}
 		}
-		sentence_generator generate_sentence_generator( size_t a ) const { return sentence_generator( that, a, cv, original_functions ); }
+		term_generator generate_term_generator( size_t a ) const { return term_generator( that, a, cv, original_functions ); }
 		std::vector< term > generate( )
 		{
 			if ( arity == 0 ) { return { }; }
@@ -46,9 +46,9 @@ namespace first_order_logic
 			{
 				for ( auto it : cv )
 				{
-					if ( sentence_map.count( it.first ) == 0 )
+					if ( term_map.count( it.first ) == 0 )
 					{
-						sentence_map.insert( it.first );
+						term_map.insert( it.first );
 						return { it.first };
 					}
 				}
@@ -61,7 +61,7 @@ namespace first_order_logic
 								[this]( const function & f )
 					{
 						assert( f.arity != 0 );
-						return std::make_pair( f, std::make_pair( generate_sentence_generator( f.arity - 1 ), generate_sentence_generator( 1 ) ) );
+						return std::make_pair( f, std::make_pair( generate_term_generator( f.arity - 1 ), generate_term_generator( 1 ) ) );
 					} );
 				}
 				if ( i == functions.end( ) ) { i = functions.begin( ); }
@@ -69,7 +69,6 @@ namespace first_order_logic
 				auto ret = generate( i );
 				if ( i != functions.end( ) ) { ++i; }
 				assert( ret.size( ) == arity );
-				assert( ! ret[0]->is_quantifier( ) );
 				return ret;
 			}
 		}

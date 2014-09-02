@@ -26,7 +26,6 @@ namespace first_order_logic
 				as_type( as_type ), name( name ), arguments( arguments ) { }
 		};
 		std::shared_ptr< internal > data;
-		std::shared_ptr< proof_tree > pt;
 		internal * operator ->( ) const { return data.get( ); }
 		internal & operator * ( ) const { return * data; }
 		bool operator == ( const atomic_sentence & comp ) const { return ! ( * this < comp ) && ! ( comp < * this ); }
@@ -35,12 +34,7 @@ namespace first_order_logic
 		atomic_sentence( ) { }
 		atomic_sentence( type t, const std::string & name, const std::vector< term > & il ) : data( new internal( t, name, il ) ) { }
 		atomic_sentence( const std::shared_ptr< internal > & ptr ) : data( ptr ) { }
-		atomic_sentence & operator = ( const atomic_sentence & t )
-		{
-			data = t.data;
-			pt = t.pt;
-			return * this;
-		}
+		atomic_sentence( const term & t ) { throw t; }
 		explicit operator std::string( ) const
 		{
 			switch ( (*this)->as_type )
