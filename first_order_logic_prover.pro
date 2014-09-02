@@ -16,8 +16,8 @@ HEADERS += \
     gentzen_system.hpp \
     substitution.hpp \
     term.hpp \
-    atomic_sentence.hpp \
-    complex_sentence.hpp
+    variable.hpp \
+    sentence.hpp
 
 OTHER_FILES += \
     theorem_prover.pro.user \

@@ -6,8 +6,6 @@
 #include <map>
 #include <vector>
 #include <algorithm>
-#include "atomic_sentence.hpp"
-#include "complex_sentence.hpp"
 namespace first_order_logic
 {
 	template< class deduction_tree >
@@ -15,7 +13,7 @@ namespace first_order_logic
 	{
 		deduction_tree * that;
 		size_t arity;
-		std::map< term, std::set< complex_sentence > > & cv;
+		std::map< term, std::set< sentence > > & cv;
 		std::set< term > term_map;
 		std::map< function, std::pair< term_generator, term_generator > > functions;
 		const std::set< function > & original_functions;

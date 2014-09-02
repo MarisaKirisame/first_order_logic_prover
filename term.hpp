@@ -1,11 +1,12 @@
 #ifndef TERM_HPP
 #define TERM_HPP
+#include "boost/function_output_iterator.hpp"
 #include "function.hpp"
 #include <vector>
 #include <memory>
 #include <algorithm>
 #include <set>
-//#define self (*this)
+#include "variable.hpp"
 namespace first_order_logic
 {
 	struct term
@@ -78,10 +79,27 @@ namespace first_order_logic
 		const internal * operator -> ( ) const { return data.get( ); }
 		explicit operator std::string( ) const
 		{
-			throw;
+			std::string stack;
+			auto it = (*this)->arguments.begin( );
+			goto http;
+			while ( it != (*this)->arguments.end( ) )
+			{
+				stack += ", ";
+				http://marisa.moe
+				stack += static_cast< std::string >( * it );
+				++it;
+			}
+			return (*this)->name + ( stack.empty( ) ? "" : "(" + stack + ")" );
 		}
-		bool operator < ( const term & comp ) const { throw comp; }
+		auto data_tie( ) const { return std::tie( (*this)->arguments, (*this)->name, (*this)->term_type ); }
+		bool operator < ( const term & comp ) const { return data_tie( ) < comp.data_tie( ); }
+		bool operator <= ( const term & comp ) const { return data_tie( ) <= comp.data_tie( ); }
+		bool operator != ( const term & comp ) const { return data_tie( ) != comp.data_tie( ); }
+		bool operator == ( const term & comp ) const { return data_tie( ) == comp.data_tie( ); }
+		bool operator > ( const term & comp ) const { return data_tie( ) > comp.data_tie( ); }
+		bool operator >= ( const term & comp ) const { return data_tie( ) >= comp.data_tie( ); }
 		term( ) { }
+		term( const variable & var ) : data( new internal( type::variable, var.name, { } ) ) { }
 	};
 }
 #endif // TERM_HPP
