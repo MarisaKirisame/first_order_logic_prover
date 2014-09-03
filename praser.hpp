@@ -17,7 +17,7 @@
 #include <boost/spirit/include/qi_char_class.hpp>
 #include "variable.hpp"
 namespace first_order_logic
-{/*
+{
 	namespace
 	{
 		namespace spirit = boost::spirit;
@@ -46,7 +46,8 @@ namespace first_order_logic
 				using phoenix::push_back;
 				using phoenix::bind;
 				text %= lexeme[alpha>>*(alnum)];
-				bool_exp %= ( lit( '(' ) >> expression >> lit( ')' ) ) | with_equality | predicate | parse_variable;
+				parse_propositional_letter = text[ _val = bind( make_propositional_letter, _1 ) ];
+				bool_exp %= ( lit( '(' ) >> expression >> lit( ')' ) ) | with_equality | predicate | parse_propositional_letter;
 				with_equality = ( term_exp >> lit( '=' ) >> term_exp )[ _val = bind( make_equal, _1, _2 ) ];
 				predicate = ( text >> lit( '(' ) >> ( term_exp % ',' ) >> lit( ')' ) )[ _val = bind( make_predicate, _1, _2 ) ];
 				with_not =
@@ -58,8 +59,8 @@ namespace first_order_logic
 										( lit( "/\\" ) >> with_not )[ _val = bind( make_and, _val, _1 ) ] |
 										( lit( "\\/" ) >> with_not )[ _val = bind( make_or, _val, _1 ) ] );
 				with_quantifier =
-									( lit( "∃" ) >> text >> expression )[ _val = bind( make_some, _1, _2 ) ] |
-									( lit( "∀" ) >> text >> expression )[ _val = bind( make_all, _1, _2 ) ] |
+									( lit( "∃" ) >> parse_variable >> expression )[ _val = bind( make_some, _1, _2 ) ] |
+									( lit( "∀" ) >> parse_variable >> expression )[ _val = bind( make_all, _1, _2 ) ] |
 									with_binary[ _val = _1 ];
 				with_implication =
 									with_quantifier[ _val = _1 ] >> *
@@ -84,6 +85,7 @@ namespace first_order_logic
 				with_not,
 				with_binary,
 				with_quantifier,
+				parse_propositional_letter,
 				with_implication;
 			qi::rule< IT, std::string( ), encoding::space_type> text;
 		};
@@ -97,6 +99,6 @@ namespace first_order_logic
 		bool succeed = boost::spirit::qi::phrase_parse( i, e, fol, boost::spirit::unicode::space, ret );
 		if ( ! ( succeed && i == e ) ) { return boost::optional< sentence >( ); }
 		return ret;
-	}*/
+	}
 }
 #endif // FIRST_ORDER_LOGIC_PRASER_HPP
