@@ -11,13 +11,15 @@ template< typename T >\
 struct NAME ## _actor\
 {\
 	const T & t;\
-	template< typename ... ARG > auto operator ( )( const ARG & ... arg ) const { return t( arg ... ); }\
-	NAME ## _actor( const T & t ) : t( t ) { }\
+	template< typename ... ARG > void operator ( )( const ARG & ... arg ) const { t( arg ... ); }\
+	explicit NAME ## _actor( const T & t ) : t( t ) { }\
 };\
 template< typename T >\
-struct NAME ## _actor_helper : boost::mpl::true_{ };\
-template< typename T > \
-struct NAME ## _actor_helper< NAME ## _actor< T > > : boost::mpl::false_{ };
+struct NAME ## _actor_helper : boost::mpl::false_{ };\
+template< typename T >\
+struct NAME ## _actor_helper< NAME ## _actor< T > > : boost::mpl::true_{ };\
+template< typename T >\
+NAME ## _actor< T > make_ ## NAME ## _actor( const T & t ) { return NAME ## _actor< T >( t ); }
 namespace first_order_logic
 {
 	DEFINE_ACTOR(and);
@@ -39,30 +41,21 @@ namespace first_order_logic
 		}
 	};
 	template< template< typename > class T, bool is_current >
-	struct extractor_helper;
+	struct extractor;
 	template< template< typename > class T >
-	struct extractor
-	{
-		template< typename FIRST, typename ... REST >
-		auto operator( )( const FIRST & f, const REST & ... r ) const { return extractor_helper< T, T< decltype( f ) >::value >( f, r ... ); }
-		auto operator ( )( ) const { return ignore::get( ); }
-	};
-	template< template< typename > class T >
-	struct extractor_helper< T, true >
+	struct extractor< T, true >
 	{
 		template< typename FIRST, typename ... REST >
 		auto operator( )( const FIRST & f, const REST & ... ) const { return f; }
-		auto operator ( )( ) const { return ignore::get( ); }
 	};
 	template< template< typename > class T >
-	struct extractor_helper< T, false >
+	struct extractor< T, false >
 	{
-		template< typename FIRST, typename ... REST >
-		auto operator( )( const FIRST &, const REST & ... r ) const { return extractor< T >( )( r ... ); }
-		auto operator ( )( ) const { return ignore::get( ); }
+		template< typename FIRST, typename SECOND, typename ... REST >
+		auto operator( )( const FIRST &, const SECOND & sec, const REST & ... r ) const { return extractor< T, T< SECOND >::value >( )( sec, r ... ); }
 	};
-	template< template< typename > class T, typename ... ARG >
-	auto extract( const ARG & ... arg ) { return extractor< T >( )( arg ... ); }
+	template< template< typename > class T, typename FIRST, typename ... REST >
+	auto extract( const FIRST & f, const REST & ... r ) { return extractor< T, T< FIRST >::value >( )( f, r ... ); }
 	struct sentence
 	{
 		enum class type { logical_and, logical_or, logical_not, all, some, equal, predicate, propositional_letter };
@@ -83,28 +76,34 @@ namespace first_order_logic
 		internal * operator ->( ) const { return data.get( ); }
 		internal & operator * ( ) const { return * data; }
 		template< typename ... T >
-		void type_restore( const T & ... t )
+		void type_restore_check( const T & ... t ) const
 		{
-			type_restore(
-						extract< and_actor_helper >( t ... ),
-						extract< or_actor_helper >( t ... ),
-						extract< not_actor_helper >( t ... ),
-						extract< all_actor_helper >( t ... ),
-						extract< some_actor_helper >( t ... ),
-						extract< equal_actor_helper >( t ... ),
-						extract< predicate_actor_helper >( t ... ),
-						extract< propositional_letter_actor_helper >( t ... ) );
+			static_assert( std::tuple_size< std::tuple< T ... > >::value == 8, "should be eight arguments" );
+			type_restore( t ... );
+		}
+		template< typename ... T >
+		void type_restore( const T & ... t ) const
+		{
+			type_restore_inner(
+						extract< and_actor_helper >( t ..., make_and_actor( ignore::get( ) ) ),
+						extract< or_actor_helper >( t ..., make_or_actor( ignore::get( ) ) ),
+						extract< not_actor_helper >( t ..., make_not_actor( ignore::get( ) ) ),
+						extract< all_actor_helper >( t ..., make_all_actor( ignore::get( ) ) ),
+						extract< some_actor_helper >( t ..., make_some_actor( ignore::get( ) ) ),
+						extract< equal_actor_helper >( t ..., make_equal_actor( ignore::get( ) ) ),
+						extract< predicate_actor_helper >( t ..., make_predicate_actor( ignore::get( ) ) ),
+						extract< propositional_letter_actor_helper >( t ..., make_propositional_letter_actor( ignore::get( ) ) ) );
 		}
 		template< typename T1, typename T2, typename T3, typename T4, typename T5, typename T6, typename T7, typename T8 >
-		void type_restore(
-				const T1 & and_func,
-				const T2 & or_func,
-				const T3 & not_func,
-				const T4 & all_func,
-				const T5 & some_func,
-				const T6 & equal_func,
-				const T7 & predicate_func,
-				const T8 & propositional_letter_func ) const
+		void type_restore_inner(
+				const and_actor< T1 > & and_func,
+				const or_actor< T2 > & or_func,
+				const not_actor< T3 > & not_func,
+				const all_actor< T4 > & all_func,
+				const some_actor< T5 > & some_func,
+				const equal_actor< T6 > & equal_func,
+				const predicate_actor< T7 > & predicate_func,
+				const propositional_letter_actor< T8 > & propositional_letter_func ) const
 		{
 			switch ( (*this)->sentence_type )
 			{
@@ -129,7 +128,11 @@ namespace first_order_logic
 			case type::predicate:
 			{
 				std::vector< term > arg;
-				std::transform( (*this)->arguments, (*this)->arguments, std::back_inserter( arg ), [](const auto & s){ return boost::get< term >( s ); } );
+				std::transform(
+					(*this)->arguments.begin( ),
+					(*this)->arguments.end( ),
+					std::back_inserter( arg ),
+					[](const auto & s){ return boost::get< term >( s ); } );
 				predicate_func( (*this)->name, arg );
 				break;
 			}
@@ -138,59 +141,67 @@ namespace first_order_logic
 				break;
 			}
 		}
-		/*explicit operator std::string( ) const
-		{
-			switch ( (*this)->as_type )
-			{
-			case type::equal:
-				return "(" + static_cast< std::string >( (*this)->arguments[0] ) + "=" + static_cast< std::string >( (*this)->arguments[1] ) + ")";
-			case type::predicate:
-			{
-				std::string stack;
-				for ( const auto & i : (*this)->arguments )
-				{
-					if( ! stack.empty( ) ) { stack += ", "; };
-					stack += static_cast< std::string >( i );
-				}
-				return (*this)->name + "(" + stack + ")";
-			}
-			case type::propositional_letter:
-				return static_cast< std::string >( (*this)->arguments[0] );
-			}
-		}
 		explicit operator std::string( ) const
 		{
-			switch ( (*this)->cs_type )
-			{
-			case type::logical_and:
-				return
-						static_cast< std::string >( boost::get< sentence >( (*this)->arguments[0] ) ) +
-						"/\\" +
-						static_cast< std::string >( boost::get< sentence >( (*this)->arguments[1] ) );
-			case type::logical_or:
-				return
-						static_cast< std::string >( boost::get< sentence >( (*this)->arguments[0] ) ) +
-						"\\/" +
-						static_cast< std::string >( boost::get< sentence >( (*this)->arguments[1] ) );
-			case type::logical_not:
-				return "!" + static_cast< std::string >( boost::get< sentence >( (*this)->arguments[0] ) );
-			case type::all:
-				return
-						"∀" +
-						static_cast< std::string >( boost::get< variable >( (*this)->arguments[0] ) ) +
-						" " +
-						static_cast< std::string >( boost::get< sentence >( (*this)->arguments[1] ) );
-			case type::some:
-				return
-						"∃" +
-						static_cast< std::string >( boost::get< variable >( (*this)->arguments[0] ) ) +
-						" " +
-						static_cast< std::string >( boost::get< sentence >( (*this)->arguments[1] ) );
-			case type::atomic:
-				return static_cast< std::string >( boost::get< atomic_sentence >( (*this)->arguments[0] ) );
-			}
-			throw std::invalid_argument( "unknown type" );
-		}*/
+			std::string ret;
+			type_restore
+			(
+				make_and_actor(
+					[&]( const sentence & l, const sentence & r )
+					{
+						ret =
+								static_cast< std::string >( l ) +
+								"/\\" +
+								static_cast< std::string >( r );
+					} ),
+				make_some_actor(
+					[&]( const variable & var, const sentence & sen )
+					{
+						ret =
+								"∃" +
+								var.name +
+								" " +
+								static_cast< std::string >( sen );
+
+					} ),
+				make_all_actor(
+					[&]( const variable & var, const sentence & sen )
+					{
+						ret =
+								"∀" +
+								var.name +
+								" " +
+								static_cast< std::string >( sen );
+					} ),
+				make_or_actor(
+					[&]( const sentence & l, const sentence & r )
+					{
+						ret =
+								static_cast< std::string >( l ) +
+								"\\/" +
+								static_cast< std::string >( r );
+					} ),
+				make_not_actor( [&]( const sentence & sen ){ ret = "!" + static_cast< std::string >( sen ); } ),
+				make_equal_actor( [&]( const term & l, const term & r ){ ret = static_cast< std::string >( l ) + "=" + static_cast< std::string >( r ); } ),
+				make_predicate_actor(
+					[&]( const std::string & str, const std::vector< term > & vec )
+					{
+						std::string stack;
+						auto it = vec.begin( );
+						goto http;
+						while ( it != vec.end( ) )
+						{
+							stack += ", ";
+							http://marisa.moe
+							stack += static_cast< std::string >( * it );
+							++it;
+						}
+						return str + "(" + stack + ")";
+					} ),
+				make_propositional_letter_actor( [&]( const std::string & str ){ ret = str; } )
+			);
+			return "(" + ret + ")";
+		}
 		sentence( ) { }
 		sentence( type ty, const variable & l, const sentence & r ) : data( new internal( ty, l, r ) ) { }
 		template< typename ... T >
