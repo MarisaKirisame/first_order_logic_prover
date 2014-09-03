@@ -102,6 +102,7 @@ namespace first_order_logic
 		bool operator >= ( const term & comp ) const { return data_tie( ) >= comp.data_tie( ); }
 		term( ) { }
 		term( const variable & var ) : data( new internal( type::variable, var.name, { } ) ) { }
+		term( const constant & var ) : data( new internal( type::variable, var.name, { } ) ) { }
 	};
 }
 #endif // TERM_HPP

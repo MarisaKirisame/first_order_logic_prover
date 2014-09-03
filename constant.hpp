@@ -1,8 +1,17 @@
 #ifndef CONSTANTS_HPP
 #define CONSTANTS_HPP
-#include "variable.hpp"
+#include "constant.hpp"
 namespace first_order_logic
 {
-	typedef variable constant;
+	struct constant
+	{
+		std::string name;
+		constant( const std::string & str ) : name( str ) { }
+		template< typename T >
+		constant( const T & t ) : name( t ) { }
+		constant( ) { }
+		explicit operator std::string( ) const { return name; }
+		bool operator < ( const constant & comp ) const { return name < comp.name; }
+	};
 }
 #endif // CONSTANTS_HPP

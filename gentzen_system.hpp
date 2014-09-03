@@ -17,7 +17,7 @@ namespace first_order_logic
 {
 	struct gentzen_system
 	{
-		std::shared_ptr< proof_tree > pt;
+		proof_tree pt;
 		term new_variable( )
 		{
 			term ret = make_variable( std::to_string( unused++ ) );
@@ -36,7 +36,7 @@ namespace first_order_logic
 		std::set< function > functions;
 		std::set< predicate > predicates;
 		term_generator< gentzen_system > tg;
-		bool is_valid( std::shared_ptr< proof_tree > & pt, sentence t, bool b )
+		bool is_valid( proof_tree & pt, sentence t, bool b )
 		{
 			gentzen_system dt( * this );
 			try { dt.try_insert( dt.sequent, t, b ); }
@@ -49,7 +49,7 @@ namespace first_order_logic
 			join( pt, dt.pt );
 			return res;
 		}
-		struct contradiction { std::shared_ptr< proof_tree > pt; };
+		struct contradiction { proof_tree pt; };
 		void try_insert(
 				std::map< sentence, bool > & m,
 				const sentence & t,
@@ -62,13 +62,13 @@ namespace first_order_logic
 				std::string & str = b ? res.first : res.second;
 				if ( ! str.empty( ) ) { str += ","; }
 				str += static_cast< std::string >( t );
-				con.pt.reset( new proof_tree( res.first + "-->" + res.second ) );
+				con.pt = ( res.first + "-->" + res.second );
 				throw con;
 			}
 		}
-		std::shared_ptr< proof_tree > join( std::shared_ptr< proof_tree > & parent, std::shared_ptr< proof_tree > child )
+		proof_tree join( proof_tree & parent, proof_tree child )
 		{
-			child->parent = parent.get( );
+			child->parent = parent.data.get( );
 			if ( child->str != parent->str )
 			{
 				parent->child.push_back( child );
@@ -227,8 +227,8 @@ namespace first_order_logic
 		}
 		bool is_valid( )
 		{
-			pt.reset( new proof_tree( static_cast< std::string >( * this ) ) );
-			std::shared_ptr< proof_tree > leaf = pt;
+			pt = proof_tree( static_cast< std::string >( * this ) );
+			proof_tree leaf = pt;
 			try
 			{
 				while ( ! sequent.empty( ) || ! temp_sequent.empty( ) )
@@ -346,7 +346,7 @@ namespace first_order_logic
 							//}
 							//else { try_insert( expanded, t.first, t.second ); }
 						}*/
-						leaf = join( leaf, std::shared_ptr< proof_tree >( new proof_tree( static_cast< std::string >( * this ), { } ) ) );
+						leaf = join( leaf, proof_tree( static_cast< std::string >( * this ) ) );
 					}
 				}
 				return false;
@@ -372,17 +372,21 @@ namespace first_order_logic
 		{
 			const auto fv = t.free_variables( );
 			const auto con = t.constants( );
-			auto r = boost::range::join( fv, con );
 			std::transform(
-						r.begin( ),
-						r.end( ),
+						fv.begin( ),
+						fv.end( ),
+						std::inserter( cv_map, cv_map.begin( ) ),
+						[]( const term & s ){ return std::make_pair( s, std::set< sentence >( ) ); } );
+			std::transform(
+						con.begin( ),
+						con.end( ),
 						std::inserter( cv_map, cv_map.begin( ) ),
 						[]( const term & s ){ return std::make_pair( s, std::set< sentence >( ) ); } );
 			sentence_map = cv_map;
 			if ( cv_map.empty( ) ) { new_variable( ); }
 			if ( t.have_equal( ) ) { add_equal_generator( ); }
 		}
-		static std::pair< std::shared_ptr< proof_tree >, bool > is_valid( sentence & te )
+		static std::pair< proof_tree, bool > is_valid( sentence & te )
 		{
 			gentzen_system t( te );
 			bool res = t.is_valid( );
