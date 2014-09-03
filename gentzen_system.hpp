@@ -15,7 +15,6 @@
 #include "substitution.hpp"
 namespace first_order_logic
 {
-/*
 	struct gentzen_system
 	{
 		std::shared_ptr< proof_tree > pt;
@@ -82,19 +81,28 @@ namespace first_order_logic
 			assert( f.arity >= 1 );
 			if ( f.arity == 1 )
 			{
-				try_insert( sequent,
-							make_all(
-								"s",
-								make_all(
-									"t",
-									make_imply(
-											make_equal(
-												make_variable( "s" ),
-												make_variable( "t" ) ),
-											make_equal(
-												make_function( f.name, { make_variable( "s" ) } ),
-												make_function( f.name, { make_variable( "t" ) } ) ) ) ) ),
-							true );
+				try_insert
+				(
+					sequent,
+					make_all
+					(
+						"s",
+						make_all
+						(
+							"t",
+							make_imply
+							(
+								make_equal( make_variable( "s" ), make_variable( "t" ) ),
+								make_equal
+								(
+									make_function( f.name, { make_variable( "s" ) } ),
+									make_function( f.name, { make_variable( "t" ) } )
+								)
+							)
+						)
+					),
+					true
+				);
 			}
 			else
 			{
@@ -102,17 +110,14 @@ namespace first_order_logic
 				args.reserve( f.arity );
 				argt.reserve( f.arity );
 				std::for_each(
-							boost::counting_iterator< size_t >( 0 ),
-							boost::counting_iterator< size_t >( f.arity ),
-							[&]( size_t i )
-				{
-					args.push_back( make_variable( "s" + std::to_string( i ) ) );
-					argt.push_back( make_variable( "t" + std::to_string( i ) ) );
-				} );
-				sentence and_stack =
-						make_and(
-							make_equal( args[0], argt[0] ),
-							make_equal( args[1], argt[1] ) );
+					boost::counting_iterator< size_t >( 0 ),
+					boost::counting_iterator< size_t >( f.arity ),
+					[&]( size_t i )
+					{
+						args.push_back( make_variable( "s" + std::to_string( i ) ) );
+						argt.push_back( make_variable( "t" + std::to_string( i ) ) );
+					} );
+				sentence and_stack = make_and( make_equal( args[0], argt[0] ), make_equal( args[1], argt[1] ) );
 				for ( size_t i = 2; i < f.arity; ++i ) { and_stack = make_and( and_stack, make_equal( args[i], argt[i] ) ); }
 				auto add = make_imply( and_stack, make_equal( make_function( f.name, args ), make_function( f.name, argt ) ) );
 				for ( size_t i = 0; i < f.arity; ++i ) { add = make_all( args[i]->name, make_all( argt[i]->name, add ) ); }
@@ -124,19 +129,28 @@ namespace first_order_logic
 			assert( f.arity >= 1 );
 			if ( f.arity == 1 )
 			{
-				try_insert( sequent,
-							make_all(
-										"s",
-										make_all(
-												"t",
-												make_imply(
-														make_and(
-															make_equal(
-																make_variable( "s" ),
-																make_variable( "t" ) ),
-														make_predicate( f.name, { make_variable( "s" ) } ) ),
-												make_predicate( f.name, { make_variable( "t" ) } ) ) ) ),
-										true );
+				try_insert
+				(
+					sequent,
+					make_all
+					(
+						"s",
+						make_all
+						(
+							"t",
+							make_imply
+							(
+								make_and
+								(
+									make_equal( make_variable( "s" ), make_variable( "t" ) ),
+									make_predicate( f.name, { make_variable( "s" ) } )
+								),
+								make_predicate( f.name, { make_variable( "t" ) } )
+							)
+						)
+					),
+					true
+				);
 			}
 			else
 			{
@@ -144,15 +158,14 @@ namespace first_order_logic
 				args.reserve( f.arity );
 				argt.reserve( f.arity );
 				std::for_each(
-							boost::counting_iterator< size_t >( 0 ),
-							boost::counting_iterator< size_t >( f.arity ),
-							[&]( size_t i ){
-					args.push_back( make_variable( "s" + std::to_string( i ) ) );
-					argt.push_back( make_variable( "t" + std::to_string( i ) ) ); } );
-				sentence and_stack =
-						make_and(
-							make_equal( args[0], argt[0] ),
-							make_equal( args[1], argt[1] ) );
+					boost::counting_iterator< size_t >( 0 ),
+					boost::counting_iterator< size_t >( f.arity ),
+					[&]( size_t i )
+					{
+						args.push_back( make_variable( "s" + std::to_string( i ) ) );
+						argt.push_back( make_variable( "t" + std::to_string( i ) ) );
+					} );
+				sentence and_stack = make_and( make_equal( args[0], argt[0] ), make_equal( args[1], argt[1] ) );
 				try_insert( sequent, make_imply( make_and( and_stack, make_predicate( f.name, args ) ), make_predicate( f.name, argt ) ), true );
 			}
 		}
@@ -160,29 +173,35 @@ namespace first_order_logic
 		{
 			try_insert( sequent, make_all( "t", make_equal( make_variable( "t" ), make_variable( "t" ) ) ), true );
 			try_insert( sequent,
-						make_all(
+						make_all
+						(
 							"s1",
-							make_all(
+							make_all
+							(
 								"t1",
-								make_all(
+								make_all
+								(
 									"s2",
-									make_all(
+									make_all
+									(
 										"t2",
-										make_imply(
-											make_and(
-												make_and(
-													make_equal(
-														make_variable( "s1" ),
-														make_variable( "t1" ) ),
-													make_equal(
-														make_variable( "s2" ),
-														make_variable( "t2" ) ) ),
-											make_equal(
-												make_variable( "s1" ),
-												make_variable( "s2" ) ) ),
-														make_equal(
-															make_variable( "t1" ),
-															make_variable( "t2" ) ) ) ) ) ) ),
+										make_imply
+										(
+											make_and
+											(
+												make_and
+												(
+													make_equal( make_variable( "s1" ), make_variable( "t1" ) ),
+													make_equal( make_variable( "s2" ), make_variable( "t2" ) )
+												),
+												make_equal( make_variable( "s1" ), make_variable( "s2" ) )
+											),
+											make_equal( make_variable( "t1" ), make_variable( "t2" ) )
+										)
+									)
+								)
+							)
+						),
 						true );
 			std::for_each( functions.begin( ), functions.end( ), [this]( const function & f ){ add_equal_generator( f ); } );
 			std::for_each( predicates.begin( ), predicates.end( ), [this]( const predicate & f ){ add_equal_generator( f ); } );
@@ -219,16 +238,24 @@ namespace first_order_logic
 						sequent.swap( temp_sequent );
 						auto f = tg.generate( );
 						assert( f.size( ) == 1 );
-						sentence_map.insert(
-									std::make_pair(
-										f[0],
-										std::set< sentence >( ) ) );
+						sentence_map.insert( std::make_pair( f[0], std::set< sentence >( ) ) );
 					}
 					while ( ! sequent.empty( ) )
 					{
-						auto t = * sequent.begin( );
+						const std::pair< sentence, bool > & t = * sequent.begin( );
 						sequent.erase( sequent.begin( ) );
-						//if ( t.first->name == "variable" ) { try_insert( expanded, t.first, t.second ); }
+						t.first.type_restore_full
+						(
+							make_all_actor( ignore::get( ) ),
+							make_some_actor( ignore::get( ) ),
+							make_equal_actor( ignore::get( ) ),
+							make_predicate_actor( ignore::get( ) ),
+							make_propositional_letter_actor( ignore::get( ) ),
+							make_and_actor( ignore::get( ) ),
+							make_or_actor( ignore::get( ) ),
+							make_not_actor( ignore::get( ) )
+						);
+						/*if ( t.first->name == "variable" ) { try_insert( expanded, t.first, t.second ); }
 						else if ( t.first.is_quantifier( ) )
 						{
 							assert( t.first->arguments.size( ) == 2 );
@@ -318,7 +345,7 @@ namespace first_order_logic
 							//	try_insert( expanded, make_equal( t.first->arguments[1], t.first->arguments[0] ), t.second );
 							//}
 							//else { try_insert( expanded, t.first, t.second ); }
-						}
+						}*/
 						leaf = join( leaf, std::shared_ptr< proof_tree >( new proof_tree( static_cast< std::string >( * this ), { } ) ) );
 					}
 				}
@@ -355,14 +382,12 @@ namespace first_order_logic
 			if ( cv_map.empty( ) ) { new_variable( ); }
 			if ( t.have_equal( ) ) { add_equal_generator( ); }
 		}
-		static bool is_valid( sentence & te )
+		static std::pair< std::shared_ptr< proof_tree >, bool > is_valid( sentence & te )
 		{
 			gentzen_system t( te );
 			bool res = t.is_valid( );
-			te.pt = t.pt;
-			return res;
+			return std::make_pair( t.pt, res );
 		}
 	};
-		*/
 }
 #endif //FIRST_ORDER_LOGIC_DEDUCTION_TREE

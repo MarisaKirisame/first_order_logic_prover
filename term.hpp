@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <set>
 #include "variable.hpp"
+#include "constant.hpp"
 namespace first_order_logic
 {
 	struct term
@@ -23,7 +24,7 @@ namespace first_order_logic
 		std::shared_ptr< internal > data;
 		term( type term_type, const std::string & name, const std::vector< term > & arguments ) : data( new internal( term_type, name, arguments ) ) { }
 		term( const std::shared_ptr< internal > & data ) : data( data ) { }
-		std::set< term > constants( ) const
+		std::set< constant > constants( ) const
 		{
 			switch ( (*this)->term_type )
 			{
@@ -33,17 +34,17 @@ namespace first_order_logic
 				return { term( data ) };
 			case type::function:
 				{
-					std::set< term > ret;
+					std::set< constant > ret;
 					std::transform( (*this)->arguments.begin( ),
 									(*this)->arguments.end( ),
-									boost::make_function_output_iterator( [&]( const std::set< term > & s ){ ret.insert( s.begin( ), s.end( ) ); } ),
+									boost::make_function_output_iterator( [&]( const std::set< constant > & s ){ ret.insert( s.begin( ), s.end( ) ); } ),
 									[&]( const term & t ){ return t.constants( ); } );
 					return ret;
 				}
 			}
 		}
 		size_t length( ) const { return std::accumulate( (*this)->arguments.begin( ), (*this)->arguments.end( ), 1, []( size_t s, const term & t ){ return s + t.length( ); } ); }
-		std::set< term > free_variables( )
+		std::set< variable > free_variables( ) const
 		{
 			switch ( (*this)->term_type )
 			{
@@ -53,11 +54,12 @@ namespace first_order_logic
 				return { };
 			case type::function:
 				{
-					std::set< term > ret;
+					std::set< variable > ret;
 					std::transform( (*this)->arguments.begin( ),
 									(*this)->arguments.end( ),
-									boost::make_function_output_iterator( [&]( const std::set< term > & s ){ ret.insert( s.begin( ), s.end( ) ); } ),
-									[&]( const term & t ){ return t.constants( ); } );
+									boost::make_function_output_iterator(
+										[&]( const std::set< variable > & s ){ ret.insert( s.begin( ), s.end( ) ); } ),
+									[&]( const term & t ){ return t.free_variables( ); } );
 					return ret;
 				}
 			}

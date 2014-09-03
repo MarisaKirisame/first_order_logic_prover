@@ -17,7 +17,8 @@ HEADERS += \
     substitution.hpp \
     term.hpp \
     variable.hpp \
-    sentence.hpp
+    sentence.hpp \
+    constant.hpp
 
 OTHER_FILES += \
     theorem_prover.pro.user \

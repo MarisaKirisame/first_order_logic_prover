@@ -12,6 +12,7 @@ namespace first_order_logic
 		variable( const T & t ) : name( t ) { }
 		variable( ) { }
 		explicit operator std::string( ) const { return name; }
+		bool operator < ( const variable & comp ) const { return name < comp.name; }
 	};
 }
 #endif // VARIABLE_HPP
