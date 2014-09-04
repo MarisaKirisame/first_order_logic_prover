@@ -30,7 +30,7 @@ namespace first_order_logic
 		<
 			term,
 			std::set< sentence >
-		> cv_map, sentence_map;
+		> cv_map, term_map;
 		std::map< sentence, bool > expanded;
 		size_t unused = 0;
 		std::set< function > functions;
@@ -175,6 +175,20 @@ namespace first_order_logic
 			try_insert( sequent,
 						make_all
 						(
+							"x",
+							make_all
+							(
+								"y",
+								make_imply
+								(
+									make_equal( make_variable( "x" ), make_variable( "y" ) ),
+									make_equal( make_variable( "y" ), make_variable( "x" ) )
+								)
+							)
+						), true );
+			try_insert( sequent,
+						make_all
+						(
 							"s1",
 							make_all
 							(
@@ -238,11 +252,11 @@ namespace first_order_logic
 						sequent.swap( temp_sequent );
 						auto f = tg.generate( );
 						assert( f.size( ) == 1 );
-						sentence_map.insert( std::make_pair( f[0], std::set< sentence >( ) ) );
+						term_map.insert( std::make_pair( f[0], std::set< sentence >( ) ) );
 					}
 					while ( ! sequent.empty( ) )
 					{
-						const std::pair< sentence, bool > & t = * sequent.begin( );
+						std::pair< sentence, bool > t = * sequent.begin( );
 						sequent.erase( sequent.begin( ) );
 						try
 						{
@@ -255,12 +269,12 @@ namespace first_order_logic
 										{
 											std::for_each
 											(
-												sentence_map.begin( ),
-												sentence_map.end( ),
+												term_map.begin( ),
+												term_map.end( ),
 												[&,this]( auto & s )
 												{
 													if ( s.second.count( t.first ) == 0 )
-												{
+													{
 														s.second.insert( t.first );
 														this->try_insert
 														(
@@ -283,8 +297,8 @@ namespace first_order_logic
 										{
 											std::for_each
 											(
-												sentence_map.begin( ),
-												sentence_map.end( ),
+												term_map.begin( ),
+												term_map.end( ),
 												[&,this]( auto & s )
 												{
 													if ( s.second.count( t.first ) == 0 )
@@ -357,7 +371,7 @@ namespace first_order_logic
 			sequent( t.sequent ),
 			temp_sequent( t.temp_sequent ),
 			cv_map( t.cv_map ),
-			sentence_map( t.sentence_map ),
+			term_map( t.term_map ),
 			expanded( t.expanded ),
 			unused( t.unused ),
 			functions( t.functions ),
@@ -378,7 +392,7 @@ namespace first_order_logic
 						con.end( ),
 						std::inserter( cv_map, cv_map.begin( ) ),
 						[]( const term & s ){ return std::make_pair( s, std::set< sentence >( ) ); } );
-			sentence_map = cv_map;
+			term_map = cv_map;
 			if ( cv_map.empty( ) ) { new_variable( ); }
 			if ( t.have_equal( ) ) { add_equal_generator( ); }
 		}

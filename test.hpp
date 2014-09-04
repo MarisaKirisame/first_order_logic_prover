@@ -11,9 +11,10 @@ namespace first_order_logic
 {
 	BOOST_AUTO_TEST_CASE( first_order_logic_test )
 	{
-/*		auto fol = make_imply(
+		auto fol = make_imply(
 								 make_all( "x", make_predicate( "F", { make_variable( "x" ) } ) ),
 								 make_all( "x", make_predicate( "F", { make_function( "f", { make_variable( "x" ) } ) } ) ) );
+		static_cast< std::string >( fol );
 		auto fol2 = make_imply(
 									make_some
 									(
@@ -21,7 +22,7 @@ namespace first_order_logic
 										make_imply
 										(
 											make_propositional_letter( "p" ),
-											make_function( "Q", { make_variable( "x" ) } )
+											make_predicate( "Q", { make_variable( "x" ) } )
 										)
 									),
 									make_imply
@@ -30,34 +31,47 @@ namespace first_order_logic
 										make_some
 										(
 											"z",
-											make_function( "Q", { make_variable( "z" ) } )
+											make_predicate( "Q", { make_variable( "z" ) } )
 										)
 									)
 								);
-		auto fol3 = make_imply(
-								make_and(
-									make_all(
-										"x",
-										make_function( "P", { make_variable( "x" ) } ) ),
-									make_some(
-										"y",
-										make_function( "Q", { make_variable( "y" ) } ) ) ),
-								make_and(
-									make_function(
-										"P",
-										{ make_function( "F",  { make_variable( "v" ) } ) } ),
-									make_some(
-										"z",
-										make_function( "Q", { make_variable( "z" ) } ) ) ) );
-		auto fol4 = make_imply(
-								make_and(
-									make_function( "p", { make_variable( "x" ) } ),
-										make_equal( make_function( "f", { make_variable( "x" ) } ), make_variable( "x" ) ) ),
-								make_function( "p", { make_function( "f", { make_variable( "x" ) } ) } ) );
-		BOOST_CHECK( gentzen_system::is_valid( fol ) );
-		BOOST_CHECK( gentzen_system::is_valid( fol2 ) );
-		BOOST_CHECK( gentzen_system::is_valid( fol3 ) );
-		BOOST_CHECK( gentzen_system::is_valid( fol4 ) );*/
+		auto fol3 =
+				make_imply
+				(
+					make_and
+					(
+						make_all
+						(
+							"x",
+							make_predicate( "P", { make_variable( "x" ) } )
+						),
+						make_some( "y", make_predicate( "Q", { make_variable( "y" ) } ) )
+					),
+					make_and
+					(
+						make_predicate
+						(
+							"P",
+							{ make_function( "F",  { make_variable( "v" ) } ) }
+						),
+						make_some( "z", make_predicate( "Q", { make_variable( "z" ) } ) )
+					)
+				);
+		auto fol4 =
+				make_imply
+				(
+					make_and
+					(
+						make_predicate( "p", { make_variable( "x" ) } ),
+						make_equal( make_function( "f", { make_variable( "x" ) } ), make_variable( "x" ) )
+					),
+					make_predicate( "p", { make_function( "f", { make_variable( "x" ) } ) } )
+				);
+
+		BOOST_CHECK( gentzen_system::is_valid( fol ).second );
+		BOOST_CHECK( gentzen_system::is_valid( fol2 ).second );
+		BOOST_CHECK( gentzen_system::is_valid( fol3 ).second );
+		BOOST_CHECK( gentzen_system::is_valid( fol4 ).second );
 	}
 }
 #endif //THEOREM_PROVER_EXAMPLE

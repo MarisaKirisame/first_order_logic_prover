@@ -1,5 +1,6 @@
 #ifndef TERM_HPP
 #define TERM_HPP
+#include <cassert>
 #include "boost/function_output_iterator.hpp"
 #include "function.hpp"
 #include <vector>
@@ -17,12 +18,14 @@ namespace first_order_logic
 		{
 			type term_type;
 			std::string name;
+			mutable std::string cache;
 			std::vector< term > arguments;
 			internal( type term_type, const std::string & name, const std::vector< term > & arguments ) :
 				term_type( term_type ), name( name ), arguments( arguments ) { }
 		};
 		std::shared_ptr< internal > data;
-		term( type term_type, const std::string & name, const std::vector< term > & arguments ) : data( new internal( term_type, name, arguments ) ) { }
+		term( type term_type, const std::string & name, const std::vector< term > & arguments ) :
+			data( new internal( term_type, name, arguments ) ) { }
 		term( const std::shared_ptr< internal > & data ) : data( data ) { }
 		std::set< constant > constants( ) const
 		{
@@ -42,8 +45,18 @@ namespace first_order_logic
 					return ret;
 				}
 			}
+			throw std::invalid_argument( "unknown enum type" );
 		}
-		size_t length( ) const { return std::accumulate( (*this)->arguments.begin( ), (*this)->arguments.end( ), 1, []( size_t s, const term & t ){ return s + t.length( ); } ); }
+		size_t length( ) const
+		{
+			return
+					std::accumulate
+					(
+						(*this)->arguments.begin( ),
+						(*this)->arguments.end( ),
+						1,
+						[]( size_t s, const term & t ){ return s + t.length( ); } );
+		}
 		std::set< variable > free_variables( ) const
 		{
 			switch ( (*this)->term_type )
@@ -63,6 +76,7 @@ namespace first_order_logic
 					return ret;
 				}
 			}
+			throw std::invalid_argument( "unknown enum type" );
 		}
 		std::set< function > functions( ) const
 		{
@@ -81,25 +95,23 @@ namespace first_order_logic
 		const internal * operator -> ( ) const { return data.get( ); }
 		explicit operator std::string( ) const
 		{
+			if ( ! (*this)->cache.empty( ) ) { return (*this)->cache; }
+			assert( data );
 			std::string stack;
 			auto it = (*this)->arguments.begin( );
-			goto http;
+			if ( it != (*this)->arguments.end( ) ) { goto http; }
 			while ( it != (*this)->arguments.end( ) )
 			{
 				stack += ", ";
 				http://marisa.moe
+				assert( it->data );
 				stack += static_cast< std::string >( * it );
 				++it;
 			}
-			return (*this)->name + ( stack.empty( ) ? "" : "(" + stack + ")" );
+			(*this)->cache = (*this)->name + ( stack.empty( ) ? "" : "(" + stack + ")" );
+			return (*this)->cache;
 		}
-		auto data_tie( ) const { return std::tie( (*this)->arguments, (*this)->name, (*this)->term_type ); }
-		bool operator < ( const term & comp ) const { return data_tie( ) < comp.data_tie( ); }
-		bool operator <= ( const term & comp ) const { return data_tie( ) <= comp.data_tie( ); }
-		bool operator != ( const term & comp ) const { return data_tie( ) != comp.data_tie( ); }
-		bool operator == ( const term & comp ) const { return data_tie( ) == comp.data_tie( ); }
-		bool operator > ( const term & comp ) const { return data_tie( ) > comp.data_tie( ); }
-		bool operator >= ( const term & comp ) const { return data_tie( ) >= comp.data_tie( ); }
+		bool operator < ( const term & comp ) const { return static_cast< std::string >( * this ) < static_cast< std::string >( comp ); }
 		term( ) { }
 		term( const variable & var ) : data( new internal( type::variable, var.name, { } ) ) { }
 		term( const constant & var ) : data( new internal( type::variable, var.name, { } ) ) { }

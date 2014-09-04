@@ -31,6 +31,7 @@ namespace first_order_logic
 					return make_function( t->name, tem );
 				}
 			}
+			throw std::invalid_argument( "unknown enum type" );
 		}
 		sentence operator ( )( const sentence & s ) const
 		{

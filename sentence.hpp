@@ -65,6 +65,7 @@ namespace first_order_logic
 		{
 			type sentence_type;
 			std::string name;
+			mutable std::string cache;
 			std::vector< boost::variant< boost::recursive_wrapper< sentence >, term > > arguments;
 			internal( type sentence_type, const std::string & name, const auto & r ) :
 				sentence_type( sentence_type ), name( name ), arguments( r.begin( ), r.end( ) ) { }
@@ -116,9 +117,9 @@ namespace first_order_logic
 			case type::logical_or:
 				return or_func( boost::get< sentence >( (*this)->arguments[0] ), boost::get< sentence >( (*this)->arguments[1] ) );
 			case type::all:
-				return all_func( variable( (*this)->name ), boost::get< sentence >( (*this)->arguments[1] ) );
+				return all_func( variable( (*this)->name ), boost::get< sentence >( (*this)->arguments[0] ) );
 			case type::some:
-				return some_func( variable( (*this)->name ), boost::get< sentence >( (*this)->arguments[1] ) );
+				return some_func( variable( (*this)->name ), boost::get< sentence >( (*this)->arguments[0] ) );
 			case type::equal:
 				return equal_func( boost::get< term >( (*this)->arguments[0] ), boost::get< term >( (*this)->arguments[1] ) );
 			case type::predicate:
@@ -134,10 +135,12 @@ namespace first_order_logic
 			case type::propositional_letter:
 				return propositional_letter_func( (*this)->name );
 			}
+			throw std::invalid_argument( "unknown enum type" );
 		}
 		explicit operator std::string( ) const
 		{
-			return
+			if ( ! (*this)->cache.empty( ) ) { return (*this)->cache; }
+			(*this)->cache =
 				"(" +
 				type_restore_full
 				(
@@ -197,6 +200,7 @@ namespace first_order_logic
 					make_propositional_letter_actor( [&]( const std::string & str ){ return str; } )
 				) +
 				")";
+			return (*this)->cache;
 		}
 		sentence( ) { }
 		sentence( type ty, const variable & l, const sentence & r ) : data( new internal( ty, l, r ) ) { }
@@ -207,21 +211,12 @@ namespace first_order_logic
 		size_t length( ) const
 		{
 			return
-				1 +
 				type_restore_full
 				(
 					make_all_actor( []( const variable &, const sentence & s ){ return s.length( ); } ),
 					make_some_actor( []( const variable &, const sentence & s ){ return s.length( ); } ),
 					make_equal_actor( []( const term & l, const term & r ){ return l.length( ) + r.length( ); } ),
-					make_predicate_actor(
-						[]( const std::string &, const std::vector< term > & vec )
-						{
-							return std::accumulate(
-										vec.begin( ),
-										vec.end( ),
-										static_cast< size_t >( 0 ),
-										[]( size_t s, const term & t ){ return s + t.length( ); } );
-						} ),
+					make_predicate_actor( []( const std::string &, const std::vector< term > & )->size_t { return 0; } ),
 					make_propositional_letter_actor( []( const std::string & )->size_t{ return 0; } ),
 					make_and_actor( []( const sentence & l, const sentence & r ){ return l.length( ) + r.length( ); } ),
 					make_or_actor( []( const sentence & l, const sentence & r ){ return l.length( ) + r.length( ); } ),
@@ -421,7 +416,7 @@ namespace first_order_logic
 		{
 			if ( length( ) < comp.length( ) ) { return true; }
 			if ( length( ) > comp.length( ) ) { return false; }
-			return static_cast< std::string >( * this ) < static_cast< std::string >( * this );
+			return static_cast< std::string >( * this ) < static_cast< std::string >( comp );
 		}
 	};
 }
