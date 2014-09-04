@@ -6,14 +6,15 @@
 #include "first_order_logic.hpp"
 namespace first_order_logic
 {
-	/*struct substitution
+	struct substitution
 	{
 		std::map< variable, term > data;
 		sentence operator ( )( const sentence & t ) const
 		{
 			throw t;
 		}
-	};
+		substitution( const std::map< variable, term > & data ) : data( data ) { }
+	};/*
 	substitution unify( const sentence & p, const sentence & q, const substitution & sub )
 	{
 		throw p;

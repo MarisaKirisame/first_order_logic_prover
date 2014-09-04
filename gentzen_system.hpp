@@ -18,10 +18,10 @@ namespace first_order_logic
 	struct gentzen_system
 	{
 		proof_tree pt;
-		term new_variable( )
+		variable new_variable( )
 		{
-			term ret = make_variable( std::to_string( unused++ ) );
-			cv_map.insert( std::make_pair( ret,  std::set< sentence >( ) ) );
+			variable ret = make_variable( std::to_string( unused++ ) );
+			cv_map.insert( std::make_pair( ret, std::set< sentence >( ) ) );
 			return ret;
 		}
 		std::map< sentence, bool > sequent;
@@ -244,51 +244,45 @@ namespace first_order_logic
 					{
 						const std::pair< sentence, bool > & t = * sequent.begin( );
 						sequent.erase( sequent.begin( ) );
-						t.first.type_restore_full
-						(
-							make_all_actor( ignore::get( ) ),
-							make_some_actor( ignore::get( ) ),
-							make_equal_actor( ignore::get( ) ),
-							make_predicate_actor( ignore::get( ) ),
-							make_propositional_letter_actor( ignore::get( ) ),
-							make_and_actor( ignore::get( ) ),
-							make_or_actor( ignore::get( ) ),
-							make_not_actor( ignore::get( ) )
-						);
-						/*if ( t.first->name == "variable" ) { try_insert( expanded, t.first, t.second ); }
-						else if ( t.first.is_quantifier( ) )
+						try
 						{
-							assert( t.first->arguments.size( ) == 2 );
-							if ( t.first->cs_type == sentence::type::all )
-							{
-								if ( t.second )
-								{
-									std::for_each(
-										sentence_map.begin( ),
-										sentence_map.end( ),
-										[&,this]( auto & s )
+							t.first.type_restore_full
+							(
+								make_all_actor(
+									[&]( const variable & var, const sentence & sen )
+									{
+										if ( t.second )
 										{
-											if ( s.second.count( t.first ) == 0 )
-											{
-												s.second.insert( t.first );
-												this->try_insert(
+											std::for_each
+											(
+												sentence_map.begin( ),
+												sentence_map.end( ),
+												[&,this]( auto & s )
+												{
+													if ( s.second.count( t.first ) == 0 )
+												{
+														s.second.insert( t.first );
+														this->try_insert
+														(
 															sequent,
-															substitution( { boost::get< variable >( t.first->arguments[0] ), s.first } )
-																( t.first->argument[1] ),
-															true );
-											}
-										} );
-									try_insert( temp_sequent, t.first, true );
-								}
-								else { try_insert( sequent, t.first.rebound( boost::get< term >( t.first->arguments[0] ), new_variable( ) ), false ); }
-							}
-							else
-							{
-								assert( t.first->cs_type  == sentence::type::some );
-								if ( t.second ) { try_insert( sequent, t.first.rebound( boost::get< term >( t.first->arguments[0] ), new_variable( ) ), true ); }
-								else
-								{
-									std::for_each(
+															substitution( { { var, s.first } } )( sen ),
+															true
+														);
+													}
+												}
+											);
+											try_insert( temp_sequent, t.first, true );
+										}
+										else { try_insert( sequent, substitution( { { var, term( new_variable( ) ) } } )( sen ), false ); }
+									} ),
+								make_some_actor(
+									[&]( const variable & var, const sentence & sen )
+									{
+										if ( t.second ) { try_insert( sequent, substitution( { { var, term( new_variable( ) ) } } )( sen ), true ); }
+										else
+										{
+											std::for_each
+											(
 												sentence_map.begin( ),
 												sentence_map.end( ),
 												[&,this]( auto & s )
@@ -296,57 +290,59 @@ namespace first_order_logic
 													if ( s.second.count( t.first ) == 0 )
 													{
 														s.second.insert( t.first );
-														this->try_insert( sequent, t.first.rebound( boost::get< term >( t.first->arguments[0] ), s.first ), false );
+														this->try_insert
+														(
+															sequent,
+															substitution( { { var, s.first } } )( sen ),
+															false
+														);
 													}
-												} );
-									try_insert( temp_sequent, t.first, false );
-								}
-							}
+												}
+											);
+											try_insert( temp_sequent, t.first, false );
+										}
+									} ),
+								make_equal_actor(
+									[&]( const term & l, const term & r ) { try_insert( expanded, make_equal( l, r ), t.second ); } ),
+								make_predicate_actor(
+									[&]( const std::string & str, const std::vector< term > & vec )
+									{ try_insert( expanded, make_predicate( str, vec ), t.second ); } ),
+								make_propositional_letter_actor(
+									[&]( const std::string & str )
+									{ try_insert( expanded, make_propositional_letter( str ), t.second ); } ),
+								make_and_actor(
+									[&]( const sentence & l, const sentence & r )
+									{
+										if ( t.second )
+										{
+											try_insert( sequent, l, true );
+											try_insert( sequent, r, true );
+										}
+										else
+										{
+											if ( ! is_valid( leaf, l, false ) ) { throw false; }
+											try_insert( sequent, r, false );
+										}
+									} ),
+								make_or_actor(
+									[&]( const sentence & l, const sentence & r )
+									{
+										if ( t.second )
+										{
+											if ( ! is_valid( leaf, l, true ) ) { throw false; }
+											try_insert( sequent, r, true );
+										}
+										else
+										{
+											try_insert( sequent, l, false );
+											try_insert( sequent, r, false );
+										}
+									} ),
+								make_not_actor( [&]( const sentence & sen ) { try_insert( sequent, sen, ! t.second ); } )
+							);
+							leaf = join( leaf, proof_tree( static_cast< std::string >( * this ) ) );
 						}
-						else
-						{
-							if ( t.first->cs_type == sentence::type::logical_not )
-							{
-								assert( t.first->arguments.size( ) == 1 );
-								try_insert( sequent, boost::get< sentence >( t.first->arguments[0] ), ! t.second );
-							}
-							else if ( t.first->cs_type == sentence::type::logical_and )
-							{
-								assert( t.first->arguments.size( ) == 2 );
-								if ( t.second )
-								{
-									try_insert( sequent, boost::get< sentence >( t.first->arguments[0] ), true );
-									try_insert( sequent, boost::get< sentence >( t.first->arguments[1] ), true );
-								}
-								else
-								{
-									if ( ! is_valid( leaf, boost::get< sentence >( t.first->arguments[0] ), false ) ) { return false; }
-									try_insert( sequent, boost::get< sentence >( t.first->arguments[1] ), false );
-								}
-							}
-							else if ( t.first->cs_type == sentence::type::logical_or )
-							{
-								assert( t.first->arguments.size( ) == 2 );
-								if ( t.second )
-								{
-									if ( ! is_valid( leaf, boost::get< sentence >( t.first->arguments[0] ), true ) ) { return false; }
-									try_insert( sequent, boost::get< sentence >( t.first->arguments[1] ), true );
-								}
-								else
-								{
-									try_insert( sequent, boost::get< sentence >( t.first->arguments[0] ), false );
-									try_insert( sequent, boost::get< sentence >( t.first->arguments[1] ), false );
-								}
-							}
-							//else if ( t.first->cs_type == equal )
-							//{
-							//	assert( t.first->arguments.size( ) == 2 );
-							//	try_insert( expanded, t.first, t.second );
-							//	try_insert( expanded, make_equal( t.first->arguments[1], t.first->arguments[0] ), t.second );
-							//}
-							//else { try_insert( expanded, t.first, t.second ); }
-						}*/
-						leaf = join( leaf, proof_tree( static_cast< std::string >( * this ) ) );
+						catch( bool ret ) { return ret; }
 					}
 				}
 				return false;
