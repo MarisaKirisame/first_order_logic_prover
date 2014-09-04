@@ -9,9 +9,63 @@ namespace first_order_logic
 	struct substitution
 	{
 		std::map< variable, term > data;
-		sentence operator ( )( const sentence & t ) const
+		term operator ( )( const term & t ) const
 		{
-			throw t;
+			switch ( t->term_type )
+			{
+				case term::type::constant:
+					return t;
+				case term::type::variable:
+				{
+					auto it = data.find( t->name );
+					return it == data.end( ) ? t : it->second;
+				}
+				case term::type::function:
+				{
+					std::vector< term > tem;
+					std::transform(
+						t->arguments.begin( ),
+						t->arguments.end( ),
+						std::back_inserter( tem ),
+						[&]( const term & te ){ return(*this)(te); } );
+					return make_function( t->name, tem );
+				}
+			}
+		}
+		sentence operator ( )( const sentence & s ) const
+		{
+			return
+				s.type_restore_full
+				(
+					make_all_actor(
+						[&]( const variable & var, const sentence & sen )
+						{
+							auto it = data.find( var );
+							return ( it != data.end( ) ) ? make_all( var, sen ) : make_all( var, (*this)(sen) );
+						} ),
+					make_some_actor(
+						[&]( const variable & var, const sentence & sen )
+						{
+							auto it = data.find( var );
+							return ( it != data.end( ) ) ? make_some( var, sen ) : make_some( var, (*this)(sen) );
+						} ),
+					make_and_actor( [&]( const sentence & l, const sentence & r ){ return make_and( (*this)(l), (*this)(r) ); } ),
+					make_or_actor( [&]( const sentence & l, const sentence & r ){ return make_or( (*this)(l), (*this)(r) ); } ),
+					make_not_actor( [&]( const sentence & sen ){ return make_not( sen ); } ),
+					make_equal_actor( [&]( const term & l, const term & r ){ return make_equal( (*this)(l), (*this)(r) ); } ),
+					make_predicate_actor(
+						[&]( const std::string & str, const std::vector< term > & vec )
+						{
+							std::vector< term > tem;
+							std::transform(
+								vec.begin( ),
+								vec.end( ),
+								std::back_inserter( tem ),
+								[&]( const term & te ){ return(*this)(te); } );
+							return make_predicate( str, tem );
+						} ),
+					make_propositional_letter_actor( [&]( const std::string & str ){ return make_propositional_letter( str ); } )
+				);
 		}
 		substitution( const std::map< variable, term > & data ) : data( data ) { }
 	};/*
