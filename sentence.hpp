@@ -203,11 +203,11 @@ namespace first_order_logic
 			return (*this)->cache;
 		}
 		sentence( ) { }
-		sentence( type ty, const variable & l, const sentence & r ) : data( new internal( ty, l, r ) ) { }
+		sentence( type ty, const variable & l, const sentence & r ) : data( new internal( ty, l, r ) ) { static_cast< std::string >( * this ); }
 		template< typename ... T >
-		sentence( type ty, const T & ... t ) : data( new internal( ty, t ... ) ) { }
+		sentence( type ty, const T & ... t ) : data( new internal( ty, t ... ) ) { static_cast< std::string >( * this ); }
 		template< typename ... T, typename VEC >
-		sentence( type ty, const T & ... t, const std::initializer_list< VEC > & vec ) : data( new internal( ty, t ..., vec ) ) { }
+		sentence( type ty, const T & ... t, const std::initializer_list< VEC > & vec ) : data( new internal( ty, t ..., vec ) ) { static_cast< std::string >( * this ); }
 		size_t length( ) const
 		{
 			return
@@ -295,7 +295,7 @@ namespace first_order_logic
 					make_not_actor( []( const sentence & sen ){ return sen.predicates( ); } )
 				);
 		}
-		std::set< variable > free_variables(  ) const
+		std::set< variable > free_variables( ) const
 		{
 			std::set< variable > bounded;
 			auto ret = free_variables( bounded );

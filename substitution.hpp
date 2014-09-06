@@ -52,7 +52,7 @@ namespace first_order_logic
 						} ),
 					make_and_actor( [&]( const sentence & l, const sentence & r ){ return make_and( (*this)(l), (*this)(r) ); } ),
 					make_or_actor( [&]( const sentence & l, const sentence & r ){ return make_or( (*this)(l), (*this)(r) ); } ),
-					make_not_actor( [&]( const sentence & sen ){ return make_not( sen ); } ),
+					make_not_actor( [&]( const sentence & sen ){ return make_not( (*this)(sen) ); } ),
 					make_equal_actor( [&]( const term & l, const term & r ){ return make_equal( (*this)(l), (*this)(r) ); } ),
 					make_predicate_actor(
 						[&]( const std::string & str, const std::vector< term > & vec )
