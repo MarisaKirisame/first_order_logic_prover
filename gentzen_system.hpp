@@ -58,21 +58,6 @@ namespace first_order_logic
 					throw con;
 				}
 			}
-			static proof_tree join( proof_tree & parent, proof_tree child )
-			{
-				if ( parent.data.get( ) == nullptr )
-				{
-					parent = child;
-					return parent;
-				}
-				child->parent = parent.data.get( );
-				if ( child->str != parent->str )
-				{
-					parent->child.push_back( child );
-					return child;
-				}
-				return parent;
-			}
 			void add_equal_generator( const function & f )
 			{
 				assert( f.arity >= 1 );
@@ -250,13 +235,13 @@ namespace first_order_logic
 									branch.end( ),
 									[&]( const auto & t ) { return std::get< 2 >( t ) == true; } ) )
 									{
-										std::for_each( branch.begin( ), branch.end( ), [&]( const auto & t ){ join( leaf, std::get< 1 >( t ) ); } );
+										std::for_each( branch.begin( ), branch.end( ), [&]( const auto & t ){ leaf.join( std::get< 1 >( t ) ); } );
 										return true;
 									}
 									auto it = std::find_if( branch.begin( ), branch.end( ), [&]( const auto & t ){ return std::get< 2 >( t ) == false; } );
 									if ( it != branch.end( ) )
 									{
-										join( leaf, std::get< 1 >( * it ) );
+										leaf.join( std::get< 1 >( * it ) );
 										return false;
 									}
 						}
@@ -359,13 +344,13 @@ namespace first_order_logic
 											ldt.try_insert( ldt.sequent, l, false );
 											branch.push_back( std::make_tuple( ldt, proof_tree( ), boost::optional< bool >( ) ) );
 										}
-										catch ( contradiction & con ) { join( pt, con.pt ); }
+										catch ( contradiction & con ) { pt.join( con.pt ); }
 										try
 										{
 											rdt.try_insert( rdt.sequent, r, false );
 											branch.push_back( std::make_tuple( rdt, proof_tree( ), boost::optional< bool >( ) ) );
 										}
-										catch ( contradiction & con ) { join( pt, con.pt ); }
+										catch ( contradiction & con ) { pt.join( con.pt ); }
 									}
 								} ),
 							make_or_actor(
@@ -381,13 +366,13 @@ namespace first_order_logic
 											ldt.try_insert( ldt.sequent, l, true );
 											branch.push_back( std::make_tuple( ldt, proof_tree( ), boost::optional< bool >( ) ) );
 										}
-										catch ( contradiction & con ) { join( pt, con.pt ); }
+										catch ( contradiction & con ) { pt.join( con.pt ); }
 										try
 										{
 											rdt.try_insert( rdt.sequent, r, true );
 											branch.push_back( std::make_tuple( rdt, proof_tree( ), boost::optional< bool >( ) ) );
 										}
-										catch ( contradiction & con ) { join( pt, con.pt ); }
+										catch ( contradiction & con ) { pt.join( con.pt ); }
 									}
 									else
 									{
@@ -400,10 +385,10 @@ namespace first_order_logic
 					}
 					catch ( contradiction & con )
 					{
-						join( leaf, con.pt );
+						leaf.join( con.pt );
 						return true;
 					}
-					leaf = join( leaf, proof_tree( static_cast< std::string >( * this ) ) );
+					leaf = leaf.join( proof_tree( static_cast< std::string >( * this ) ) );
 				}
 				return boost::optional< bool >( );
 			}
