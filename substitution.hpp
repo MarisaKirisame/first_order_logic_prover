@@ -4,6 +4,8 @@
 #include <map>
 #include <string>
 #include "first_order_logic.hpp"
+#include "algorithm"
+#include <boost/optional.hpp>
 namespace first_order_logic
 {
 	struct substitution
@@ -70,39 +72,50 @@ namespace first_order_logic
 		}
 		substitution( const std::map< variable, term > & data ) : data( data ) { }
 	};
-	substitution unify( const sentence & p, const sentence & q, const substitution & sub )
+	boost::optional< substitution > unify( const sentence & p, const sentence & q, const substitution & sub )
 	{
 		throw p;
 		throw q;
 		throw sub;
 	}
-/*	boost::optional< substitution > unify_variable( const std::string & var, const sentence & t, const substitution & sub )
+	boost::optional< substitution > unify( const variable & var, const term & t, const substitution & sub )
 	{
 		{
-			//auto it = sub.data.find( var );
-			//if ( it != sub.data.end( ) )
-			//{ return unify( it->second, t, sub ); }
+			auto it = sub.data.find( var );
+			if ( it != sub.data.end( ) )
+			{ return unify( it->second, t, sub ); }
 		}
-		if ( t->name == "variable" )
+		if ( t->term_type == term::type::variable )
 		{
-			assert( t->arguments.size( ) == 1 );
-			//auto it = sub.data.find( t->arguments[0]->name );
-			//if ( it != sub.data.end( ) ) { return unify( make_variable( var ), it->second, sub ); }
+			auto it = sub.data.find( t->name );
+			if ( it != sub.data.end( ) ) { return unify( var, it->second, sub ); }
 		}
 		auto occur_check =
-				[&]( const auto & self, const sentence & te )->bool
-				{
-					return
-							std::any_of(
-								te->arguments.begin( ),
-								te->arguments.end( ),
-								[&]( const sentence & te )
-								{ return ( te->name == "variable" && te->arguments[0]->name == var ) || self( self, te );; } );
-				};
-		//if ( occur_check( occur_check, t ) ) { return boost::optional< substitution >( ); }
-		//substitution ret;
-		//ret.data.insert( { var, t } );
-		//return ret;
-	}*/
+			[]( const variable & argvar, const term & argt )
+			{
+				auto inner =
+					[]( const auto & self, const variable & var, const term & t )->bool
+					{
+						switch ( t->term_type )
+						{
+						case term::type::variable:
+							return var.name != t->name;
+						case term::type::constant:
+							return true;
+						case term::type::function:
+							return std::all_of(
+										t->arguments.begin( ),
+										t->arguments.end( ),
+										[&]( const term & te ){ return self( self, var, te ); } );
+						}
+						throw std::invalid_argument( "unknown enum type." );
+					};
+				return inner( inner, argvar, argt );
+			};
+		if ( occur_check ) { return boost::optional< substitution >( ); }
+		substitution ret( sub );
+		ret.data.insert( { var, t } );
+		return ret;
+	}
 }
 #endif // SUBSTITUTION_HPP
