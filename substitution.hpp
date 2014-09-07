@@ -72,11 +72,31 @@ namespace first_order_logic
 		}
 		substitution( const std::map< variable, term > & data ) : data( data ) { }
 	};
-	boost::optional< substitution > unify( const sentence & p, const sentence & q, const substitution & sub )
+	boost::optional< substitution > unify( const term & p, const term & q, const substitution & sub )
 	{
-		throw p;
-		throw q;
-		throw sub;
+		switch ( p->term_type )
+		{
+		case term::type::constant:
+			return p == q ? sub : boost::optional< substitution >( );
+		case term::type::variable:
+			return unify( make_variable( p->name ), q, sub );
+		case term::type::function:
+			if ( p->term_type == q->term_type && p->name == q->name )
+			{
+				substitution ret( sub );
+				assert( p->arguments.size( ) == q->arguments.size( ) );
+				std::vector< substitution > sub;
+				sub.reserve( p->arguments.size( ) );
+				for ( size_t i = 0; i < p->arguments.size( ); ++i )
+				{
+					boost::optional< substitution > tem = unify( p->arguments[i], q->arguments[i], ret );
+					if ( tem ) { std::copy( tem->data.begin( ), tem->data.end( ), std::inserter( ret.data, ret.data.begin( ) ) ); }
+					else  {  return boost::optional< substitution >( ); }
+				}
+			}
+			return boost::optional< substitution >( );
+		}
+		throw std::invalid_argument( "unknown enum type." );
 	}
 	boost::optional< substitution > unify( const variable & var, const term & t, const substitution & sub )
 	{

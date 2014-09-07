@@ -112,6 +112,7 @@ namespace first_order_logic
 			return (*this)->cache;
 		}
 		bool operator < ( const term & comp ) const { return static_cast< std::string >( * this ) < static_cast< std::string >( comp ); }
+		bool operator == ( const term & comp ) const { return static_cast< std::string >( * this ) == static_cast< std::string >( comp ); }
 		term( ) { }
 		term( const variable & var ) : data( new internal( type::variable, var.name, { } ) ) { }
 		term( const constant & var ) : data( new internal( type::variable, var.name, { } ) ) { }
