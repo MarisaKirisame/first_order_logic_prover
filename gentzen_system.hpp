@@ -41,6 +41,7 @@ namespace first_order_logic
 			term_generator< sequence > tg;
 			std::vector< std::tuple< sequence, proof_tree, boost::optional< bool > > > branch;
 			sequence * parent = nullptr;
+			bool have_branch = false;
 			struct contradiction { proof_tree pt; };
 			void try_insert(
 				std::map< sentence, bool > & m,
@@ -223,13 +224,11 @@ namespace first_order_logic
 			}
 			boost::optional< bool > expand( proof_tree & leaf )
 			{
-				if ( ! branch.empty( ) )
+				if ( have_branch )
 				{
-					for ( std::tuple< sequence, proof_tree, boost::optional< bool > > & p : branch )
-					{
-						if ( ! std::get< 2 >( p ) )
+					auto try_join =
+						[&]( )->boost::optional< bool >
 						{
-							std::get< 2 >( p ) = std::get< 0 >( p ).expand( std::get< 1 >( p ) );
 							if ( std::all_of(
 									branch.begin( ),
 									branch.end( ),
@@ -244,9 +243,18 @@ namespace first_order_logic
 										leaf.join( std::get< 1 >( * it ) );
 										return false;
 									}
+							return boost::optional< bool >( );
+						};
+					for ( std::tuple< sequence, proof_tree, boost::optional< bool > > & p : branch )
+					{
+						if ( ! std::get< 2 >( p ) )
+						{
+							std::get< 2 >( p ) = std::get< 0 >( p ).expand( std::get< 1 >( p ) );
+							auto ret = try_join( );
+							if ( ret ) { return ret; }
 						}
 					}
-					return boost::optional< bool >( );
+					return try_join( );
 				}
 				if ( sequent.empty( ) )
 				{
@@ -351,6 +359,7 @@ namespace first_order_logic
 											branch.push_back( std::make_tuple( rdt, proof_tree( ), boost::optional< bool >( ) ) );
 										}
 										catch ( contradiction & con ) { pt.join( con.pt ); }
+										have_branch = true;
 									}
 								} ),
 							make_or_actor(
@@ -373,6 +382,7 @@ namespace first_order_logic
 											branch.push_back( std::make_tuple( rdt, proof_tree( ), boost::optional< bool >( ) ) );
 										}
 										catch ( contradiction & con ) { pt.join( con.pt ); }
+										have_branch = true;
 									}
 									else
 									{

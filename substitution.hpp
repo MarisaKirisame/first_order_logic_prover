@@ -69,14 +69,14 @@ namespace first_order_logic
 				);
 		}
 		substitution( const std::map< variable, term > & data ) : data( data ) { }
-	};/*
+	};
 	substitution unify( const sentence & p, const sentence & q, const substitution & sub )
 	{
 		throw p;
 		throw q;
 		throw sub;
 	}
-	boost::optional< substitution > unify_variable( const std::string & var, const sentence & t, const substitution & sub )
+/*	boost::optional< substitution > unify_variable( const std::string & var, const sentence & t, const substitution & sub )
 	{
 		{
 			//auto it = sub.data.find( var );
