@@ -137,5 +137,31 @@ namespace first_order_logic
 		ret.data.insert( { var, t } );
 		return ret;
 	}
-}
+	template< typename GENERATOR >
+	substitution rename_variable( const term & t, const substitution & used, const GENERATOR & gen )
+	{
+		substitution ret;
+		rename_variable( t, ret, used, gen );
+		return ret;
+	}
+	template< typename GENERATOR >
+	void rename_variable( const term & t, substitution & renamed, const substitution & used, const GENERATOR & gen )
+	{
+		switch ( t->term_type )
+		{
+		case term::type::variable:
+			{
+				std::string gen_str = t->name;
+				while ( renamed.data.count( gen_str ) != 0 && used.data.count( gen_str ) != 0 ) { gen_str = gen( gen_str ); }
+			}
+		case term::type::constant:
+			break;
+		case term::type::function:
+			std::for_each(
+					t->arguments.begin( ),
+					t->arguments.end( ),
+					[&]( const term & te ){ rename_variable( te, renamed, used, gen ); } );
+		}
+	}
+	}
 #endif // SUBSTITUTION_HPP
