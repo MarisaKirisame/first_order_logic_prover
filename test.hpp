@@ -7,9 +7,11 @@
 #include "praser.hpp"
 #include "gentzen_system.hpp"
 #include "substitution.hpp"
+#include "definite_clause.hpp"
+#include "knowledge_base.hpp"
 namespace first_order_logic
 {
-	BOOST_AUTO_TEST_CASE( first_order_logic_test )
+	BOOST_AUTO_TEST_CASE( gentzen_system_test )
 	{
 		auto fol = make_imply(
 								 make_all( "x", make_predicate( "F", { make_variable( "x" ) } ) ),
@@ -72,6 +74,11 @@ namespace first_order_logic
 		BOOST_CHECK( gentzen_system::is_valid( fol2 ).second );
 		BOOST_CHECK( gentzen_system::is_valid( fol3 ).second );
 		BOOST_CHECK( gentzen_system::is_valid( fol4 ).second );
+	}
+	BOOST_AUTO_TEST_CASE( forward_chaning_algorithm )
+	{
+		knowledge_base kb;
+		BOOST_CHECK( kb.forward_chaining( make_predicate( "criminal", { make_variable( "x" ) } ) ) );
 	}
 }
 #endif //THEOREM_PROVER_EXAMPLE

@@ -71,6 +71,7 @@ namespace first_order_logic
 				);
 		}
 		substitution( const std::map< variable, term > & data ) : data( data ) { }
+		substitution( ) { }
 		bool coherent( const substitution & comp ) const
 		{
 			return std::any_of(
@@ -244,31 +245,55 @@ namespace first_order_logic
 							return ret;
 						} ) );
 	}
-	template< typename GENERATOR >
-	substitution rename_variable( const term & t, const substitution & used, const GENERATOR & gen )
-	{
-		substitution ret;
-		rename_variable( t, ret, used, gen );
-		return ret;
-	}
-	template< typename GENERATOR >
-	void rename_variable( const term & t, substitution & renamed, const substitution & used, const GENERATOR & gen )
+	template< typename F, typename GENERATOR >
+	void rename_variable( const term & t, const F & usable, const GENERATOR & gen, substitution & renamed )
 	{
 		switch ( t->term_type )
-		{
-		case term::type::variable:
-			{
-				std::string gen_str = t->name;
-				while ( renamed.data.count( gen_str ) != 0 && used.data.count( gen_str ) != 0 ) { gen_str = gen( gen_str ); }
-			}
-		case term::type::constant:
-			break;
-		case term::type::function:
-			std::for_each(
-					t->arguments.begin( ),
-					t->arguments.end( ),
-					[&]( const term & te ){ rename_variable( te, renamed, used, gen ); } );
+		 {
+			case term::type::variable:
+				rename_variable( variable( t->name ), usable, gen, renamed );
+			case term::type::constant:
+				break;
+			case term::type::function:
+				rename_variable( t->arguments.begin( ), t->arguments.end( ), usable, gen, renamed );
 		}
+	}
+	template< typename F, typename GENERATOR >
+	void rename_variable( const variable & sen, const F & usable, const GENERATOR & gen, substitution & renamed )
+	{
+		std::string gen_str = sen.name;
+		while ( renamed.data.count( gen_str ) != 0 && ! usable( gen_str ) ) { gen_str = gen( gen_str ); }
+		if ( gen_str != sen.name ) { renamed.data.insert( std::make_pair( make_variable( sen.name ), make_variable( gen_str ) ) ); }
+	}
+	template< typename F, typename GENERATOR >
+	void rename_variable( const sentence & sen, const F & usable, const GENERATOR & gen, substitution & renamed )
+	{
+		std::set< variable > tem = sen.free_variables( );
+		rename_variable( tem.begin( ), tem.end( ), usable, gen, renamed );
+	}
+	template< typename INITER, typename F, typename GENERATOR >
+	void rename_variable( INITER begin, INITER end, const F & usable, const GENERATOR & gen, substitution & renamed )
+	{
+		std::for_each(
+			begin,
+			end,
+			[&]( const auto & te ){ rename_variable( te, usable, gen, renamed ); } );
+	}
+	template< typename ... T >
+	auto unify( const T & ... t ) { return unify( t ..., substitution( ) ); }
+	template< typename ... T >
+	substitution rename_variable( const T & ... t )
+	{
+		static_assert(
+			! std::is_same
+			<
+				typename std::tuple_element< std::tuple_size< std::tuple< T ... > >::value - 1, std::tuple< T ... > >::type,
+				substitution
+			>::value,
+			"Recursive call detected. Possibly result from invalid argument(s)." );
+		substitution ret;
+		rename_variable( t ..., ret );
+		return ret;
 	}
 }
 #endif // SUBSTITUTION_HPP

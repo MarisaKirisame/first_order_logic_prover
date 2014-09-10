@@ -19,7 +19,8 @@ HEADERS += \
     variable.hpp \
     constant.hpp \
     definite_clause.hpp \
-    sentence.hpp
+    sentence.hpp \
+    knowledge_base.hpp
 
 OTHER_FILES += \
     theorem_prover.pro.user \
