@@ -71,6 +71,17 @@ namespace first_order_logic
 				);
 		}
 		substitution( const std::map< variable, term > & data ) : data( data ) { }
+		bool coherent( const substitution & comp ) const
+		{
+			return std::any_of(
+						comp.data.begin( ),
+						comp.data.end( ),
+						[&]( const std::pair< variable, term > & p )
+						{
+							auto it = data.find( p.first );
+							return it == data.end( ) && it->second == p.second;
+						} );
+		}
 		static boost::optional< substitution > join( const substitution & l, const substitution & r )
 		{
 			if ( l.data.size( ) > r.data.size( ) ) { return join( r, l ); }
@@ -123,10 +134,10 @@ namespace first_order_logic
 			if ( it != sub.data.end( ) ) { return unify( var, it->second, sub ); }
 		}
 		auto occur_check =
-			[]( const variable & argvar, const term & argt )
+			[&]( )
 			{
 				auto inner =
-					[]( const auto & self, const variable & var, const term & t )->bool
+					[&]( const auto & self, const variable & var, const term & t )->bool
 					{
 						switch ( t->term_type )
 						{
@@ -142,12 +153,12 @@ namespace first_order_logic
 						}
 						throw std::invalid_argument( "unknown enum type." );
 					};
-				return inner( inner, argvar, argt );
+				return t->term_type != term::type::variable && inner( inner, var, t );
 			};
-		if ( occur_check ) { return boost::optional< substitution >( ); }
+		if ( occur_check( ) ) { return boost::optional< substitution >( ); }
 		substitution ret( sub );
-		ret.data.insert( { var, t } );
-		return ret;
+		auto it = ret.data.insert( { var, t } );
+		return it.first->second == t ? ret : boost::optional< substitution >( );
 	}
 	boost::optional< substitution > unify( const sentence & p, const sentence & q, const substitution & sub )
 	{
