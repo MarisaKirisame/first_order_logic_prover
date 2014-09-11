@@ -67,9 +67,11 @@ namespace first_order_logic
 			std::string name;
 			mutable std::string cache;
 			std::vector< boost::variant< boost::recursive_wrapper< sentence >, term > > arguments;
-			internal( type sentence_type, const std::string & name, const auto & r ) :
+			template< typename T >
+			internal( type sentence_type, const std::string & name, const T & r ) :
 				sentence_type( sentence_type ), name( name ), arguments( r.begin( ), r.end( ) ) { }
-			internal( type sentence_type, const auto & r ) :
+			template< typename T >
+			internal( type sentence_type, const T & r ) :
 				sentence_type( sentence_type ), arguments( r.begin( ), r.end( ) ) { }
 			internal( type sentence_type, const std::string & name ) :
 				sentence_type( sentence_type ), name( name ) { }
@@ -203,11 +205,13 @@ namespace first_order_logic
 			return (*this)->cache;
 		}
 		sentence( ) { }
-		sentence( type ty, const variable & l, const sentence & r ) : data( new internal( ty, l, r ) ) { static_cast< std::string >( * this ); }
+		sentence( type ty, const variable & l, const sentence & r ) : data( new internal( ty, l, r ) ) { }
 		template< typename ... T >
-		sentence( type ty, const T & ... t ) : data( new internal( ty, t ... ) ) { static_cast< std::string >( * this ); }
-		template< typename ... T, typename VEC >
-		sentence( type ty, const T & ... t, const std::initializer_list< VEC > & vec ) : data( new internal( ty, t ..., vec ) ) { static_cast< std::string >( * this ); }
+		sentence( type ty, const T & ... t ) : data( new internal( ty, t ... ) ) { }
+		template< typename ... T >
+		sentence( type ty, const T & ... t, const std::initializer_list< sentence > & vec ) : data( new internal( ty, t ..., vec ) ) { }
+		template< typename ... T >
+		sentence( type ty, const T & ... t, const std::initializer_list< term > & vec ) : data( new internal( ty, t ..., vec ) ) { }
 		size_t length( ) const
 		{
 			return

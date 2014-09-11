@@ -16,7 +16,6 @@ namespace first_order_logic
 		auto fol = make_imply(
 								 make_all( "x", make_predicate( "F", { make_variable( "x" ) } ) ),
 								 make_all( "x", make_predicate( "F", { make_function( "f", { make_variable( "x" ) } ) } ) ) );
-		static_cast< std::string >( fol );
 		auto fol2 = make_imply(
 									make_some
 									(

@@ -71,7 +71,7 @@ namespace first_order_logic
 										boost::make_function_output_iterator(
 											[&]( const std::pair< sentence, substitution > & p )
 											{
-												if ( unify( known_facts.back( ), sen ) )
+												if ( ! unify( known_facts.back( ), sen ) )
 												{
 													gp.push_back( p.first );
 													self( self, p.second );

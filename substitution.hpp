@@ -116,7 +116,7 @@ namespace first_order_logic
 		case term::type::constant:
 			return p == q ? sub : boost::optional< substitution >( );
 		case term::type::variable:
-			return unify( make_variable( p->name ), q, sub );
+			return unify( variable( p->name ), q, sub );
 		case term::type::function:
 			if ( p->term_type == q->term_type && p->name == q->name ) { return unify( p->arguments, q->arguments, sub ); }
 			return boost::optional< substitution >( );

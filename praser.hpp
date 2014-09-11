@@ -56,18 +56,27 @@ namespace first_order_logic
 				with_binary =
 								with_not[ _val = _1 ] >> *
 									 (
-										( lit( "/\\" ) >> with_not )[ _val = bind( make_and, _val, _1 ) ] |
-										( lit( "\\/" ) >> with_not )[ _val = bind( make_or, _val, _1 ) ] );
+										( lit( "/\\" ) >> with_not )
+										[ bind( []( auto & val, auto & param ){ val = make_and( val, param ); }, _val, _1 ) ] |
+										( ( lit( "\\/" ) >> with_not )
+										[ bind( []( auto & val, auto & param ){ val = make_or( val, param ); }, _val, _1 ) ] ) );
 				with_quantifier =
-									( lit( "∃" ) >> parse_variable >> expression )[ _val = bind( make_some, _1, _2 ) ] |
-									( lit( "∀" ) >> parse_variable >> expression )[ _val = bind( make_all, _1, _2 ) ] |
+									( lit( "∃" ) >> parse_variable >> expression )
+									[ bind( []( auto & val, auto & param1, auto & param2 )
+									{ val = make_some( param1, param2 ); }, _val, _1, _2 ) ] |
+									( lit( "∀" ) >> parse_variable >> expression )
+									[ bind( []( auto & val, auto & param1, auto & param2 )
+									{ val = make_all( param1, param2 ); }, _val, _1, _2 ) ] |
 									with_binary[ _val = _1 ];
 				with_implication =
 									with_quantifier[ _val = _1 ] >> *
 									 (
-										( lit( "->" ) >> with_quantifier )[ _val = bind( make_imply, _val, _1 ) ] |
-										 ( lit( "<-" ) >> with_quantifier )[ _val = bind( make_imply, _1, _val ) ] |
-										 ( lit( "<->" ) >> with_quantifier )[ _val = bind( make_iff, _val, _1 ) ] );
+										( lit( "->" ) >> with_quantifier )
+										[ bind( []( auto & val, auto & param ){ val = make_imply( val, param ); }, _val, _1 ) ] |
+										( lit( "<-" ) >> with_quantifier )
+										[ bind( []( auto & val, auto & param ){ val = make_imply( param, val ); }, _val, _1 ) ] |
+										( lit( "<->" ) >> with_quantifier )
+										[ bind( []( auto & val, auto & param ){ val = make_iff( val, param ); }, _val, _1 ) ] );
 				expression %= with_implication;
 				term_exp = function[ _val = _1 ] | text[ _val = bind( make_variable, _1 ) ];
 				function = ( text >> lit( '(' ) >> ( term_exp % ',' ) >> lit( ')' ) )[ _val = bind( make_function, _1, _2 ) ];
