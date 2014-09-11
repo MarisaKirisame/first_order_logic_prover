@@ -114,8 +114,8 @@ namespace first_order_logic
 		bool operator < ( const term & comp ) const { return static_cast< std::string >( * this ) < static_cast< std::string >( comp ); }
 		bool operator == ( const term & comp ) const { return static_cast< std::string >( * this ) == static_cast< std::string >( comp ); }
 		term( ) { }
-		term( const variable & var ) : data( new internal( type::variable, var.name, { } ) ) { }
-		term( const constant & var ) : data( new internal( type::variable, var.name, { } ) ) { }
+		explicit term( const variable & var ) : data( new internal( type::variable, var.name, { } ) ) { }
+		explicit term( const constant & var ) : data( new internal( type::constant, var.name, { } ) ) { }
 		std::set< term > cv( ) const
 		{
 			switch ( (*this)->term_type )

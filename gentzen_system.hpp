@@ -21,9 +21,9 @@ namespace first_order_logic
 		struct sequence
 		{
 			proof_tree pt;
-			variable new_variable( )
+			term new_variable( )
 			{
-				variable ret = make_variable( std::to_string( unused++ ) );
+				term ret = make_variable( std::to_string( unused++ ) );
 				cv_map.insert( std::make_pair( ret, std::set< sentence >( ) ) );
 				return ret;
 			}
@@ -426,16 +426,10 @@ namespace first_order_logic
 			sequence( const sentence & t ) :
 				sequent( { { t, false } } ), functions( t.functions( ) ), predicates( t.predicates( ) ), tg( this, 1, cv_map, functions )
 			{
-				const auto fv = t.free_variables( );
-				const auto con = t.constants( );
+				const auto cv = t.cv( );
 				std::transform(
-							fv.begin( ),
-							fv.end( ),
-							std::inserter( cv_map, cv_map.begin( ) ),
-							[]( const term & s ){ return std::make_pair( s, std::set< sentence >( ) ); } );
-				std::transform(
-							con.begin( ),
-							con.end( ),
+							cv.begin( ),
+							cv.end( ),
 							std::inserter( cv_map, cv_map.begin( ) ),
 							[]( const term & s ){ return std::make_pair( s, std::set< sentence >( ) ); } );
 				term_map = cv_map;

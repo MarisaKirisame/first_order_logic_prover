@@ -108,6 +108,7 @@ namespace first_order_logic
 		}
 		return ret;
 	}
+	boost::optional< substitution > unify( const variable & var, const term & t, const substitution & sub );
 	boost::optional< substitution > unify( const term & p, const term & q, const substitution & sub )
 	{
 		switch ( p->term_type )

@@ -9,10 +9,10 @@ namespace first_order_logic
 	{ return term( term::type::function, s, t ); }
 
 	term make_constant( const std::string & s )
-	{ return term( term::type::constant, s, { } ); }
+	{ return term( constant( s ) ); }
 
-	variable make_variable( const std::string & s )
-	{ return variable( s ); }
+	term make_variable( const std::string & s )
+	{ return term( variable( s ) ); }
 
 	sentence make_predicate( const std::string & s, const std::vector< term > & t )
 	{ return sentence( sentence::type::predicate, s, t ); }

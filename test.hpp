@@ -79,8 +79,8 @@ namespace first_order_logic
 	{
 		knowledge_base kb;
 		kb.kb.push_back( definite_clause(
-			{ make_predicate( "Missle", { variable( "x" ) } ) },
-			make_predicate( "Weapon", { variable( "x" ) } ) ) );
+			{ make_predicate( "Missle", { make_variable( "x" ) } ) },
+			make_predicate( "Weapon", { make_variable( "x" ) } ) ) );
 		kb.kb.push_back( definite_clause(
 			{
 				make_predicate( "American", { make_variable( "x" ) } ),

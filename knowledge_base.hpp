@@ -26,15 +26,20 @@ namespace first_order_logic
 			}
 			bool have_new_inference = true;
 			std::set< std::string > variable_name;
+			auto extract =
+					[&]( const sentence & s )
+					{
+						std::set< term > v = s.cv( );
+						std::transform(
+									v.begin( ),
+									v.end( ),
+									std::inserter( variable_name, variable_name.begin( ) ),
+									[]( const term & t ){ return t->name; } );
+					};
 			for ( const definite_clause & dc : kb )
 			{
-				for ( const sentence & s : dc.premise )
-				{
-					std::set< std::string > v = s.cv( );
-					variable_name.insert( v.begin( ), v.end( ) );
-				}
-				std::set< std::string > v = dc.conclusion.cv( );
-				variable_name.insert( v.begin( ), v.end( ) );
+				std::for_each( dc.premise.begin( ), dc.premise.end( ), extract );
+				extract( dc.conclusion );
 			}
 			while ( have_new_inference )
 			{
