@@ -10,6 +10,8 @@ namespace first_order_logic
 	{
 		std::vector< sentence > premise;
 		sentence conclusion;
+		definite_clause( const std::vector< sentence > & p, const sentence & c ) : premise( p ), conclusion( c )
+		{ assert( p.size( ) != 0 ); }
 	};
 }
 #endif // DEFINITE_CLAUSE_HPP

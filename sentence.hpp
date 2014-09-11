@@ -412,6 +412,15 @@ namespace first_order_logic
 					make_not_actor( [&]( const sentence & sen ){ return sen.constants( ); } )
 				);
 		}
+		std::set< std::string > cv( ) const
+		{
+			auto c = constants( );
+			auto v = free_variables( );
+			std::set< std::string > ret;
+			std::transform( c.begin( ), c.end( ), std::inserter( ret, ret.begin( ) ), []( const constant & co ){ return co.name; } );
+			std::transform( v.begin( ), v.end( ), std::inserter( ret, ret.begin( ) ), []( const variable & co ){ return co.name; } );
+			return ret;
+		}
 		bool operator < ( const sentence & comp ) const
 		{
 			if ( length( ) < comp.length( ) ) { return true; }

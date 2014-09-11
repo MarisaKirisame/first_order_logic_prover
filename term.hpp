@@ -116,6 +116,27 @@ namespace first_order_logic
 		term( ) { }
 		term( const variable & var ) : data( new internal( type::variable, var.name, { } ) ) { }
 		term( const constant & var ) : data( new internal( type::variable, var.name, { } ) ) { }
+		std::set< term > cv( ) const
+		{
+			switch ( (*this)->term_type )
+			{
+			case type::variable:
+				return { term( data ) };
+			case type::constant:
+				return { term( data ) };
+			case type::function:
+				{
+					std::set< term > ret;
+					std::transform( (*this)->arguments.begin( ),
+									(*this)->arguments.end( ),
+									boost::make_function_output_iterator(
+										[&]( const std::set< term > & s ){ ret.insert( s.begin( ), s.end( ) ); } ),
+									[&]( const term & t ){ return t.cv( ); } );
+					return ret;
+				}
+			}
+			throw std::invalid_argument( "unknown enum type" );
+		}
 	};
 }
 #endif // TERM_HPP

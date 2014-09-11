@@ -25,14 +25,16 @@ namespace first_order_logic
 				if ( ret ) { return ret; }
 			}
 			bool have_new_inference = true;
-			std::set< variable > variable_name;
+			std::set< std::string > variable_name;
 			for ( const definite_clause & dc : kb )
 			{
 				for ( const sentence & s : dc.premise )
 				{
-					std::set< variable > v = s.free_variables( );
+					std::set< std::string > v = s.cv( );
 					variable_name.insert( v.begin( ), v.end( ) );
 				}
+				std::set< std::string > v = dc.conclusion.cv( );
+				variable_name.insert( v.begin( ), v.end( ) );
 			}
 			while ( have_new_inference )
 			{
@@ -44,7 +46,7 @@ namespace first_order_logic
 							rename_variable(
 								dc.premise.begin( ),
 								dc.premise.end( ),
-								[&]( const std::string & v ){ return variable_name.count( make_variable( v ) ) == 0; },
+								[&]( const std::string & v ){ return variable_name.count( v ) == 0; },
 								[]( const std::string & n ){ return n + "_"; } );
 					substitution s;
 					std::vector< sentence > gp;
@@ -53,13 +55,13 @@ namespace first_order_logic
 							{
 								if ( gp.size( ) == dc.premise.size( ) )
 								{
-									known_facts.push_back( sub( dc.conclusion ) );
+									known_facts.push_back( sub( rename( dc.conclusion ) ) );
 									have_new_inference = true;
 								}
 								else
 								{
 									this->matching_facts(
-										dc.premise[ gp.size( ) ],
+										rename( dc.premise[ gp.size( ) ] ),
 										sub,
 										boost::make_function_output_iterator(
 											[&]( const std::pair< sentence, substitution > & p )
