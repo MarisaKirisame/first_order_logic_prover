@@ -4,7 +4,7 @@
 #define BOOST_TEST_DYN_LINK
 #include <boost/test/unit_test.hpp>
 #include "first_order_logic.hpp"
-#include "praser.hpp"
+//#include "praser.hpp"
 #include "gentzen_system.hpp"
 #include "substitution.hpp"
 #include "definite_clause.hpp"
@@ -77,7 +77,7 @@ namespace first_order_logic
 	BOOST_AUTO_TEST_CASE( forward_chaning_algorithm )
 	{
 		knowledge_base kb;
-		kb.kb.push_back( definite_clause(
+		/*kb.kb.push_back( definite_clause(
 			{ make_predicate( "Missle", { make_variable( "x" ) } ) },
 			make_predicate( "Weapon", { make_variable( "x" ) } ) ) );
 		kb.kb.push_back( definite_clause(
@@ -100,7 +100,8 @@ namespace first_order_logic
 		kb.known_facts.push_back( make_predicate( "Owns", { make_constant( "Nono" ), make_constant( "M1" ) } ) );
 		kb.known_facts.push_back( make_predicate( "Missile", { make_constant( "M1" ) } ) );
 		kb.known_facts.push_back( make_predicate( "American", { make_constant( "West" ) } ) );
-		kb.known_facts.push_back( make_predicate( "Enemy", { make_constant( "Nono" ), make_constant( "America" ) } ) );
+		kb.known_facts.push_back( make_predicate( "Enemy", { make_constant( "Nono" ), make_constant( "America" ) } ) );*/
+		kb.known_facts.push_back( make_predicate( "Criminal", { make_constant( "West" ) } ) );
 		BOOST_CHECK( kb.forward_chaining( make_predicate( "Criminal", { make_variable( "x" ) } ) ) );
 	}
 }

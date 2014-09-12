@@ -111,6 +111,7 @@ namespace first_order_logic
 	boost::optional< substitution > unify( const variable & var, const term & t, const substitution & sub );
 	boost::optional< substitution > unify( const term & p, const term & q, const substitution & sub )
 	{
+		if ( p->term_type != term::type::variable && q->term_type == term::type::variable ) { return unify( q, p, sub ); }
 		switch ( p->term_type )
 		{
 		case term::type::constant:
@@ -281,7 +282,17 @@ namespace first_order_logic
 			[&]( const auto & te ){ rename_variable( te, usable, gen, renamed ); } );
 	}
 	template< typename ... T >
-	auto unify( const T & ... t ) { return unify( t ..., substitution( ) ); }
+	auto unify( const T & ... t )
+	{
+		static_assert(
+			! std::is_same
+			<
+				typename std::tuple_element< std::tuple_size< std::tuple< T ... > >::value - 1, std::tuple< T ... > >::type,
+				substitution
+			>::value,
+			"Recursive call detected. Possibly result from invalid argument(s)." );
+		return unify( t ..., substitution( ) );
+	}
 	template< typename ... T >
 	substitution rename_variable( const T & ... t )
 	{

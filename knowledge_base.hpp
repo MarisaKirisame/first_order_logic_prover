@@ -47,6 +47,7 @@ namespace first_order_logic
 				for ( size_t i = 0; i < kb.size( ); ++i )
 				{
 					const definite_clause & dc = kb[i];
+					assert( ! dc.premise.empty( ) );
 					substitution rename =
 							rename_variable(
 								dc.premise.begin( ),

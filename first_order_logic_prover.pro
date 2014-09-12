@@ -8,7 +8,6 @@ LIBS += -lboost_unit_test_framework
 HEADERS += \
     first_order_logic.hpp \
     function.hpp \
-    praser.hpp \
     predicate.hpp \
     proof_tree.hpp \
     term_generator.hpp \
@@ -20,7 +19,8 @@ HEADERS += \
     constant.hpp \
     definite_clause.hpp \
     sentence.hpp \
-    knowledge_base.hpp
+    knowledge_base.hpp \
+    praser.hpp
 
 OTHER_FILES += \
     theorem_prover.pro.user \
