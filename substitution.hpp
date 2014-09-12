@@ -158,7 +158,7 @@ namespace first_order_logic
 					};
 				return t->term_type != term::type::variable && inner( inner, var, t );
 			};
-		if ( occur_check( ) ) { return boost::optional< substitution >( ); }
+		if ( ! occur_check( ) ) { return boost::optional< substitution >( ); }
 		substitution ret( sub );
 		auto it = ret.data.insert( { var, t } );
 		return it.first->second == t ? ret : boost::optional< substitution >( );
