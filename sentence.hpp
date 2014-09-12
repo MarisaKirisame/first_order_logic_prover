@@ -204,7 +204,6 @@ namespace first_order_logic
 				")";
 			return (*this)->cache;
 		}
-		sentence( ) { }
 		sentence( type ty, const variable & l, const sentence & r ) : data( new internal( ty, l, r ) ) { }
 		template< typename ... T >
 		sentence( type ty, const T & ... t ) : data( new internal( ty, t ... ) ) { }
@@ -212,6 +211,7 @@ namespace first_order_logic
 		sentence( type ty, const T & ... t, const std::initializer_list< sentence > & vec ) : data( new internal( ty, t ..., vec ) ) { }
 		template< typename ... T >
 		sentence( type ty, const T & ... t, const std::initializer_list< term > & vec ) : data( new internal( ty, t ..., vec ) ) { }
+		sentence( const sentence & sen ) : data( sen.data ) { }
 		size_t length( ) const
 		{
 			return

@@ -10,8 +10,10 @@ namespace first_order_logic
 		template< typename ITER >
 		ITER matching_facts( const sentence & match, const substitution & sub, ITER result )
 		{
-			for ( const sentence & sen : known_facts )
+			for ( auto i = known_facts.begin( ); i != known_facts.end( ); ++i )
 			{
+				const auto & sen = * i;
+				assert( static_cast< bool >( sen.data ) );
 				auto res = unify( match, sen, sub );
 				if ( res ) { * result = std::make_pair( sen, * res ); }
 			}

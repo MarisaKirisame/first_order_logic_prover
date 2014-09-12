@@ -79,29 +79,30 @@ namespace first_order_logic
 		knowledge_base kb;
 		/*kb.kb.push_back( definite_clause(
 			{ make_predicate( "Missle", { make_variable( "x" ) } ) },
-			make_predicate( "Weapon", { make_variable( "x" ) } ) ) );
-		kb.kb.push_back( definite_clause(
+			make_predicate( "Weapon", { make_variable( "x" ) } ) ) );*/
+		/*kb.kb.push_back( definite_clause(
 			{
 				make_predicate( "American", { make_variable( "x" ) } ),
 				make_predicate( "Weapon", { make_variable( "y" ) } ),
 				make_predicate( "Sell", { make_variable( "x" ), make_variable( "y" ), make_variable( "z" ) } ),
 				make_predicate( "Hostile", { make_variable( "z" ) } )
 			},
-			make_predicate( "Criminal", { make_variable( "x" ) } ) ) );
-		kb.kb.push_back( definite_clause(
+			make_predicate( "Criminal", { make_variable( "x" ) } ) ) );*/
+		/*kb.kb.push_back( definite_clause(
 			{
 				make_predicate( "Missile", { make_variable( "x" ) } ),
 				make_predicate( "Owns", { make_constant( "Nono" ), make_variable( "x" ) } )
 			},
-			make_predicate( "Sell", { make_constant( "West" ), make_variable( "x" ), make_constant( "Nono" ) } ) ) );
+			make_predicate( "Sell", { make_constant( "West" ), make_variable( "x" ), make_constant( "Nono" ) } ) ) );*/
 		kb.kb.push_back( definite_clause(
 			{ make_predicate( "Enemy", { make_variable( "x" ), make_constant( "America" ) } ) },
 			make_predicate( "Hostile", { make_variable( "x" ) } ) ) );
-		kb.known_facts.push_back( make_predicate( "Owns", { make_constant( "Nono" ), make_constant( "M1" ) } ) );
-		kb.known_facts.push_back( make_predicate( "Missile", { make_constant( "M1" ) } ) );
-		kb.known_facts.push_back( make_predicate( "American", { make_constant( "West" ) } ) );
-		kb.known_facts.push_back( make_predicate( "Enemy", { make_constant( "Nono" ), make_constant( "America" ) } ) );*/
-		kb.known_facts.push_back( make_predicate( "Criminal", { make_constant( "West" ) } ) );
+		//kb.known_facts.push_back( make_predicate( "Owns", { make_constant( "Nono" ), make_constant( "M1" ) } ) );
+		//kb.known_facts.push_back( make_predicate( "Missile", { make_constant( "M1" ) } ) );
+		//kb.known_facts.push_back( make_predicate( "American", { make_constant( "West" ) } ) );
+		kb.known_facts.reserve( 2 );
+		kb.known_facts.push_back( make_predicate( "Enemy", { make_constant( "Nono" ), make_constant( "America" ) } ) );
+		//kb.known_facts.push_back( make_predicate( "Criminal", { make_constant( "West" ) } ) );
 		BOOST_CHECK( kb.forward_chaining( make_predicate( "Criminal", { make_variable( "x" ) } ) ) );
 	}
 }

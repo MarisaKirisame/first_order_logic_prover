@@ -37,7 +37,7 @@ namespace first_order_logic
 		}
 		sentence operator ( )( const sentence & s ) const
 		{
-			return
+			sentence ret =
 				s.type_restore_full
 				(
 					make_all_actor(
@@ -69,6 +69,8 @@ namespace first_order_logic
 						} ),
 					make_propositional_letter_actor( [&]( const std::string & str ){ return make_propositional_letter( str ); } )
 				);
+			assert( ret.data );
+			return ret;
 		}
 		substitution( const std::map< variable, term > & data ) : data( data ) { }
 		substitution( ) { }
