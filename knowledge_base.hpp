@@ -58,14 +58,11 @@ namespace first_order_logic
 								[]( const std::string & n ){ return n + "_"; } );
 					substitution s;
 					std::vector< sentence > gp;
+					std::vector< sentence > new_known_facts;
 					auto generate =
 							[&,this]( const auto & self, const substitution & sub )->void
 							{
-								if ( gp.size( ) == dc.premise.size( ) )
-								{
-									known_facts.push_back( sub( rename( dc.conclusion ) ) );
-									have_new_inference = true;
-								}
+								if ( gp.size( ) == dc.premise.size( ) ) { new_known_facts.push_back( sub( rename( dc.conclusion ) ) ); }
 								else
 								{
 									this->matching_facts(
@@ -84,6 +81,18 @@ namespace first_order_logic
 								}
 							};
 					generate( generate, s );
+					for ( const sentence & sen : new_known_facts )
+					{
+						if ( std::none_of(
+								known_facts.begin( ),
+								known_facts.end( ),
+								[&]( const sentence & s ){ return unify( sen, s ); } ) )
+						{
+							known_facts.push_back( sen );
+							have_new_inference = true;
+						}
+					}
+					std::copy( new_known_facts.begin( ), new_known_facts.end( ), std::back_inserter( known_facts ) );
 					auto ret = unify( known_facts.back( ), sen );
 					if ( ret ) { return ret; }
 				}
