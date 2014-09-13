@@ -74,6 +74,7 @@ namespace first_order_logic
 		}
 		substitution( const std::map< variable, term > & data ) : data( data ) { }
 		substitution( ) { }
+		bool operator ==( const substitution & s ) const { return data == s.data; }
 		bool coherent( const substitution & comp ) const
 		{
 			return std::any_of(
