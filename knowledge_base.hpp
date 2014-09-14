@@ -8,7 +8,7 @@ namespace first_order_logic
 		std::vector< definite_clause > kb;
 		std::vector< sentence > known_facts;
 		template< typename ITER >
-		ITER matching_facts( const sentence & match, const substitution & sub, ITER result )
+        ITER matching_facts( const sentence & match, const substitution & sub, ITER result ) const
 		{
 			for ( auto i = known_facts.begin( ); i != known_facts.end( ); ++i )
 			{
