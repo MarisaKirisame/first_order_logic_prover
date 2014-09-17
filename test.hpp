@@ -101,6 +101,37 @@ namespace first_order_logic
 		kb.known_facts.push_back( make_predicate( "Missile", { make_constant( "M1" ) } ) );
 		kb.known_facts.push_back( make_predicate( "American", { make_constant( "West" ) } ) );
 		kb.known_facts.push_back( make_predicate( "Enemy", { make_constant( "Nono" ), make_constant( "America" ) } ) );
+		auto res = kb.forward_chaining( make_predicate( "Criminal", { make_variable( "x" ) } ) );
+		substitution expected = std::map< variable, term > { { make_variable( "x" ), make_constant( "West" ) } };
+		BOOST_CHECK( res && * res == expected );
+	}
+	BOOST_AUTO_TEST_CASE( backward_chaning_algorithm )
+	{
+		knowledge_base kb;
+		kb.kb.push_back( definite_clause(
+			{ make_predicate( "Missile", { make_variable( "x" ) } ) },
+			make_predicate( "Weapon", { make_variable( "x" ) } ) ) );
+		kb.kb.push_back( definite_clause(
+			{
+				make_predicate( "American", { make_variable( "x" ) } ),
+				make_predicate( "Weapon", { make_variable( "y" ) } ),
+				make_predicate( "Sell", { make_variable( "x" ), make_variable( "y" ), make_variable( "z" ) } ),
+				make_predicate( "Hostile", { make_variable( "z" ) } )
+			},
+			make_predicate( "Criminal", { make_variable( "x" ) } ) ) );
+		kb.kb.push_back( definite_clause(
+			{
+				make_predicate( "Missile", { make_variable( "x" ) } ),
+				make_predicate( "Owns", { make_constant( "Nono" ), make_variable( "x" ) } )
+			},
+			make_predicate( "Sell", { make_constant( "West" ), make_variable( "x" ), make_constant( "Nono" ) } ) ) );
+		kb.kb.push_back( definite_clause(
+			{ make_predicate( "Enemy", { make_variable( "x" ), make_constant( "America" ) } ) },
+			make_predicate( "Hostile", { make_variable( "x" ) } ) ) );
+		kb.known_facts.push_back( make_predicate( "Owns", { make_constant( "Nono" ), make_constant( "M1" ) } ) );
+		kb.known_facts.push_back( make_predicate( "Missile", { make_constant( "M1" ) } ) );
+		kb.known_facts.push_back( make_predicate( "American", { make_constant( "West" ) } ) );
+		kb.known_facts.push_back( make_predicate( "Enemy", { make_constant( "Nono" ), make_constant( "America" ) } ) );
 		auto res = kb.backward_chaining( make_predicate( "Criminal", { make_variable( "x" ) } ) );
 		substitution expected = std::map< variable, term > { { make_variable( "x" ), make_constant( "West" ) } };
 		BOOST_CHECK( res && * res == expected );
