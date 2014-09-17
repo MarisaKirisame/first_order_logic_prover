@@ -149,6 +149,7 @@ namespace first_order_logic
 								}
 							}
 							requiring_fact.insert( std::make_pair( s, deduct_from ) );
+							progress = true;
 						}
 					};
 			try_add( sen );

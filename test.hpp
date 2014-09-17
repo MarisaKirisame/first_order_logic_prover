@@ -101,7 +101,7 @@ namespace first_order_logic
 		kb.known_facts.push_back( make_predicate( "Missile", { make_constant( "M1" ) } ) );
 		kb.known_facts.push_back( make_predicate( "American", { make_constant( "West" ) } ) );
 		kb.known_facts.push_back( make_predicate( "Enemy", { make_constant( "Nono" ), make_constant( "America" ) } ) );
-		auto res = kb.forward_chaining( make_predicate( "Criminal", { make_variable( "x" ) } ) );
+		auto res = kb.backward_chaining( make_predicate( "Criminal", { make_variable( "x" ) } ) );
 		substitution expected = std::map< variable, term > { { make_variable( "x" ), make_constant( "West" ) } };
 		BOOST_CHECK( res && * res == expected );
 	}

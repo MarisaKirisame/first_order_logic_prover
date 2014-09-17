@@ -139,6 +139,7 @@ namespace first_order_logic
 			auto it = sub.data.find( t->name );
 			if ( it != sub.data.end( ) ) { return unify( var, it->second, sub ); }
 		}
+		if ( t->term_type == term::type::variable && t->name == var.name ) { return sub; }
 		auto occur_check =
 			[&]( )
 			{
@@ -159,7 +160,7 @@ namespace first_order_logic
 						}
 						throw std::invalid_argument( "unknown enum type." );
 					};
-				return t->term_type != term::type::variable && inner( inner, var, t );
+				return var.name == t->name || inner( inner, var, t );
 			};
 		if ( ! occur_check( ) ) { return boost::optional< substitution >( ); }
 		substitution ret( sub );
@@ -267,7 +268,7 @@ namespace first_order_logic
 	void rename_variable( const variable & sen, const F & usable, const GENERATOR & gen, substitution & renamed )
 	{
 		std::string gen_str = sen.name;
-		while ( renamed.data.count( gen_str ) != 0 && ! usable( gen_str ) ) { gen_str = gen( gen_str ); }
+		while ( renamed.data.count( gen_str ) != 0 || ! usable( gen_str ) ) { gen_str = gen( gen_str ); }
 		if ( gen_str != sen.name ) { renamed.data.insert( std::make_pair( make_variable( sen.name ), make_variable( gen_str ) ) ); }
 	}
 	template< typename F, typename GENERATOR >
