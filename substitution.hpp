@@ -274,7 +274,8 @@ namespace first_order_logic
 	template< typename F, typename GENERATOR >
 	void rename_variable( const sentence & sen, const F & usable, const GENERATOR & gen, substitution & renamed )
 	{
-		std::set< variable > tem = sen.free_variables( );
+		std::set< variable > tem;
+		sen.free_variables( std::inserter( tem, tem.begin( ) ) );
 		rename_variable( tem.begin( ), tem.end( ), usable, gen, renamed );
 	}
 	template< typename INITER, typename F, typename GENERATOR >

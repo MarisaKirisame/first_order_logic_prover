@@ -57,23 +57,22 @@ namespace first_order_logic
 						1,
 						[]( size_t s, const term & t ){ return s + t.length( ); } );
 		}
-		std::set< variable > free_variables( ) const
+		template< typename OUTITER >
+		OUTITER variables( OUTITER result ) const
 		{
 			switch ( (*this)->term_type )
 			{
-			case type::variable:
-				return { term( data ) };
-			case type::constant:
-				return { };
-			case type::function:
+				case type::variable:
+					*result = variable( (*this)->name );
+					++result;
+					return result;
+				case type::constant:
+					return result;
+				case type::function:
 				{
-					std::set< variable > ret;
-					std::transform( (*this)->arguments.begin( ),
-									(*this)->arguments.end( ),
-									boost::make_function_output_iterator(
-										[&]( const std::set< variable > & s ){ ret.insert( s.begin( ), s.end( ) ); } ),
-									[&]( const term & t ){ return t.free_variables( ); } );
-					return ret;
+					for ( const term & t : (*this)->arguments )
+					{ result = t.variables( result ); }
+					return result;
 				}
 			}
 			throw std::invalid_argument( "unknown enum type" );

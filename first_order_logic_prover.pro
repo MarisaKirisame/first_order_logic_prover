@@ -20,7 +20,8 @@ HEADERS += \
     definite_clause.hpp \
     sentence.hpp \
     knowledge_base.hpp \
-    praser.hpp
+    praser.hpp \
+    function_output_iterator.h
 
 OTHER_FILES += \
     theorem_prover.pro.user \
