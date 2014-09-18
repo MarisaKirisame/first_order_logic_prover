@@ -431,6 +431,40 @@ namespace first_order_logic
 			if ( length( ) > comp.length( ) ) { return false; }
 			return static_cast< std::string >( * this ) < static_cast< std::string >( comp );
 		}
+		bool have_quantifier( ) const
+		{
+			return
+					type_restore_full
+					(
+						make_all_actor( []( const variable &, const sentence & ){ return true; } ),
+						make_some_actor( []( const variable &, const sentence & ){ return true; } ),
+						make_or_actor( []( const sentence & l, const sentence & r )
+							{ return l.have_quantifier( ) || r.have_quantifier( ); } ),
+						make_and_actor( []( const sentence & l, const sentence & r )
+							{ return l.have_quantifier( ) || r.have_quantifier( ); } ),
+						make_not_actor( []( const sentence & sen ){ return sen.have_quantifier( ); } ),
+						make_equal_actor( []( const term &, const term & ){ return false; } ),
+						make_predicate_actor( []( const std::string &, const std::vector< term > & ){ return false; } ),
+						make_propositional_letter_actor( []( const std::string & ){ return false; } )
+					);
+		}
+		bool is_in_prenex_form( ) const
+		{
+			return
+					type_restore_full
+					(
+						make_all_actor( []( const variable &, const sentence &  sen ){ return sen.is_in_prenex_form( ); } ),
+						make_some_actor( []( const variable &, const sentence & sen ){ return sen.is_in_prenex_form( ); } ),
+						make_or_actor( []( const sentence & l, const sentence & r )
+							{ return ( ! l.have_quantifier( ) ) && ( ! r.have_quantifier( ) ); } ),
+						make_and_actor( []( const sentence & l, const sentence & r )
+							{ return ( ! l.have_quantifier( ) ) && ( ! r.have_quantifier( ) ); } ),
+						make_not_actor( []( const sentence & sen ){ return ! sen.have_quantifier( ); } ),
+						make_equal_actor( []( const term &, const term & ){ return true; } ),
+						make_predicate_actor( []( const std::string &, const std::vector< term > & ){ return true; } ),
+						make_propositional_letter_actor( []( const std::string & ){ return true; } )
+					);
+		}
 	};
 }
 #endif // FIRST_ORDER_LOGIC_COMPLEX_SENTENCE_HPP
