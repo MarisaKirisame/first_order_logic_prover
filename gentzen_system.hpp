@@ -424,8 +424,10 @@ namespace first_order_logic
 				predicates( t.predicates ),
 				tg( this, 1, cv_map, functions ) { }
 			sequence( const sentence & t ) :
-				sequent( { { t, false } } ), functions( t.functions( ) ), predicates( t.predicates( ) ), tg( this, 1, cv_map, functions )
+				sequent( { { t, false } } ), tg( this, 1, cv_map, functions )
 			{
+				t.functions( std::inserter( functions, functions.begin( ) ) );
+				t.predicates( std::inserter( predicates, predicates.begin( ) ) );
 				t.cv
 				(
 					make_function_output_iterator(

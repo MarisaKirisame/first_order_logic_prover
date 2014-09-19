@@ -21,7 +21,10 @@ HEADERS += \
     sentence.hpp \
     knowledge_base.hpp \
     praser.hpp \
-    function_output_iterator.hpp
+    function_output_iterator.hpp \
+    forward/first_order_logic.hpp \
+    implementation/substitution.hpp \
+    implementation/sentence.hpp
 
 OTHER_FILES += \
     theorem_prover.pro.user \

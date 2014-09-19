@@ -76,19 +76,16 @@ namespace first_order_logic
 			}
 			throw std::invalid_argument( "unknown enum type" );
 		}
-		std::set< function > functions( ) const
+		template< typename OUTITER >
+		OUTITER functions( OUTITER result ) const
 		{
-			std::set< function > ret;
-			if ( (*this)->term_type == type::function ) { ret.insert( function( (*this)->name, (*this)->arguments.size( ) ) ); }
-			std::for_each(
-						(*this)->arguments.begin( ),
-						(*this)->arguments.end( ),
-						[&]( const term & t )
-						{
-							auto tem = t.functions( );
-							ret.insert( tem.begin( ), tem.end( ) );
-						} );
-			return ret;
+			if ( (*this)->term_type == type::function )
+			{
+				* result = function( (*this)->name, (*this)->arguments.size( ) );
+				++result;
+			}
+			for( const term & t : (*this)->arguments ) { result = t.functions( result ); }
+			return result;
 		}
 		const internal * operator -> ( ) const { return data.get( ); }
 		explicit operator std::string( ) const

@@ -2,6 +2,7 @@
 #define KNOWLEDGE_BASE_HPP
 #include <list>
 #include "definite_clause.hpp"
+#include "substitution.hpp"
 namespace first_order_logic
 {
 	struct knowledge_base

@@ -9,6 +9,7 @@
 #include "function_output_iterator.hpp"
 #include "constant.hpp"
 #include <boost/iterator/transform_iterator.hpp>
+#include "forward/first_order_logic.hpp"
 #define DEFINE_ACTOR( NAME )\
 template< typename T >\
 struct NAME ## _actor\
@@ -33,6 +34,7 @@ namespace first_order_logic
 	DEFINE_ACTOR(equal);
 	DEFINE_ACTOR(predicate);
 	DEFINE_ACTOR(propositional_letter);
+	struct substitution;
 	struct ignore
 	{
 		template< typename ... T >
@@ -141,71 +143,7 @@ namespace first_order_logic
 			}
 			throw std::invalid_argument( "unknown enum type" );
 		}
-		explicit operator std::string( ) const
-		{
-			if ( ! (*this)->cache.empty( ) ) { return (*this)->cache; }
-			(*this)->cache =
-				"(" +
-				type_restore_full
-				(
-					make_and_actor(
-						[&]( const sentence & l, const sentence & r )
-						{
-							return
-								static_cast< std::string >( l ) +
-								"/\\" +
-									static_cast< std::string >( r );
-						} ),
-					make_some_actor(
-						[&]( const variable & var, const sentence & sen )
-						{
-							return
-								"∃" +
-								var.name +
-								" " +
-								static_cast< std::string >( sen );
-						} ),
-					make_all_actor(
-						[&]( const variable & var, const sentence & sen )
-						{
-							return
-								"∀" +
-								var.name +
-								" " +
-								static_cast< std::string >( sen );
-						} ),
-					make_or_actor(
-						[&]( const sentence & l, const sentence & r )
-						{
-							return
-								static_cast< std::string >( l ) +
-								"\\/" +
-								static_cast< std::string >( r );
-						} ),
-					make_not_actor( [&]( const sentence & sen ){ return "!" + static_cast< std::string >( sen ); } ),
-					make_equal_actor(
-						[&]( const term & l, const term & r )
-						{ return static_cast< std::string >( l ) + "=" + static_cast< std::string >( r ); } ),
-					make_predicate_actor(
-						[&]( const std::string & str, const std::vector< term > & vec )
-						{
-							std::string stack;
-							auto it = vec.begin( );
-							goto http;
-							while ( it != vec.end( ) )
-							{
-								stack += ", ";
-								http://marisa.moe
-								stack += static_cast< std::string >( * it );
-								++it;
-							}
-							return str + "(" + stack + ")";
-						} ),
-					make_propositional_letter_actor( [&]( const std::string & str ){ return str; } )
-				) +
-				")";
-			return (*this)->cache;
-		}
+		explicit operator std::string( ) const;
 		sentence( type ty, const variable & l, const sentence & r ) : data( new internal( ty, l, r ) ) { }
 		template< typename ... T >
 		sentence( type ty, const T & ... t ) : data( new internal( ty, t ... ) ) { }
@@ -214,214 +152,20 @@ namespace first_order_logic
 		template< typename ... T >
 		sentence( type ty, const T & ... t, const std::initializer_list< term > & vec ) : data( new internal( ty, t ..., vec ) ) { }
 		sentence( const sentence & sen ) : data( sen.data ) { }
-		size_t length( ) const
-		{
-			return
-				type_restore_full
-				(
-					make_all_actor( []( const variable &, const sentence & s ){ return s.length( ); } ),
-					make_some_actor( []( const variable &, const sentence & s ){ return s.length( ); } ),
-					make_equal_actor( []( const term & l, const term & r ){ return l.length( ) + r.length( ); } ),
-					make_predicate_actor( []( const std::string &, const std::vector< term > & )->size_t { return 0; } ),
-					make_propositional_letter_actor( []( const std::string & )->size_t{ return 0; } ),
-					make_and_actor( []( const sentence & l, const sentence & r ){ return l.length( ) + r.length( ); } ),
-					make_or_actor( []( const sentence & l, const sentence & r ){ return l.length( ) + r.length( ); } ),
-					make_not_actor( []( const sentence & sen ){ return sen.length( ); } )
-				);
-		}
-		std::set< function > functions( ) const
-		{
-			return
-				type_restore_full
-				(
-					make_all_actor( []( const variable &, const sentence & s ){ return s.functions( ); } ),
-					make_some_actor( []( const variable &, const sentence & s ){ return s.functions( ); } ),
-					make_equal_actor(
-							[]( const term & l, const term & r )
-							{
-								auto fl = l.functions( ), fr = r.functions( );
-								std::copy( fl.begin( ), fl.end( ), std::inserter( fr, fr.begin( ) ) );
-								return fr;
-							} ),
-					make_predicate_actor(
-						[]( const std::string &, const std::vector< term > & vec )
-						{
-							std::set< function > ret;
-							for ( const term & t : vec )
-							{
-								std::set< function > tem = t.functions( );
-								std::copy( tem.begin( ), tem.end( ), std::inserter( ret, ret.begin( ) ) );
-							}
-							return ret;
-						} ),
-					make_propositional_letter_actor( []( const std::string & )->std::set< function >{ return { }; } ),
-					make_and_actor(
-							[]( const sentence & l, const sentence & r )
-							{
-								auto fl = l.functions( ), fr = r.functions( );
-								std::copy( fl.begin( ), fl.end( ), std::inserter( fr, fr.begin( ) ) );
-								return fr;
-							} ),
-					make_or_actor(
-							[]( const sentence & l, const sentence & r )
-							{
-								auto fl = l.functions( ), fr = r.functions( );
-								std::copy( fl.begin( ), fl.end( ), std::inserter( fr, fr.begin( ) ) );
-								return fr;
-							} ),
-					make_not_actor( []( const sentence & sen ){ return sen.functions( ); } )
-				);
-		}
-		std::set< predicate > predicates( ) const
-		{
-			return
-				type_restore_full
-				(
-					make_all_actor( []( const variable &, const sentence & s ){ return s.predicates( ); } ),
-					make_some_actor( []( const variable &, const sentence & s ){ return s.predicates( ); } ),
-					make_equal_actor( []( const term &, const term & )->std::set< predicate > { return { }; } ),
-					make_predicate_actor(
-						[]( const std::string & str, const std::vector< term > & vec )->std::set< predicate >
-						{ return { predicate( str, vec.size( ) ) }; } ),
-					make_propositional_letter_actor( []( const std::string & )->std::set< predicate >{ return { }; } ),
-					make_and_actor(
-						[]( const sentence & l, const sentence & r )
-						{
-							auto fl = l.predicates( ), fr = r.predicates( );
-							std::copy( fl.begin( ), fl.end( ), std::inserter( fr, fr.begin( ) ) );
-							return fr;
-						} ),
-					make_or_actor(
-						[]( const sentence & l, const sentence & r )
-						{
-							auto fl = l.predicates( ), fr = r.predicates( );
-							std::copy( fl.begin( ), fl.end( ), std::inserter( fr, fr.begin( ) ) );
-							return fr;
-						} ),
-					make_not_actor( []( const sentence & sen ){ return sen.predicates( ); } )
-				);
-		}
+		size_t length( ) const;
 		template< typename OUTITER >
-		OUTITER variables( OUTITER result ) const
-		{
-			type_restore_full
-			(
-				make_all_actor(
-					[&]( const variable & var, const sentence & s )
-					{
-						*result = var;
-						++result;
-						result = s.variables( result );
-					} ),
-					make_some_actor(
-					[&]( const variable & var, const sentence & s )
-					{
-						*result = var;
-						++result;
-						result = s.variables( result );
-					} ),
-					make_equal_actor( [&]( const term & l, const term & r ) { result = l.variables( r.variables( result ) ); } ),
-					make_predicate_actor(
-						[&]( const std::string &, const std::vector< term > & vec )
-						{ for ( const term & t : vec ) { result = t.variables( result ); } } ),
-					make_propositional_letter_actor( []( const std::string & ){ } ),
-					make_and_actor(
-						[&]( const sentence & l, const sentence & r ) { result = l.variables( r.variables( result ) ); } ),
-					make_or_actor(
-						[&]( const sentence & l, const sentence & r ) { result = l.variables( r.variables( result ) ); } ),
-					make_not_actor( [&]( const sentence & sen ){ result = sen.variables( result ); } )
-				);
-			return result;
-		}
+		OUTITER functions( OUTITER result ) const;
 		template< typename OUTITER >
-		OUTITER bounded_variables( OUTITER result ) const
-		{
-			type_restore_full
-			(
-				make_all_actor(
-					[&]( const variable & var, const sentence & s )
-					{
-						*result = var;
-						++result;
-						result = s.bounded_variables( result );
-					} ),
-					make_some_actor(
-					[&]( const variable & var, const sentence & s )
-					{
-						*result = var;
-						++result;
-						result = s.bounded_variables( result );
-					} ),
-					make_equal_actor( [&]( const term &, const term & ) { } ),
-					make_predicate_actor(
-						[&]( const std::string &, const std::vector< term > & vec )
-						{ for ( const term & t : vec ) { result = t.variables( result ); } } ),
-					make_propositional_letter_actor( []( const std::string & ){ } ),
-					make_and_actor(
-						[&]( const sentence & l, const sentence & r )
-						{ result = l.bounded_variables( r.bounded_variables( result ) ); } ),
-					make_or_actor(
-						[&]( const sentence & l, const sentence & r )
-						{ result = l.bounded_variables( r.bounded_variables( result ) ); } ),
-					make_not_actor( [&]( const sentence & sen ){ result = sen.bounded_variables( result ); } )
-				);
-			return result;
-		}
+		OUTITER predicates( OUTITER result ) const;
 		template< typename OUTITER >
-		OUTITER free_variables( OUTITER result ) const
-		{
-			std::set< variable > bounded;
-			bounded_variables( std::inserter( bounded, bounded.begin( ) ) );
-			variables(
-				make_function_output_iterator(
-					[&]( const variable & v )
-					{
-						if ( bounded.count( v ) != 0 )
-						{
-							*result = v;
-							++result;
-						}
-					} ) );
-			return result;
-		}
-		bool have_equal( ) const
-		{
-			return
-				type_restore_full
-				(
-					make_all_actor( [&]( const variable &, const sentence & s ) { return s.have_equal( ); } ),
-					make_some_actor( [&]( const variable &, const sentence & s ) { return s.have_equal( ); } ),
-					make_equal_actor( [&]( const term &, const term & ) { return true; } ),
-					make_predicate_actor( [&]( const std::string &, const std::vector< term > & ){ return false; } ),
-					make_propositional_letter_actor( []( const std::string & ) { return false; } ),
-					make_and_actor( [&]( const sentence & l, const sentence & r ) { return l.have_equal( ) || r.have_equal( ); } ),
-					make_or_actor( [&]( const sentence & l, const sentence & r ) { return l.have_equal( ) || r.have_equal( ); } ),
-					make_not_actor( [&]( const sentence & sen ){ return sen.have_equal( ); } )
-				);
-		}
+		OUTITER variables( OUTITER result ) const;
 		template< typename OUTITER >
-		OUTITER constants( OUTITER result ) const
-		{
-			return
-				type_restore_full
-				(
-					make_all_actor( [&]( const variable &, const sentence & s ) { return s.constants( result ); } ),
-					make_some_actor( [&]( const variable &, const sentence & s ) { return s.constants( result ); } ),
-					make_equal_actor( [&]( const term & l, const term & r ) { return l.constants( r.constants( result ) ); } ),
-					make_predicate_actor(
-						[&]( const std::string &, const std::vector< term > & vec )
-						{
-							for ( const term & t : vec ) { result = t.constants( result ); }
-							return result;
-						} ),
-					make_propositional_letter_actor( [&]( const std::string & ) { return result; } ),
-					make_and_actor(
-						[&]( const sentence & l, const sentence & r ) { return l.constants( r.constants( result ) ); } ),
-					make_or_actor(
-						[&]( const sentence & l, const sentence & r ) { return l.constants( r.constants( result ) ); } ),
-					make_not_actor( [&]( const sentence & sen ){ return sen.constants( result ); } )
-				);
-		}
+		OUTITER bounded_variables( OUTITER result ) const;
+		template< typename OUTITER >
+		OUTITER free_variables( OUTITER result ) const;
+		bool have_equal( ) const;
+		template< typename OUTITER >
+		OUTITER constants( OUTITER result ) const;
 		template< typename OUTITER >
 		OUTITER cv( OUTITER result ) const
 		{
@@ -434,40 +178,20 @@ namespace first_order_logic
 			if ( length( ) > comp.length( ) ) { return false; }
 			return static_cast< std::string >( * this ) < static_cast< std::string >( comp );
 		}
-		bool have_quantifier( ) const
+		bool have_quantifier( ) const;
+		bool is_in_prenex_form( ) const;
+		sentence standardize_bound_variable( ) const
 		{
-			return
-					type_restore_full
-					(
-						make_all_actor( []( const variable &, const sentence & ){ return true; } ),
-						make_some_actor( []( const variable &, const sentence & ){ return true; } ),
-						make_or_actor( []( const sentence & l, const sentence & r )
-							{ return l.have_quantifier( ) || r.have_quantifier( ); } ),
-						make_and_actor( []( const sentence & l, const sentence & r )
-							{ return l.have_quantifier( ) || r.have_quantifier( ); } ),
-						make_not_actor( []( const sentence & sen ){ return sen.have_quantifier( ); } ),
-						make_equal_actor( []( const term &, const term & ){ return false; } ),
-						make_predicate_actor( []( const std::string &, const std::vector< term > & ){ return false; } ),
-						make_propositional_letter_actor( []( const std::string & ){ return false; } )
-					);
+			std::set< std::string > term_map;
+			cv( make_function_output_iterator(
+					[&]( const term & t )
+					{
+						assert( t->term_type == term::type::constant || t->term_type == term::type::variable );
+						term_map.insert( t->name );
+					} ) );
+			return standardize_bound_variable( term_map );
 		}
-		bool is_in_prenex_form( ) const
-		{
-			return
-					type_restore_full
-					(
-						make_all_actor( []( const variable &, const sentence &  sen ){ return sen.is_in_prenex_form( ); } ),
-						make_some_actor( []( const variable &, const sentence & sen ){ return sen.is_in_prenex_form( ); } ),
-						make_or_actor( []( const sentence & l, const sentence & r )
-							{ return ( ! l.have_quantifier( ) ) && ( ! r.have_quantifier( ) ); } ),
-						make_and_actor( []( const sentence & l, const sentence & r )
-							{ return ( ! l.have_quantifier( ) ) && ( ! r.have_quantifier( ) ); } ),
-						make_not_actor( []( const sentence & sen ){ return ! sen.have_quantifier( ); } ),
-						make_equal_actor( []( const term &, const term & ){ return true; } ),
-						make_predicate_actor( []( const std::string &, const std::vector< term > & ){ return true; } ),
-						make_propositional_letter_actor( []( const std::string & ){ return true; } )
-					);
-		}
+		sentence standardize_bound_variable( std::set< std::string > & term_map ) const;
 	};
 }
 #endif // FIRST_ORDER_LOGIC_COMPLEX_SENTENCE_HPP
