@@ -384,8 +384,8 @@ namespace first_order_logic
 								{
 									sentence ret;
 									ss.type_restore(
-										make_all_actor( [&]( const variable & v, const sentence & sss ) { ret = make_all( v, make_not( sss ) ); } ),
-										make_some_actor( [&]( const variable & v, const sentence & sss ) { ret = make_some( v, make_not( sss ) ); } ) );
+										make_all_actor( [&]( const variable & v, const sentence & sss ) { ret = make_some( v, sss ); } ),
+										make_some_actor( [&]( const variable & v, const sentence & sss ) { ret = make_all( v, sss ); } ) );
 									assert( ret.data );
 									return ret.move_quantifier_out( );
 								}
