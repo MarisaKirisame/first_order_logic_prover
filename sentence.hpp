@@ -152,6 +152,7 @@ namespace first_order_logic
 		template< typename ... T >
 		sentence( type ty, const T & ... t, const std::initializer_list< term > & vec ) : data( new internal( ty, t ..., vec ) ) { }
 		sentence( const sentence & sen ) : data( sen.data ) { }
+		sentence( ) { }
 		size_t length( ) const;
 		template< typename OUTITER >
 		OUTITER functions( OUTITER result ) const;
@@ -192,6 +193,7 @@ namespace first_order_logic
 			return standardize_bound_variable( term_map );
 		}
 		sentence standardize_bound_variable( std::set< std::string > & term_map ) const;
+		sentence move_quantifier_out( ) const;
 	};
 }
 #endif // FIRST_ORDER_LOGIC_COMPLEX_SENTENCE_HPP

@@ -317,5 +317,81 @@ namespace first_order_logic
 					make_propositional_letter_actor( []( const std::string & ){ return true; } )
 				);
 	}
+	sentence sentence::move_quantifier_out( ) const
+	{
+		return type_restore_full
+				(
+					make_all_actor( [&]( const variable & v, const sentence & s ) { return make_all( v, s.move_quantifier_out( ) ); } ),
+					make_some_actor( [&]( const variable & v, const sentence & s ) { return make_some( v, s.move_quantifier_out( ) ); } ),
+					make_equal_actor( [&]( const term & l, const term & r ) { return make_equal( l, r ); } ),
+					make_predicate_actor( [&]( const std::string & str, const std::vector< term > & vec ) { return make_predicate( str, vec ); } ),
+					make_propositional_letter_actor( [&]( const std::string & str ) { return make_propositional_letter( str ); } ),
+					make_and_actor(
+						[&]( const sentence & l, const sentence & r )
+						{
+							sentence ll = l.move_quantifier_out( );
+							if ( ll->sentence_type == sentence::type::all || ll->sentence_type == sentence::type::some )
+							{
+								sentence ret;
+								ll.type_restore(
+									make_all_actor( [&]( const variable & v, const sentence & sen ) { ret = make_all( v, make_and( sen, r ) ); } ),
+									make_some_actor( [&]( const variable & v, const sentence & sen ) { ret = make_some( v, make_and( sen, r ) ); } ) );
+								assert( ret.data );
+								return ret.move_quantifier_out( );
+							}
+							sentence rr = r.move_quantifier_out( );
+							if ( rr->sentence_type == sentence::type::all || rr->sentence_type == sentence::type::some )
+							{
+								sentence ret;
+								rr.type_restore(
+									make_all_actor( [&]( const variable & v, const sentence & sen ) { ret = make_all( v, make_and( l, sen ) ); } ),
+									make_some_actor( [&]( const variable & v, const sentence & sen ) { ret = make_some( v, make_and( l, sen ) ); } ) );
+								assert( ret.data );
+								return ret.move_quantifier_out( );
+							}
+							return make_and( l, r );
+						} ),
+					make_or_actor(
+						[&]( const sentence & l, const sentence & r )
+						{
+							sentence ll = l.move_quantifier_out( );
+							if ( ll->sentence_type == sentence::type::all || ll->sentence_type == sentence::type::some )
+							{
+								sentence ret;
+								ll.type_restore(
+									make_all_actor( [&]( const variable & v, const sentence & sen ) { ret = make_all( v, make_or( sen, r ) ); } ),
+									make_some_actor( [&]( const variable & v, const sentence & sen ) { ret = make_some( v, make_or( sen, r ) ); } ) );
+								assert( ret.data );
+								return ret.move_quantifier_out( );
+							}
+							sentence rr = r.move_quantifier_out( );
+							if ( rr->sentence_type == sentence::type::all || rr->sentence_type == sentence::type::some )
+							{
+								sentence ret;
+									rr.type_restore(
+									make_all_actor( [&]( const variable & v, const sentence & sen ) { ret = make_all( v, make_or( l, sen ) ); } ),
+									make_some_actor( [&]( const variable & v, const sentence & sen ) { ret = make_some( v, make_or( l, sen ) ); } ) );
+								assert( ret.data );
+								return ret.move_quantifier_out( );
+							}
+							return make_or( l, r );
+						} ),
+						make_not_actor(
+							[&]( const sentence & sen )
+							{
+								sentence ss = sen.move_quantifier_out( );
+								if ( ss->sentence_type == sentence::type::all || ss->sentence_type == sentence::type::some )
+								{
+									sentence ret;
+									ss.type_restore(
+										make_all_actor( [&]( const variable & v, const sentence & sss ) { ret = make_all( v, make_not( sss ) ); } ),
+										make_some_actor( [&]( const variable & v, const sentence & sss ) { ret = make_some( v, make_not( sss ) ); } ) );
+									assert( ret.data );
+									return ret.move_quantifier_out( );
+								}
+								return make_not( sen );
+							} )
+				);
+	}
 }
 #endif // IMPLEMENTATION_SENTENCE_HPP
