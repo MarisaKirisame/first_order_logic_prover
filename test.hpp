@@ -4,7 +4,6 @@
 #define BOOST_TEST_DYN_LINK
 #include <boost/test/unit_test.hpp>
 #include "first_order_logic.hpp"
-//#include "praser.hpp"
 #include "gentzen_system.hpp"
 #include "substitution.hpp"
 #include "definite_clause.hpp"
@@ -14,12 +13,12 @@ namespace first_order_logic
 	BOOST_AUTO_TEST_CASE( gentzen_system_test )
 	{
 		auto fol = make_imply(
-								 make_all( "x", make_predicate( "F", { make_variable( "x" ) } ) ),
-								 make_all( "x", make_predicate( "F", { make_function( "f", { make_variable( "x" ) } ) } ) ) );
+								 make_all( variable( "x" ), make_predicate( "F", { make_variable( "x" ) } ) ),
+								 make_all( variable( "x" ), make_predicate( "F", { make_function( "f", { make_variable( "x" ) } ) } ) ) );
 		auto fol2 = make_imply(
 									make_some
 									(
-										"x",
+										variable( "x" ),
 										make_imply
 										(
 											make_propositional_letter( "p" ),
@@ -31,7 +30,7 @@ namespace first_order_logic
 										make_propositional_letter( "p" ),
 										make_some
 										(
-											"z",
+											variable( "z" ),
 											make_predicate( "Q", { make_variable( "z" ) } )
 										)
 									)
@@ -43,10 +42,10 @@ namespace first_order_logic
 					(
 						make_all
 						(
-							"x",
+							variable( "x" ),
 							make_predicate( "P", { make_variable( "x" ) } )
 						),
-						make_some( "y", make_predicate( "Q", { make_variable( "y" ) } ) )
+						make_some( variable( "y" ), make_predicate( "Q", { make_variable( "y" ) } ) )
 					),
 					make_and
 					(
@@ -55,7 +54,7 @@ namespace first_order_logic
 							"P",
 							{ make_function( "F",  { make_variable( "v" ) } ) }
 						),
-						make_some( "z", make_predicate( "Q", { make_variable( "z" ) } ) )
+						make_some( variable( "z" ), make_predicate( "Q", { make_variable( "z" ) } ) )
 					)
 				);
 		auto fol4 =
@@ -102,7 +101,7 @@ namespace first_order_logic
 		kb.known_facts.push_back( make_predicate( "American", { make_constant( "West" ) } ) );
 		kb.known_facts.push_back( make_predicate( "Enemy", { make_constant( "Nono" ), make_constant( "America" ) } ) );
 		auto res = kb.forward_chaining( make_predicate( "Criminal", { make_variable( "x" ) } ) );
-		substitution expected = std::map< variable, term > { { make_variable( "x" ), make_constant( "West" ) } };
+		substitution expected = std::map< variable, term > { { variable( "x" ), make_constant( "West" ) } };
 		BOOST_CHECK( res && * res == expected );
 	}
 	BOOST_AUTO_TEST_CASE( backward_chaning_algorithm )
@@ -133,7 +132,7 @@ namespace first_order_logic
 		kb.known_facts.push_back( make_predicate( "American", { make_constant( "West" ) } ) );
 		kb.known_facts.push_back( make_predicate( "Enemy", { make_constant( "Nono" ), make_constant( "America" ) } ) );
 		auto res = kb.backward_chaining( make_predicate( "Criminal", { make_variable( "x" ) } ) );
-		substitution expected = std::map< variable, term > { { make_variable( "x" ), make_constant( "West" ) } };
+		substitution expected = std::map< variable, term > { { variable( "x" ), make_constant( "West" ) } };
 		BOOST_CHECK( res && * res == expected );
 	}
 }

@@ -6,8 +6,9 @@
 #include <boost/variant.hpp>
 #include "proof_tree.hpp"
 #include <boost/mpl/bool.hpp>
-#include "function_output_iterator.h"
+#include "function_output_iterator.hpp"
 #include "constant.hpp"
+#include <boost/iterator/transform_iterator.hpp>
 #define DEFINE_ACTOR( NAME )\
 template< typename T >\
 struct NAME ## _actor\
@@ -398,56 +399,34 @@ namespace first_order_logic
 					make_not_actor( [&]( const sentence & sen ){ return sen.have_equal( ); } )
 				);
 		}
-		std::set< constant > constants( ) const
+		template< typename OUTITER >
+		OUTITER constants( OUTITER result ) const
 		{
 			return
 				type_restore_full
 				(
-					make_all_actor( [&]( const variable &, const sentence & s ) { return s.constants( ); } ),
-					make_some_actor( [&]( const variable &, const sentence & s ) { return s.constants( ); } ),
-					make_equal_actor(
-						[&]( const term & l, const term & r )
-						{
-							auto fl = l.constants( ), fr = r.constants( );
-							std::copy( fl.begin( ), fl.end( ), std::inserter( fr, fr.begin( ) ) );
-							return fr;
-						} ),
+					make_all_actor( [&]( const variable &, const sentence & s ) { return s.constants( result ); } ),
+					make_some_actor( [&]( const variable &, const sentence & s ) { return s.constants( result ); } ),
+					make_equal_actor( [&]( const term & l, const term & r ) { return l.constants( r.constants( result ) ); } ),
 					make_predicate_actor(
 						[&]( const std::string &, const std::vector< term > & vec )
 						{
-							std::set< constant > ret;
-							for ( const term & t : vec )
-							{
-								std::set< constant > tem = t.constants( );
-								std::copy( tem.begin( ), tem.end( ), std::inserter( ret, ret.begin( ) ) );
-							}
-							return ret;
+							for ( const term & t : vec ) { result = t.constants( result ); }
+							return result;
 						} ),
-					make_propositional_letter_actor( []( const std::string & )->std::set< constant >{ return { }; } ),
+					make_propositional_letter_actor( [&]( const std::string & ) { return result; } ),
 					make_and_actor(
-						[&]( const sentence & l, const sentence & r )
-						{
-							auto fl = l.constants( ), fr = r.constants( );
-							std::copy( fl.begin( ), fl.end( ), std::inserter( fr, fr.begin( ) ) );
-							return fr;
-						} ),
+						[&]( const sentence & l, const sentence & r ) { return l.constants( r.constants( result ) ); } ),
 					make_or_actor(
-						[&]( const sentence & l, const sentence & r )
-						{
-							auto fl = l.constants( ), fr = r.constants( );
-							std::copy( fl.begin( ), fl.end( ), std::inserter( fr, fr.begin( ) ) );
-							return fr;
-						} ),
-					make_not_actor( [&]( const sentence & sen ){ return sen.constants( ); } )
+						[&]( const sentence & l, const sentence & r ) { return l.constants( r.constants( result ) ); } ),
+					make_not_actor( [&]( const sentence & sen ){ return sen.constants( result ); } )
 				);
 		}
-		std::set< term > cv( ) const
+		template< typename OUTITER >
+		OUTITER cv( OUTITER result ) const
 		{
-			auto c = constants( );
-			std::set< term > ret;
-			free_variables( make_function_output_iterator( [&]( const variable & v ) { ret.insert( term( v ) ); } ) );
-			std::transform( c.begin( ), c.end( ), std::inserter( ret, ret.begin( ) ), []( const constant & co ){ return term( co ); } );
-			return ret;
+			free_variables( constants( make_function_output_iterator( [&]( const auto & v ) { *result = term( v ); ++result; } ) ) );
+			return result;
 		}
 		bool operator < ( const sentence & comp ) const
 		{

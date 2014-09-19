@@ -21,7 +21,7 @@ HEADERS += \
     sentence.hpp \
     knowledge_base.hpp \
     praser.hpp \
-    function_output_iterator.h
+    function_output_iterator.hpp
 
 OTHER_FILES += \
     theorem_prover.pro.user \

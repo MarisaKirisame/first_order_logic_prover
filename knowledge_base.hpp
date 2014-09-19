@@ -25,14 +25,7 @@ namespace first_order_logic
 			std::set< std::string > ret;
 			auto extract =
 					[&]( const sentence & s )
-					{
-						std::set< term > v = s.cv( );
-						std::transform(
-									v.begin( ),
-									v.end( ),
-									std::inserter( ret, ret.begin( ) ),
-									[]( const term & t ){ return t->name; } );
-					};
+					{ s.cv( make_function_output_iterator( [&]( const term & t ){ ret.insert( t->name ); } ) ); };
 			for ( const definite_clause & dc : kb )
 			{
 				std::for_each( dc.premise.begin( ), dc.premise.end( ), extract );
@@ -59,7 +52,7 @@ namespace first_order_logic
 							this->matching_facts(
 								rename( premise[ gp.size( ) ] ),
 								sub,
-								boost::make_function_output_iterator(
+								make_function_output_iterator(
 									[&]( const std::pair< sentence, substitution > & p )
 									{
 										if ( ( new_known_facts.empty( ) ) || ( ! unify( new_known_facts.back( ), query ) ) )

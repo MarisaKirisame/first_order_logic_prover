@@ -269,7 +269,11 @@ namespace first_order_logic
 	{
 		std::string gen_str = sen.name;
 		while ( renamed.data.count( gen_str ) != 0 || ! usable( gen_str ) ) { gen_str = gen( gen_str ); }
-		if ( gen_str != sen.name ) { renamed.data.insert( std::make_pair( make_variable( sen.name ), make_variable( gen_str ) ) ); }
+		if ( gen_str != sen.name )
+		{
+			renamed.data.insert( std::make_pair(
+									 variable( sen.name ),
+									 make_variable( gen_str ) ) ); }
 	}
 	template< typename F, typename GENERATOR >
 	void rename_variable( const sentence & sen, const F & usable, const GENERATOR & gen, substitution & renamed )

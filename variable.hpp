@@ -9,8 +9,8 @@ namespace first_order_logic
 		std::string name;
 		variable( const std::string & str ) : name( str ) { }
 		template< typename T >
-		variable( const T & t ) : name( t ) { }
-		variable( ) { }
+		explicit variable( const T & t ) : name( t ) { }
+		explicit variable( ) { }
 		explicit operator std::string( ) const { return name; }
 		bool operator < ( const variable & comp ) const { return name < comp.name; }
 		bool operator != ( const variable & comp ) const { return name != comp.name; }

@@ -69,16 +69,16 @@ namespace first_order_logic
 						sequent,
 						make_all
 						(
-							"s",
+							variable( "s" ),
 							make_all
 							(
-								"t",
+								variable( "t" ),
 								make_imply
 								(
 									make_equal( make_variable( "s" ), make_variable( "t" ) ),
 									make_equal
 									(
-										make_function( f.name, { make_variable( "s" ) } ),
+										make_function( f.name, { make_variable( std::string( "s" ) ) } ),
 										make_function( f.name, { make_variable( "t" ) } )
 									)
 								)
@@ -117,10 +117,10 @@ namespace first_order_logic
 						sequent,
 						make_all
 						(
-							"s",
+							variable( "s" ),
 							make_all
 							(
-								"t",
+								variable( "t" ),
 								make_imply
 								(
 									make_and
@@ -154,14 +154,14 @@ namespace first_order_logic
 			}
 			void add_equal_generator( )
 			{
-				try_insert( sequent, make_all( "t", make_equal( make_variable( "t" ), make_variable( "t" ) ) ), true );
+				try_insert( sequent, make_all( variable( "t" ), make_equal( make_variable( "t" ), make_variable( "t" ) ) ), true );
 				try_insert( sequent,
 							make_all
 							(
-								"x",
+								variable( "x" ),
 								make_all
 								(
-									"y",
+									variable( "y" ),
 									make_imply
 									(
 										make_equal( make_variable( "x" ), make_variable( "y" ) ),
@@ -172,16 +172,16 @@ namespace first_order_logic
 				try_insert( sequent,
 							make_all
 							(
-								"s1",
+								variable( "s1" ),
 								make_all
 								(
-									"t1",
+									variable( "t1" ),
 									make_all
 									(
-										"s2",
+										variable( "s2" ),
 										make_all
 										(
-											"t2",
+											variable( "t2" ),
 											make_imply
 											(
 												make_and
@@ -426,12 +426,11 @@ namespace first_order_logic
 			sequence( const sentence & t ) :
 				sequent( { { t, false } } ), functions( t.functions( ) ), predicates( t.predicates( ) ), tg( this, 1, cv_map, functions )
 			{
-				const auto cv = t.cv( );
-				std::transform(
-							cv.begin( ),
-							cv.end( ),
-							std::inserter( cv_map, cv_map.begin( ) ),
-							[]( const term & s ){ return std::make_pair( s, std::set< sentence >( ) ); } );
+				t.cv
+				(
+					make_function_output_iterator(
+						[&]( const term & t ){ cv_map.insert( std::make_pair( t, std::set< sentence >( ) ) ); } )
+				);
 				term_map = cv_map;
 				if ( cv_map.empty( ) ) { new_variable( ); }
 				if ( t.have_equal( ) ) { add_equal_generator( ); }

@@ -1,7 +1,7 @@
 #ifndef TERM_HPP
 #define TERM_HPP
 #include <cassert>
-#include "boost/function_output_iterator.hpp"
+#include "function_output_iterator.hpp"
 #include "function.hpp"
 #include <vector>
 #include <memory>
@@ -27,22 +27,21 @@ namespace first_order_logic
 		term( type term_type, const std::string & name, const std::vector< term > & arguments ) :
 			data( new internal( term_type, name, arguments ) ) { }
 		term( const std::shared_ptr< internal > & data ) : data( data ) { }
-		std::set< constant > constants( ) const
+		template< typename OUTITER >
+		OUTITER constants( OUTITER result ) const
 		{
 			switch ( (*this)->term_type )
 			{
-			case type::variable:
-				return { };
-			case type::constant:
-				return { term( data ) };
-			case type::function:
+				case type::variable:
+					return result;
+				case type::constant:
+					*result = constant( (*this)->name );
+					++result;
+					return result;
+				case type::function:
 				{
-					std::set< constant > ret;
-					std::transform( (*this)->arguments.begin( ),
-									(*this)->arguments.end( ),
-									boost::make_function_output_iterator( [&]( const std::set< constant > & s ){ ret.insert( s.begin( ), s.end( ) ); } ),
-									[&]( const term & t ){ return t.constants( ); } );
-					return ret;
+					for ( const term & t : (*this)->arguments ) { result = t.constants( result ); }
+					return result;
 				}
 			}
 			throw std::invalid_argument( "unknown enum type" );
@@ -129,7 +128,7 @@ namespace first_order_logic
 					std::set< term > ret;
 					std::transform( (*this)->arguments.begin( ),
 									(*this)->arguments.end( ),
-									boost::make_function_output_iterator(
+									make_function_output_iterator(
 										[&]( const std::set< term > & s ){ ret.insert( s.begin( ), s.end( ) ); } ),
 									[&]( const term & t ){ return t.cv( ); } );
 					return ret;

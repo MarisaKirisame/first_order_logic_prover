@@ -4,7 +4,7 @@
 namespace first_order_logic
 {
 	template< typename T >
-	struct function_output_iterator
+	struct function_output_iterator : std::iterator< std::output_iterator_tag, T >
 	{
 		explicit function_output_iterator( ) { }
 		explicit function_output_iterator( const T & f ) : f( std::shared_ptr< T >( new T( f ) ) ) {}
@@ -12,7 +12,7 @@ namespace first_order_logic
 		{
 			proxy( std::shared_ptr< T > & f ) : f( f ) { }
 			template< typename V >
-			proxy & operator=( const V & value )
+			proxy & operator = ( const V & value )
 			{
 				(*f)(value);
 				return *this;
