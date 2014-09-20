@@ -21,4 +21,5 @@ namespace first_order_logic
 	sentence make_some( const variable & l, const sentence & r );
 	sentence make_equal( const term & l, const term & r );
 }
+#include "../first_order_logic.hpp"
 #endif // FORWARD_FIRST_ORDER_LOGIC_H

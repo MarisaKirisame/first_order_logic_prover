@@ -4,7 +4,7 @@
 #include "substitution.hpp"
 namespace first_order_logic
 {
-	sentence sentence::standardize_bound_variable( std::set< std::string > & term_map ) const
+	inline sentence sentence::standardize_bound_variable( std::set< std::string > & term_map ) const
 	{
 		return
 				type_restore_full
@@ -48,7 +48,7 @@ namespace first_order_logic
 						( [&]( const sentence & s ){ return make_not( s.standardize_bound_variable( term_map ) ); } )
 				);
 	}
-	sentence::operator std::string( ) const
+	inline sentence::operator std::string( ) const
 	{
 		if ( ! (*this)->cache.empty( ) ) { return (*this)->cache; }
 		(*this)->cache =
@@ -111,7 +111,7 @@ namespace first_order_logic
 				")";
 		return (*this)->cache;
 	}
-	size_t sentence::length( ) const
+	inline size_t sentence::length( ) const
 	{
 		return
 			type_restore_full
@@ -246,7 +246,7 @@ namespace first_order_logic
 				} ) );
 		return result;
 	}
-	bool sentence::have_equal( ) const
+	inline bool sentence::have_equal( ) const
 	{
 		return
 			type_restore_full
@@ -284,7 +284,7 @@ namespace first_order_logic
 				make_not_actor( [&]( const sentence & sen ){ return sen.constants( result ); } )
 			);
 	}
-	bool sentence::have_quantifier( ) const
+	inline bool sentence::have_quantifier( ) const
 	{
 		return
 				type_restore_full
@@ -301,7 +301,7 @@ namespace first_order_logic
 					make_propositional_letter_actor( []( const std::string & ){ return false; } )
 				);
 	}
-	bool sentence::is_in_prenex_form( ) const
+	inline bool sentence::is_in_prenex_form( ) const
 	{
 		return
 				type_restore_full
@@ -318,7 +318,7 @@ namespace first_order_logic
 					make_propositional_letter_actor( []( const std::string & ){ return true; } )
 				);
 	}
-	sentence sentence::move_quantifier_out( ) const
+	inline sentence sentence::move_quantifier_out( ) const
 	{
 		return type_restore_full
 				(

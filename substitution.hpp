@@ -39,4 +39,5 @@ namespace first_order_logic
 	template< typename ... T >
 	substitution rename_variable( const T & ... );
 }
+#include "implementation/sentence.hpp"
 #endif // SUBSTITUTION_HPP

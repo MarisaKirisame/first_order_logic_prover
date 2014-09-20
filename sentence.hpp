@@ -9,7 +9,6 @@
 #include "function_output_iterator.hpp"
 #include "constant.hpp"
 #include <boost/iterator/transform_iterator.hpp>
-#include "forward/first_order_logic.hpp"
 #define DEFINE_ACTOR( NAME )\
 template< typename T >\
 struct NAME ## _actor\
@@ -196,4 +195,5 @@ namespace first_order_logic
 		sentence move_quantifier_out( ) const;
 	};
 }
+#include "implementation/sentence.hpp"
 #endif // FIRST_ORDER_LOGIC_COMPLEX_SENTENCE_HPP

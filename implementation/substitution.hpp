@@ -3,7 +3,7 @@
 #include "../substitution.hpp"
 namespace first_order_logic
 {
-	term substitution::operator ( )( const term & t ) const
+	inline term substitution::operator ( )( const term & t ) const
 	{
 		switch ( t->term_type )
 		{
@@ -25,9 +25,9 @@ namespace first_order_logic
 				return make_function( t->name, tem );
 			}
 		}
-	throw std::invalid_argument( "unknown enum type" );
+		throw std::invalid_argument( "unknown enum type" );
 	}
-	sentence substitution::operator ( )( const sentence & s ) const
+	inline sentence substitution::operator ( )( const sentence & s ) const
 	{
 		sentence ret =
 			s.type_restore_full
@@ -64,7 +64,7 @@ namespace first_order_logic
 		assert( ret.data );
 		return ret;
 	}
-	bool substitution::coherent( const substitution & comp ) const
+	inline bool substitution::coherent( const substitution & comp ) const
 	{
 		return std::any_of(
 					comp.data.begin( ),
@@ -75,7 +75,7 @@ namespace first_order_logic
 			return it == data.end( ) && it->second == p.second;
 		} );
 	}
-	boost::optional< substitution > substitution::join( const substitution & l, const substitution & r )
+	inline boost::optional< substitution > substitution::join( const substitution & l, const substitution & r )
 	{
 		if ( l.data.size( ) > r.data.size( ) ) { return join( r, l ); }
 		substitution ret( r );
@@ -86,7 +86,7 @@ namespace first_order_logic
 		}
 		return ret;
 	}
-	boost::optional< substitution > unify( const std::vector< term > & p, const std::vector< term > & q, const substitution & sub )
+	inline boost::optional< substitution > unify( const std::vector< term > & p, const std::vector< term > & q, const substitution & sub )
 	{
 		substitution ret( sub );
 		assert( p.size( ) == q.size( ) );
@@ -98,7 +98,7 @@ namespace first_order_logic
 		}
 		return ret;
 	}
-	boost::optional< substitution > unify( const term & p, const term & q, const substitution & sub )
+	inline boost::optional< substitution > unify( const term & p, const term & q, const substitution & sub )
 	{
 		if ( p->term_type != term::type::variable && q->term_type == term::type::variable ) { return unify( q, p, sub ); }
 		switch ( p->term_type )
@@ -113,7 +113,7 @@ namespace first_order_logic
 		}
 		throw std::invalid_argument( "unknown enum type." );
 	}
-	boost::optional< substitution > unify( const variable & var, const term & t, const substitution & sub )
+	inline boost::optional< substitution > unify( const variable & var, const term & t, const substitution & sub )
 	{
 		{
 			auto it = sub.data.find( var );
@@ -153,7 +153,7 @@ namespace first_order_logic
 		auto it = ret.data.insert( { var, t } );
 		return it.first->second == t ? ret : boost::optional< substitution >( );
 	}
-	boost::optional< substitution > unify( const sentence & p, const sentence & q, const substitution & sub )
+	inline boost::optional< substitution > unify( const sentence & p, const sentence & q, const substitution & sub )
 	{
 		if ( p->sentence_type != q->sentence_type || p->name != q->name ) { return boost::optional< substitution >( ); }
 		return p.type_restore_full(
