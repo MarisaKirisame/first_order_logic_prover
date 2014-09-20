@@ -1,6 +1,7 @@
 #ifndef IMPLEMENTATION_SENTENCE_HPP
 #define IMPLEMENTATION_SENTENCE_HPP
 #include "../sentence.hpp"
+#include "substitution.hpp"
 namespace first_order_logic
 {
 	sentence sentence::standardize_bound_variable( std::set< std::string > & term_map ) const

@@ -11,7 +11,7 @@
 #include "predicate.hpp"
 #include "proof_tree.hpp"
 #include "sentence.hpp"
-#include "first_order_logic.hpp"
+#include "forward/first_order_logic.hpp"
 #include "substitution.hpp"
 #include <boost/optional.hpp>
 namespace first_order_logic

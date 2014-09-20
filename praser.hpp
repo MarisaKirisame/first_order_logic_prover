@@ -1,7 +1,7 @@
 #ifndef FIRST_ORDER_LOGIC_PRASER_HPP
 #define FIRST_ORDER_LOGIC_PRASER_HPP
 #include "sentence.hpp"
-#include "first_order_logic.hpp"
+#include "forward/first_order_logic.hpp"
 #include <memory>
 #define BOOST_SPIRIT_USE_PHOENIX_V3
 #define BOOST_SPIRIT_UNICODE
@@ -15,6 +15,7 @@
 #include <boost/phoenix/function.hpp>
 #include <boost/phoenix/bind.hpp>
 #include <boost/spirit/include/qi_char_class.hpp>
+#include <boost/phoenix/object/construct.hpp>
 #include "variable.hpp"
 namespace first_order_logic
 {
@@ -45,6 +46,7 @@ namespace first_order_logic
 				using phoenix::at_c;
 				using phoenix::push_back;
 				using phoenix::bind;
+				using phoenix::construct;
 				text %= lexeme[alpha>>*(alnum)];
 				parse_propositional_letter = text[ _val = bind( make_propositional_letter, _1 ) ];
 				bool_exp %= ( lit( '(' ) >> expression >> lit( ')' ) ) | with_equality | predicate | parse_propositional_letter;
@@ -80,7 +82,7 @@ namespace first_order_logic
 				expression %= with_implication;
 				term_exp = function[ _val = _1 ] | text[ _val = bind( make_variable, _1 ) ];
 				function = ( text >> lit( '(' ) >> ( term_exp % ',' ) >> lit( ')' ) )[ _val = bind( make_function, _1, _2 ) ];
-				parse_variable = text[ _val = bind( make_variable, _1 ) ];
+				parse_variable = text[ _val = construct< variable >( _1 ) ];
 			}
 			qi::rule< IT, variable( ), encoding::space_type > parse_variable;
 			qi::rule< IT, term( ), encoding::space_type >

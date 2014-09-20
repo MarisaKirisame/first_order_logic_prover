@@ -6,6 +6,7 @@ namespace first_order_logic
 {
 	struct term;
 	struct sentence;
+	struct variable;
 	term make_function( const std::string & s, const std::vector< term > & t );
 	term make_constant( const std::string & s );
 	term make_variable( const std::string & s );

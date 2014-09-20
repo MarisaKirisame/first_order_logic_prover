@@ -6,7 +6,6 @@ QMAKE_CXXFLAGS += -std=c++1y
 SOURCES += main.cpp
 LIBS += -lboost_unit_test_framework
 HEADERS += \
-    first_order_logic.hpp \
     function.hpp \
     predicate.hpp \
     proof_tree.hpp \
@@ -24,7 +23,8 @@ HEADERS += \
     function_output_iterator.hpp \
     forward/first_order_logic.hpp \
     implementation/substitution.hpp \
-    implementation/sentence.hpp
+    implementation/sentence.hpp \
+    first_order_logic.hpp
 
 OTHER_FILES += \
     theorem_prover.pro.user \

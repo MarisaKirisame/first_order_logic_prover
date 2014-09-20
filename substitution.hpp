@@ -3,7 +3,7 @@
 #include "sentence.hpp"
 #include <map>
 #include <string>
-#include "first_order_logic.hpp"
+#include "forward/first_order_logic.hpp"
 #include "algorithm"
 #include <boost/optional.hpp>
 #include "sentence.hpp"

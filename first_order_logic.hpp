@@ -3,6 +3,7 @@
 #include "sentence.hpp"
 #include "term.hpp"
 #include "variable.hpp"
+#include "forward/first_order_logic.hpp"
 namespace first_order_logic
 {
 	term make_function( const std::string & s, const std::vector< term > & t )
