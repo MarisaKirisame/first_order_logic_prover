@@ -8,6 +8,7 @@
 #include "substitution.hpp"
 #include "definite_clause.hpp"
 #include "knowledge_base.hpp"
+#include "praser.hpp"
 namespace first_order_logic
 {
 	BOOST_AUTO_TEST_CASE( gentzen_system_test )
@@ -134,6 +135,10 @@ namespace first_order_logic
 		auto res = kb.backward_chaining( make_predicate( "Criminal", { make_variable( "x" ) } ) );
 		substitution expected = std::map< variable, term > { { variable( "x" ), make_constant( "West" ) } };
 		BOOST_CHECK( res && * res == expected );
+	}
+	BOOST_AUTO_TEST_CASE( praser )
+	{
+		BOOST_CHECK( prase( "∀x F(x)" ) );
 	}
 }
 #endif //THEOREM_PROVER_EXAMPLE
