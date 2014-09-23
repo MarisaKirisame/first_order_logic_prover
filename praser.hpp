@@ -63,10 +63,10 @@ namespace first_order_logic
 										( ( lit( "\\/" ) >> with_not )
 										[ bind( []( auto & val, auto & param ){ val = make_or( val, param ); }, _val, _1 ) ] ) );
 				with_quantifier =
-									( lit( "∃" ) >> parse_variable >> expression )
+									( lit( u8"∃" ) >> parse_variable >> expression )
 									[ bind( []( auto & val, auto & param1, auto & param2 )
 									{ val = make_some( param1, param2 ); }, _val, _1, _2 ) ] |
-									( lit( "∀" ) >> parse_variable >> expression )
+									( lit( u8"∀" ) >> parse_variable >> expression )
 									[ bind( []( auto & val, auto & param1, auto & param2 )
 									{ val = make_all( param1, param2 ); }, _val, _1, _2 ) ] |
 									with_binary[ _val = _1 ];

@@ -394,5 +394,97 @@ namespace first_order_logic
 							} )
 				);
 	}
+
+	inline sentence sentence::skolemization_remove_existential( ) const
+	{
+		if ( ! is_in_prenex_form( ) ) { return move_quantifier_out( ).skolemization_remove_existential( ); }
+		std::set< variable > s;
+		return skolemization_remove_existential( s );
+	}
+
+	inline sentence sentence::skolemization_remove_universal( ) const
+	{
+		if ( ! is_in_prenex_form( ) ) { return move_quantifier_out( ).skolemization_remove_universal( ); }
+		std::set< variable > s;
+		return skolemization_remove_universal( s );
+	}
+
+	inline sentence sentence::skolemization_remove_existential( std::set< variable > & previous_quantifier ) const
+	{
+		boost::optional< sentence > ret;
+		type_restore
+		(
+			make_all_actor(
+				[&]( const variable & v, const sentence & s )
+				{
+					previous_quantifier.insert( v );
+					ret = make_all( v, s.skolemization_remove_existential( ) );
+				} ),
+			make_some_actor(
+				[&]( const variable & v, const sentence & s )
+				{
+					if ( previous_quantifier.empty( ) )
+					{
+						std::set< std::string > used;
+						cv( make_function_output_iterator( [&]( const term & t ){ used.insert( t->name ); } ) );
+						std::string unused = "_";
+						while ( used.count( unused ) != 0 ) { unused += "_"; }
+						ret = substitution( { std::make_pair( v, make_variable( unused ) ) } )
+								( s ).
+								skolemization_remove_existential( );
+					}
+					else
+					{
+						std::set< std::string > fun;
+						functions( make_function_output_iterator( [&]( const function & f ){ fun.insert( f.name ); } ) );
+						std::string unused = "_";
+						while ( fun.count( unused ) != 0 ) { unused += "_"; }
+						ret = substitution( { std::make_pair( v, make_function( unused, std::vector< term >( previous_quantifier.begin( ), previous_quantifier.end( ) ) ) ) } )
+								( s ).
+								skolemization_remove_existential( );
+					}
+				} )
+		);
+		return ret ? * ret : * this;
+	}
+
+	inline sentence sentence::skolemization_remove_universal( std::set< variable > & previous_quantifier ) const
+	{
+		boost::optional< sentence > ret;
+		type_restore
+		(
+			make_some_actor(
+				[&]( const variable & v, const sentence & s )
+				{
+					previous_quantifier.insert( v );
+					ret = make_some( v, s.skolemization_remove_existential( ) );
+				} ),
+			make_all_actor(
+				[&]( const variable & v, const sentence & s )
+				{
+					if ( previous_quantifier.empty( ) )
+					{
+						std::set< std::string > used;
+						cv( make_function_output_iterator( [&]( const term & t ){ used.insert( t->name ); } ) );
+						std::string unused = "_";
+						while ( used.count( unused ) != 0 ) { unused += "_"; }
+						ret = substitution( { std::make_pair( v, make_variable( unused ) ) } )
+								( s ).
+								skolemization_remove_existential( );
+					}
+					else
+					{
+						std::set< std::string > fun;
+						functions( make_function_output_iterator( [&]( const function & f ){ fun.insert( f.name ); } ) );
+						std::string unused = "_";
+						while ( fun.count( unused ) != 0 ) { unused += "_"; }
+						ret = substitution( { std::make_pair( v, make_function( unused, std::vector< term >( previous_quantifier.begin( ), previous_quantifier.end( ) ) ) ) } )
+								( s ).
+								skolemization_remove_existential( );
+					}
+				} )
+		);
+		return ret ? * ret : * this;
+	}
 }
 #endif // IMPLEMENTATION_SENTENCE_HPP

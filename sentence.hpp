@@ -193,6 +193,10 @@ namespace first_order_logic
 		}
 		sentence standardize_bound_variable( std::set< std::string > & term_map ) const;
 		sentence move_quantifier_out( ) const;
+		sentence skolemization_remove_existential( std::set< variable > & previous_quantifier ) const;
+		sentence skolemization_remove_universal( std::set< variable > & previous_quantifier ) const;
+		sentence skolemization_remove_existential( ) const;
+		sentence skolemization_remove_universal( ) const;
 	};
 }
 #include "implementation/sentence.hpp"
