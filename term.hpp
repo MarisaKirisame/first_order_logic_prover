@@ -144,8 +144,8 @@ namespace first_order_logic
 						(*this)->arguments.begin( ),
 						(*this)->arguments.end( ),
 						[&]( const term & t ){ result = t.used_name( result ); } );
-				return result;
 			}
+			return result;
 		}
 	};
 }

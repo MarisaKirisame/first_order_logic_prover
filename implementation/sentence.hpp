@@ -207,43 +207,48 @@ namespace first_order_logic
 					++result;
 					result = s.bounded_variables( result );
 				} ),
-				make_some_actor(
+			make_some_actor(
 				[&]( const variable & var, const sentence & s )
 				{
 					*result = var;
 					++result;
 					result = s.bounded_variables( result );
 				} ),
-				make_equal_actor( [&]( const term &, const term & ) { } ),
+			make_equal_actor( [&]( const term &, const term & ) { } ),
+			make_predicate_actor(
+				[&]( const std::string &, const std::vector< term > & vec )
+				{ for ( const term & t : vec ) { result = t.variables( result ); } } ),
+			make_propositional_letter_actor( []( const std::string & ){ } ),
+			make_and_actor(
+				[&]( const sentence & l, const sentence & r )
+				{ result = l.bounded_variables( r.bounded_variables( result ) ); } ),
+			make_or_actor(
+				[&]( const sentence & l, const sentence & r )
+				{ result = l.bounded_variables( r.bounded_variables( result ) ); } ),
+			make_not_actor( [&]( const sentence & sen ){ result = sen.bounded_variables( result ); } )
+		);
+		return result;
+	}
+	template< typename OUTITER >
+	OUTITER sentence::free_variables( OUTITER result ) const
+	{
+		type_restore_full
+		(
+			make_all_actor( [&]( const variable &, const sentence & s ) { result = s.free_variables( result ); } ),
+			make_some_actor( [&]( const variable &, const sentence & s ) { result = s.free_variables( result ); } ),
+			make_equal_actor( [&]( const term & l, const term & r ) { result = l.variables( r.variables( result ) ); } ),
 				make_predicate_actor(
 					[&]( const std::string &, const std::vector< term > & vec )
 					{ for ( const term & t : vec ) { result = t.variables( result ); } } ),
 				make_propositional_letter_actor( []( const std::string & ){ } ),
 				make_and_actor(
 					[&]( const sentence & l, const sentence & r )
-					{ result = l.bounded_variables( r.bounded_variables( result ) ); } ),
+					{ result = l.free_variables( r.free_variables( result ) ); } ),
 				make_or_actor(
 					[&]( const sentence & l, const sentence & r )
-					{ result = l.bounded_variables( r.bounded_variables( result ) ); } ),
-				make_not_actor( [&]( const sentence & sen ){ result = sen.bounded_variables( result ); } )
+					{ result = l.free_variables( r.free_variables( result ) ); } ),
+				make_not_actor( [&]( const sentence & sen ){ result = sen.free_variables( result ); } )
 			);
-		return result;
-	}
-	template< typename OUTITER >
-	OUTITER sentence::free_variables( OUTITER result ) const
-	{
-		std::set< variable > bounded;
-		bounded_variables( std::inserter( bounded, bounded.begin( ) ) );
-		variables(
-			make_function_output_iterator(
-				[&]( const variable & v )
-				{
-					if ( bounded.count( v ) != 0 )
-					{
-						*result = v;
-						++result;
-					}
-				} ) );
 		return result;
 	}
 	inline bool sentence::have_equal( ) const
@@ -489,12 +494,75 @@ namespace first_order_logic
 
 	inline sentence sentence::rectify( ) const
 	{
-
+		std::set< variable > sv;
+		std::set< std::string > used_name;
+		std::set< variable > var;
+		free_variables( std::inserter( var, var.begin( ) ) );
+		this->used_name( std::inserter( used_name, used_name.begin( ) ) );
+		return rectify( sv, var, used_name );
 	}
 
-	inline sentence sentence::rectify( std::set< variable > & used_quantifier, std::set< std::string > & used_name ) const
+	inline sentence sentence::rectify(
+			std::set< variable > & used_quantifier,
+			const std::set< variable > & free_variable,
+			std::set< std::string > & used_name ) const
 	{
-
+		return type_restore_full
+				(
+					make_all_actor(
+						[&]( const variable & v, const sentence & sen )
+						{
+							if ( used_quantifier.count( v ) != 0 && free_variable.count( v ) != 0 )
+							{
+								std::string gen_str = v.name;
+								while ( used_quantifier.count( variable( gen_str ) ) != 0 &&
+										free_variable.count( variable( gen_str ) ) &&
+										used_name.count( gen_str ) != 0 ) { gen_str += "_"; }
+								return make_all(
+											variable( gen_str ),
+											substitution( { std::make_pair( v, make_variable( gen_str ) ) } )( sen ) );
+							}
+							return make_all( v, sen );
+						} ),
+					make_some_actor(
+						[&]( const variable & v, const sentence & sen )
+						{
+							if ( used_quantifier.count( v ) != 0 && free_variable.count( v ) != 0 )
+							{
+								std::string gen_str = v.name;
+								while ( used_quantifier.count( variable( gen_str ) ) != 0 &&
+										free_variable.count( variable( gen_str ) ) &&
+										used_name.count( gen_str ) != 0 ) { gen_str += "_"; }
+								return make_some(
+											variable( gen_str ),
+											substitution( { { v, make_variable( gen_str ) } } )( sen ) );
+							}
+							return make_some( v, sen );
+						} ),
+					make_propositional_letter_actor(
+						[&]( const std::string & str ){ return make_propositional_letter( str ); } ),
+					make_predicate_actor(
+						[&]( const std::string & str, const std::vector< term > & vec )
+						{ return make_predicate( str, vec ); } ),
+					make_equal_actor( [&]( const term & l, const term & r ) { return make_equal( l, r ); } ),
+					make_or_actor(
+						[&]( const sentence & l, const sentence & r )
+						{
+							return make_or(
+									l.rectify( used_quantifier, free_variable, used_name ),
+									r.rectify( used_quantifier, free_variable, used_name ) );
+						} ),
+					make_and_actor(
+						[&]( const sentence & l, const sentence & r )
+						{
+							return make_and(
+									l.rectify( used_quantifier, free_variable, used_name ),
+									r.rectify( used_quantifier, free_variable, used_name ) );
+						} ),
+					make_not_actor(
+						[&]( const sentence & sen )
+						{ return make_not( sen.rectify( used_quantifier, free_variable, used_name ) ); } )
+				);
 	}
 
 	template< typename OUTITER >
@@ -537,6 +605,7 @@ namespace first_order_logic
 						{
 							*result = str;
 							++result;
+							return result;
 						} )
 				);
 	}

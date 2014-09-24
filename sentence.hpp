@@ -199,7 +199,10 @@ namespace first_order_logic
 		sentence skolemization_remove_existential( ) const;
 		sentence skolemization_remove_universal( ) const;
 		sentence rectify( ) const;
-		sentence rectify( std::set< variable > & used_quantifier, std::set< std::string > & used_name ) const;
+		sentence rectify(
+					std::set< variable > & used_quantifier,
+					const std::set< variable > & free_variable,
+					std::set< std::string > & used_name ) const;
 		template< typename OUTITER >
 		OUTITER used_name( OUTITER result ) const;
 	};
