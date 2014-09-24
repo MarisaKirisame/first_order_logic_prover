@@ -169,7 +169,8 @@ namespace first_order_logic
 		template< typename OUTITER >
 		OUTITER cv( OUTITER result ) const
 		{
-			free_variables( constants( make_function_output_iterator( [&]( const auto & v ) { *result = term( v ); ++result; } ) ) );
+			free_variables( constants( make_function_output_iterator(
+										[&]( const auto & v ) { *result = term( v ); ++result; } ) ) );
 			return result;
 		}
 		bool operator < ( const sentence & comp ) const
@@ -197,6 +198,10 @@ namespace first_order_logic
 		sentence skolemization_remove_universal( std::set< variable > & previous_quantifier ) const;
 		sentence skolemization_remove_existential( ) const;
 		sentence skolemization_remove_universal( ) const;
+		sentence rectify( ) const;
+		sentence rectify( std::set< variable > & used_quantifier, std::set< std::string > & used_name ) const;
+		template< typename OUTITER >
+		OUTITER used_name( OUTITER result ) const;
 	};
 }
 #include "implementation/sentence.hpp"

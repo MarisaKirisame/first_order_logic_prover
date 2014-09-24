@@ -486,5 +486,59 @@ namespace first_order_logic
 		);
 		return ret ? * ret : * this;
 	}
+
+	inline sentence sentence::rectify( ) const
+	{
+
+	}
+
+	inline sentence sentence::rectify( std::set< variable > & used_quantifier, std::set< std::string > & used_name ) const
+	{
+
+	}
+
+	template< typename OUTITER >
+	OUTITER sentence::used_name( OUTITER result ) const
+	{
+		return
+				type_restore_full
+				(
+					make_all_actor(
+						[&]( const variable & v, const sentence & s )
+						{
+							* result = v.name;
+							++result;
+							return s.used_name( result );
+						} ),
+					make_some_actor(
+						[&]( const variable & v, const sentence & s )
+						{
+							* result = v.name;
+							++result;
+							return s.used_name( result );
+						} ),
+					make_or_actor( [&]( const sentence & l, const sentence & r )
+						{ return l.used_name( r.used_name( result ) ); } ),
+					make_and_actor( [&]( const sentence & l, const sentence & r )
+						{ return l.used_name( r.used_name( result ) ); } ),
+					make_not_actor( [&]( const sentence & sen ) { return sen.used_name( result ); } ),
+					make_equal_actor(
+						[&]( const term & l, const term & r ){ return l.used_name( r.used_name( result ) ); } ),
+					make_predicate_actor(
+						[&]( const std::string & str, const std::vector< term > & vec )
+						{
+							* result = str;
+							++result;
+							for ( const term & t : vec ) { result = t.used_name( result ); }
+							return result;
+						} ),
+					make_propositional_letter_actor(
+						[&]( const std::string & str )
+						{
+							*result = str;
+							++result;
+						} )
+				);
+	}
 }
 #endif // IMPLEMENTATION_SENTENCE_HPP

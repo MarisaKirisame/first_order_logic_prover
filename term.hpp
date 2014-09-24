@@ -112,26 +112,40 @@ namespace first_order_logic
 		term( ) { }
 		explicit term( const variable & var ) : data( new internal( type::variable, var.name, { } ) ) { }
 		explicit term( const constant & var ) : data( new internal( type::constant, var.name, { } ) ) { }
-		std::set< term > cv( ) const
+		template< typename OUTITER >
+		OUTITER cv( OUTITER result ) const
 		{
 			switch ( (*this)->term_type )
 			{
 			case type::variable:
-				return { term( data ) };
 			case type::constant:
-				return { term( data ) };
+				* result = { term( data ) };
+				++result;
+				return result;
 			case type::function:
 				{
-					std::set< term > ret;
-					std::transform( (*this)->arguments.begin( ),
-									(*this)->arguments.end( ),
-									make_function_output_iterator(
-										[&]( const std::set< term > & s ){ ret.insert( s.begin( ), s.end( ) ); } ),
-									[&]( const term & t ){ return t.cv( ); } );
-					return ret;
+					std::for_each(
+							(*this)->arguments.begin( ),
+							(*this)->arguments.end( ),
+							[&]( const term & t ){ result = t.cv( result ); } );
+					return result;
 				}
 			}
 			throw std::invalid_argument( "unknown enum type" );
+		}
+		template< typename OUTITER >
+		OUTITER used_name( OUTITER result ) const
+		{
+			* result = (*this)->name;
+			++result;
+			if ( (*this)->term_type == type::function )
+			{
+				std::for_each(
+						(*this)->arguments.begin( ),
+						(*this)->arguments.end( ),
+						[&]( const term & t ){ result = t.used_name( result ); } );
+				return result;
+			}
 		}
 	};
 }
