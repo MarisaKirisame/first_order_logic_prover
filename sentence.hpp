@@ -13,7 +13,7 @@
 template< typename T >\
 struct NAME ## _actor\
 {\
-	const T & t;\
+	T t;\
 	template< typename ... ARG > auto operator ( )( const ARG & ... arg ) const { return t( arg ... ); }\
 	explicit NAME ## _actor( const T & t ) : t( t ) { }\
 };\
