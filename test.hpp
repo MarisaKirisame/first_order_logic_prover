@@ -9,6 +9,7 @@
 #include "definite_clause.hpp"
 #include "knowledge_base.hpp"
 #include "praser.hpp"
+#include "resolution.hpp"
 namespace first_order_logic
 {
 	BOOST_AUTO_TEST_CASE( gentzen_system_test )

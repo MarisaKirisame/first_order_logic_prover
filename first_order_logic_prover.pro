@@ -24,7 +24,8 @@ HEADERS += \
     forward/first_order_logic.hpp \
     implementation/substitution.hpp \
     implementation/sentence.hpp \
-    first_order_logic.hpp
+    first_order_logic.hpp \
+    resolution.hpp
 
 OTHER_FILES += \
     theorem_prover.pro.user \
