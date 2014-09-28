@@ -24,9 +24,9 @@ namespace first_order_logic
 				term_type( term_type ), name( name ), arguments( arguments ) { }
 		};
 		std::shared_ptr< internal > data;
-		term( type term_type, const std::string & name, const std::vector< term > & arguments ) :
+		explicit term( type term_type, const std::string & name, const std::vector< term > & arguments ) :
 			data( new internal( term_type, name, arguments ) ) { }
-		term( const std::shared_ptr< internal > & data ) : data( data ) { }
+		explicit term( const std::shared_ptr< internal > & data ) : data( data ) { }
 		template< typename OUTITER >
 		OUTITER constants( OUTITER result ) const
 		{
@@ -109,7 +109,7 @@ namespace first_order_logic
 		bool operator < ( const term & comp ) const { return static_cast< std::string >( * this ) < static_cast< std::string >( comp ); }
 		bool operator == ( const term & comp ) const { return static_cast< std::string >( * this ) == static_cast< std::string >( comp ); }
 		bool operator != ( const term & comp ) const { return static_cast< std::string >( * this ) != static_cast< std::string >( comp ); }
-		term( ) { }
+		explicit term( ) { }
 		explicit term( const variable & var ) : data( new internal( type::variable, var.name, { } ) ) { }
 		explicit term( const constant & var ) : data( new internal( type::constant, var.name, { } ) ) { }
 		template< typename OUTITER >

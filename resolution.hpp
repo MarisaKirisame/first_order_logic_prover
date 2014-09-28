@@ -4,49 +4,7 @@
 #include "term.hpp"
 namespace first_order_logic
 {
-	struct resolution
-	{
-		std::set< std::set< term > > s;
-		resolution( const sentence & sen )
-		{
-
-		}
-	};
-	proposition move_negation_in( const proposition & prop )
-	{
-		if ( prop->is_atom ) { return prop; }
-		else
-		{
-			auto & comb = boost::get< proposition_combine< proposition > >( prop->data );
-			if ( comb.s == logical_not )
-			{
-				auto & in = comb.p.first;
-				if ( in->is_atom ) { return prop; }
-				else
-				{
-					auto & in_comb = boost::get< proposition_combine< proposition > >( in->data );
-					if ( in_comb.s == logical_or )
-					{ return make_and( move_negation_in( make_not( in_comb.p.first ) ), move_negation_in( make_not( in_comb.p.second ) ) ); }
-					else if ( in_comb.s == logical_and )
-					{ return make_or(
-									move_negation_in( make_not( in_comb.p.first ) ),
-									move_negation_in( make_not( in_comb.p.second ) ) ); }
-					else
-					{
-						assert( in_comb.s == logical_not );
-						return move_negation_in( in_comb.p.first );
-					}
-				}
-			}
-			else if ( comb.s == logical_and ) { return make_and( move_negation_in( comb.p.first ), move_negation_in( comb.p.second ) ); }
-			else
-			{
-				assert( comb.s == logical_or );
-				return  make_or( move_negation_in( comb.p.first ), move_negation_in( comb.p.second ) );
-			}
-		}
-	}
-	template< typename t >
+/*	template< typename t >
 	struct conjunction
 	{
 		std::set< t > data;
@@ -93,9 +51,9 @@ namespace first_order_logic
 	};
 	struct literal
 	{
-		std::string data;
+		term data;
 		bool b;
-		literal( const std::string & d, bool b ) : data( d ), b( b ) { }
+		literal( const term & d, bool b ) : data( d ), b( b ) { }
 		bool operator < ( const literal & comp ) const { return std::tie( data, b ) < std::tie( comp.data, comp.b ); }
 		bool operator == ( const literal & comp ) const { return std::tie( data, b ) == std::tie( comp.data, comp.b ); }
 		literal conjugate( ) const
@@ -107,12 +65,60 @@ namespace first_order_logic
 	};
 	typedef disjunction< literal > clause;
 	typedef conjunction< clause > CNF;
-	proposition move_or_in( const proposition & prop )
+	struct resolution
+	{
+		CNF cnf;
+		resolution( const sentence & sen )
+		{
+
+		}
+	};
+	sentence move_negation_in( const sentence & prop )
+	{
+		sentence sen;
+		prop.type_restore
+		(
+			make_not_actor( )
+		);
+		return sen;
+		if ( prop->is_atom ) { return prop; }
+		else
+		{
+			auto & comb = boost::get< sentence_combine< sentence > >( prop->data );
+			if ( comb.s == logical_not )
+			{
+				auto & in = comb.p.first;
+				if ( in->is_atom ) { return prop; }
+				else
+				{
+					auto & in_comb = boost::get< sentence_combine< sentence > >( in->data );
+					if ( in_comb.s == logical_or )
+					{ return make_and( move_negation_in( make_not( in_comb.p.first ) ), move_negation_in( make_not( in_comb.p.second ) ) ); }
+					else if ( in_comb.s == logical_and )
+					{ return make_or(
+									move_negation_in( make_not( in_comb.p.first ) ),
+									move_negation_in( make_not( in_comb.p.second ) ) ); }
+					else
+					{
+						assert( in_comb.s == logical_not );
+						return move_negation_in( in_comb.p.first );
+					}
+				}
+			}
+			else if ( comb.s == logical_and ) { return make_and( move_negation_in( comb.p.first ), move_negation_in( comb.p.second ) ); }
+			else
+			{
+				assert( comb.s == logical_or );
+				return  make_or( move_negation_in( comb.p.first ), move_negation_in( comb.p.second ) );
+			}
+		}
+	}
+	sentence move_or_in( const sentence & prop )
 	{
 		if ( prop->is_atom ) { return prop; }
 		else
 		{
-			auto & comb = boost::get< proposition_combine< proposition > >( prop->data );
+			auto & comb = boost::get< sentence_combine< sentence > >( prop->data );
 			if ( comb.s == logical_or )
 			{
 				auto f = move_or_in( comb.p.first );
@@ -120,10 +126,10 @@ namespace first_order_logic
 				if ( f->is_atom && s->is_atom ) { return make_or( f, s ); }
 				else if (
 							f->is_atom ||
-							( boost::get< proposition_combine< proposition > >( f->data ).s != logical_and &&
+							( boost::get< sentence_combine< sentence > >( f->data ).s != logical_and &&
 								! s->is_atom ) )
 				{ f.swap( s ); }
-				auto fcomb = boost::get< proposition_combine< proposition > >( f->data );
+				auto fcomb = boost::get< sentence_combine< sentence > >( f->data );
 				if ( fcomb.s == logical_or || fcomb.s == logical_not ) { return make_or( f, s ); }
 				else
 				{
@@ -139,12 +145,12 @@ namespace first_order_logic
 			}
 		}
 	}
-	clause get_clause( const proposition & prop )
+	clause get_clause( const sentence & prop )
 	{
 		if ( prop->is_atom ) { return { literal( boost::get< std::string >( prop->data ), true ) }; }
 		else
 		{
-			auto comb = boost::get< proposition_combine< proposition > >( prop->data );
+			auto comb = boost::get< sentence_combine< sentence > >( prop->data );
 			if ( comb.s == logical_or )
 			{
 				auto cf = get_clause( comb.p.first );
@@ -165,12 +171,12 @@ namespace first_order_logic
 			}
 		}
 	}
-	std::set< clause > flatten( const proposition & prop )
+	std::set< clause > flatten( const sentence & prop )
 	{
 		if ( prop->is_atom ) { return { clause( { literal( boost::get< std::string >( prop->data ), true ) } ) }; }
 		else
 		{
-			auto comb = boost::get< proposition_combine< proposition > >( prop->data );
+			auto comb = boost::get< sentence_combine< sentence > >( prop->data );
 			if ( comb.s == logical_and )
 			{
 				auto cf = flatten( comb.p.first );
@@ -182,13 +188,13 @@ namespace first_order_logic
 		}
 	}
 
-	proposition pre_CNF( const proposition & prop ) { return move_or_in( move_negation_in( prop ) ); }
+	sentence pre_CNF( const sentence & prop ) { return move_or_in( move_negation_in( prop ) ); }
 
-	CNF to_CNF( const proposition & prop )
+	CNF to_CNF( const sentence & prop )
 	{
 		if ( prop->is_atom ) { return CNF ( { clause ( { literal( boost::get< std::string >( prop->data ), true ) } ) } ); }
 		else { return CNF( flatten( pre_CNF( prop ) ) ); }
 	}
-
+*/
 }
 #endif // RESOLUTION_HPP

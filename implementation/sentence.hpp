@@ -340,8 +340,13 @@ namespace first_order_logic
 							{
 								sentence ret;
 								ll.type_restore(
-									make_all_actor( [&]( const variable & v, const sentence & sen ) { ret = make_all( v, make_and( sen, r ) ); } ),
-									make_some_actor( [&]( const variable & v, const sentence & sen ) { ret = make_some( v, make_and( sen, r ) ); } ) );
+									make_all_actor(
+										[&]( const variable & v, const sentence & sen )
+										{ ret = make_all( v, make_and( sen, r ) ); } ),
+									make_some_actor(
+										[&]( const variable & v, const sentence & sen )
+										{ ret = make_some( v, make_and( sen, r ) ); } ),
+									error::get( ) );
 								assert( ret.data );
 								return ret.move_quantifier_out( );
 							}
@@ -350,8 +355,13 @@ namespace first_order_logic
 							{
 								sentence ret;
 								rr.type_restore(
-									make_all_actor( [&]( const variable & v, const sentence & sen ) { ret = make_all( v, make_and( l, sen ) ); } ),
-									make_some_actor( [&]( const variable & v, const sentence & sen ) { ret = make_some( v, make_and( l, sen ) ); } ) );
+									make_all_actor(
+										[&]( const variable & v, const sentence & sen )
+										{ ret = make_all( v, make_and( l, sen ) ); } ),
+									make_some_actor(
+										[&]( const variable & v, const sentence & sen )
+										{ ret = make_some( v, make_and( l, sen ) ); } ),
+									error::get( ) );
 								assert( ret.data );
 								return ret.move_quantifier_out( );
 							}
@@ -365,8 +375,13 @@ namespace first_order_logic
 							{
 								sentence ret;
 								ll.type_restore(
-									make_all_actor( [&]( const variable & v, const sentence & sen ) { ret = make_all( v, make_or( sen, r ) ); } ),
-									make_some_actor( [&]( const variable & v, const sentence & sen ) { ret = make_some( v, make_or( sen, r ) ); } ) );
+									make_all_actor(
+										[&]( const variable & v, const sentence & sen )
+										{ ret = make_all( v, make_or( sen, r ) ); } ),
+									make_some_actor(
+										[&]( const variable & v, const sentence & sen )
+										{ ret = make_some( v, make_or( sen, r ) ); } ),
+									error::get( ) );
 								assert( ret.data );
 								return ret.move_quantifier_out( );
 							}
@@ -375,8 +390,13 @@ namespace first_order_logic
 							{
 								sentence ret;
 									rr.type_restore(
-									make_all_actor( [&]( const variable & v, const sentence & sen ) { ret = make_all( v, make_or( l, sen ) ); } ),
-									make_some_actor( [&]( const variable & v, const sentence & sen ) { ret = make_some( v, make_or( l, sen ) ); } ) );
+									make_all_actor(
+										[&]( const variable & v, const sentence & sen )
+										{ ret = make_all( v, make_or( l, sen ) ); } ),
+									make_some_actor(
+										[&]( const variable & v, const sentence & sen )
+										{ ret = make_some( v, make_or( l, sen ) ); } ),
+									error::get( ) );
 								assert( ret.data );
 								return ret.move_quantifier_out( );
 							}
@@ -390,8 +410,13 @@ namespace first_order_logic
 								{
 									sentence ret;
 									ss.type_restore(
-										make_all_actor( [&]( const variable & v, const sentence & sss ) { ret = make_some( v, sss ); } ),
-										make_some_actor( [&]( const variable & v, const sentence & sss ) { ret = make_all( v, sss ); } ) );
+										make_all_actor(
+											[&]( const variable & v, const sentence & sss )
+											{ ret = make_some( v, sss ); } ),
+										make_some_actor(
+											[&]( const variable & v, const sentence & sss )
+											{ ret = make_all( v, sss ); } ),
+										error::get( ) );
 									assert( ret.data );
 									return ret.move_quantifier_out( );
 								}
@@ -444,11 +469,16 @@ namespace first_order_logic
 						functions( make_function_output_iterator( [&]( const function & f ){ fun.insert( f.name ); } ) );
 						std::string unused = "_";
 						while ( fun.count( unused ) != 0 ) { unused += "_"; }
-						ret = substitution( { std::make_pair( v, make_function( unused, std::vector< term >( previous_quantifier.begin( ), previous_quantifier.end( ) ) ) ) } )
-								( s ).
-								skolemization_remove_existential( );
+						ret = substitution(
+								{
+									std::make_pair(
+										v,
+										make_function( unused, std::vector< term >( previous_quantifier.begin( ),
+									previous_quantifier.end( ) ) ) )
+								} )( s ).skolemization_remove_existential( );
 					}
-				} )
+				} ),
+			error::get( )
 		);
 		return ret ? * ret : * this;
 	}
@@ -483,11 +513,19 @@ namespace first_order_logic
 						functions( make_function_output_iterator( [&]( const function & f ){ fun.insert( f.name ); } ) );
 						std::string unused = "_";
 						while ( fun.count( unused ) != 0 ) { unused += "_"; }
-						ret = substitution( { std::make_pair( v, make_function( unused, std::vector< term >( previous_quantifier.begin( ), previous_quantifier.end( ) ) ) ) } )
-								( s ).
-								skolemization_remove_existential( );
+						ret =
+								substitution(
+								{
+									std::make_pair(
+										v,
+										make_function(
+											unused,
+											std::vector< term >( previous_quantifier.begin( ),
+										previous_quantifier.end( ) ) ) )
+								} )( s ).skolemization_remove_existential( );
 					}
-				} )
+				} ),
+			error::get( )
 		);
 		return ret ? * ret : * this;
 	}

@@ -161,79 +161,94 @@ namespace first_order_logic
 						[&]( const variable & var, const sentence & sen )
 						{
 							boost::optional< substitution > ret;
-							q.type_restore( make_all_actor(
-												[&]( const variable & va, const sentence & se )
-												{ ret = unify( substitution( { { va, term( var ) } } )( se ), sen, sub ); } ) );
+							q.type_restore(
+								make_all_actor(
+									[&]( const variable & va, const sentence & se )
+									{ ret = unify( substitution( { { va, term( var ) } } )( se ), sen, sub ); } ),
+								error::get( ) );
 							return ret;
 						} ),
 					make_some_actor(
 						[&]( const variable & var, const sentence & sen )
 						{
 							boost::optional< substitution > ret;
-							q.type_restore( make_some_actor(
-												[&]( const variable & va, const sentence & se )
-												{ ret = unify( substitution( { { va, term( var ) } } )( se ), sen, sub ); } ) );
+							q.type_restore(
+								make_some_actor(
+									[&]( const variable & va, const sentence & se )
+									{ ret = unify( substitution( { { va, term( var ) } } )( se ), sen, sub ); } ),
+								error::get( ) );
 							return ret;
 						} ),
 					make_and_actor(
 						[&]( const sentence & l, const sentence & r )
 						{
 							boost::optional< substitution > ret;
-							q.type_restore( make_and_actor(
-												[&]( const sentence & ll, const sentence & rr )
-												{
-													auto tem = unify( l, ll, sub );
-													if ( tem ) { ret = unify( r, rr, * tem ); }
-												} ) );
+							q.type_restore(
+								make_and_actor(
+									[&]( const sentence & ll, const sentence & rr )
+									{
+										auto tem = unify( l, ll, sub );
+										if ( tem ) { ret = unify( r, rr, * tem ); }
+									} ),
+								error::get( ) );
 							return ret;
 						} ),
 					make_or_actor(
 						[&]( const sentence & l, const sentence & r )
 						{
 							boost::optional< substitution > ret;
-							q.type_restore( make_or_actor(
-												[&]( const sentence & ll, const sentence & rr )
-												{
-													auto tem = unify( l, ll, sub );
-													if ( tem ) { ret = unify( r, rr, * tem ); }
-												} ) );
+							q.type_restore(
+								make_or_actor(
+									[&]( const sentence & ll, const sentence & rr )
+									{
+										auto tem = unify( l, ll, sub );
+										if ( tem ) { ret = unify( r, rr, * tem ); }
+									} ),
+								error::get( ) );
 							return ret;
 						} ),
 					make_not_actor(
 						[&]( const sentence & sen )
 						{
 							boost::optional< substitution > ret;
-							q.type_restore( make_not_actor( [&]( const sentence & s ){ ret = unify( sen, s, sub ); } ) );
+							q.type_restore(
+								make_not_actor( [&]( const sentence & s ){ ret = unify( sen, s, sub ); } ),
+								error::get( ) );
 							return ret;
 						} ),
 					make_predicate_actor(
 						[&]( const std::string &, const std::vector< term > & ter )
 						{
 							boost::optional< substitution > ret;
-							q.type_restore( make_predicate_actor(
-												[&]( const std::string &, const std::vector< term > & te )
-												{
-													assert( ter.size( ) == te.size( ) );
-													ret = sub;
-													for ( size_t i = 0; i < te.size( ); ++i )
-													{
-														if ( ret ) { ret = unify( ter[i], te[i], * ret ); }
-														else { break; }
-													}
-												} ) );
+							q.type_restore(
+								make_predicate_actor(
+									[&]( const std::string &, const std::vector< term > & te )
+									{
+										assert( ter.size( ) == te.size( ) );
+										ret = sub;
+										for ( size_t i = 0; i < te.size( ); ++i )
+										{
+											if ( ret ) { ret = unify( ter[i], te[i], * ret ); }
+											else { break; }
+										}
+									} ),
+								error::get( ) );
 							return ret;
 						} ),
-					make_propositional_letter_actor( [&]( const std::string & ){ return boost::optional< substitution >( sub ); } ),
+					make_propositional_letter_actor(
+						[&]( const std::string & ){ return boost::optional< substitution >( sub ); } ),
 					make_equal_actor(
 						[&]( const term & l, const term & r )
 						{
 							boost::optional< substitution > ret;
-							q.type_restore( make_equal_actor(
-												[&]( const term & ll, const term & rr )
-												{
-													auto tem = unify( l, ll, sub );
-													if ( tem ) { ret = unify( r, rr, * tem ); }
-												} ) );
+							q.type_restore(
+								make_equal_actor(
+									[&]( const term & ll, const term & rr )
+									{
+										auto tem = unify( l, ll, sub );
+										if ( tem ) { ret = unify( r, rr, * tem ); }
+									} ),
+								error::get( ) );
 							return ret;
 						} ) );
 	}

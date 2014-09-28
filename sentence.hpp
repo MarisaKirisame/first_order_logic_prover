@@ -44,6 +44,16 @@ namespace first_order_logic
 			return ret;
 		}
 	};
+	struct error
+	{
+		template< typename ... T >
+		void operator( )( const T & ... ) const { throw std::logic_error( "unknown enum type" ); }
+		static const error & get( )
+		{
+			static error ret;
+			return ret;
+		}
+	};
 	template< template< typename > class T, bool is_current >
 	struct extractor;
 	template< template< typename > class T >
@@ -87,20 +97,44 @@ namespace first_order_logic
 		auto type_restore_full( const T & ... t ) const
 		{
 			static_assert( std::tuple_size< std::tuple< T ... > >::value == 8, "should be eight arguments" );
-			return type_restore( t ... );
+			return type_restore( t ..., error::get( ) );
 		}
 		template< typename ... T >
 		auto type_restore( const T & ... t ) const
 		{
 			return type_restore_inner(
-						extract< and_actor_helper >( t ..., make_and_actor( ignore::get( ) ) ),
-						extract< or_actor_helper >( t ..., make_or_actor( ignore::get( ) ) ),
-						extract< not_actor_helper >( t ..., make_not_actor( ignore::get( ) ) ),
-						extract< all_actor_helper >( t ..., make_all_actor( ignore::get( ) ) ),
-						extract< some_actor_helper >( t ..., make_some_actor( ignore::get( ) ) ),
-						extract< equal_actor_helper >( t ..., make_equal_actor( ignore::get( ) ) ),
-						extract< predicate_actor_helper >( t ..., make_predicate_actor( ignore::get( ) ) ),
-						extract< propositional_letter_actor_helper >( t ..., make_propositional_letter_actor( ignore::get( ) ) ) );
+						extract< and_actor_helper >(
+							t ...,
+							make_and_actor(
+								std::get< std::tuple_size< std::tuple< T ... > >::value - 1 >( std::tie( t ... ) ) ) ),
+						extract< or_actor_helper >(
+							t ...,
+							make_or_actor(
+								std::get< std::tuple_size< std::tuple< T ... > >::value - 1 >( std::tie( t ... ) ) ) ),
+						extract< not_actor_helper >(
+							t ...,
+							make_not_actor(
+								std::get< std::tuple_size< std::tuple< T ... > >::value - 1 >( std::tie( t ... ) ) ) ),
+						extract< all_actor_helper >(
+							t ...,
+							make_all_actor(
+								std::get< std::tuple_size< std::tuple< T ... > >::value - 1 >( std::tie( t ... ) ) ) ),
+						extract< some_actor_helper >(
+							t ...,
+							make_some_actor(
+								std::get< std::tuple_size< std::tuple< T ... > >::value - 1 >( std::tie( t ... ) ) ) ),
+						extract< equal_actor_helper >(
+							t ...,
+							make_equal_actor(
+								std::get< std::tuple_size< std::tuple< T ... > >::value - 1 >( std::tie( t ... ) ) ) ),
+						extract< predicate_actor_helper >(
+							t ...,
+							make_predicate_actor(
+								std::get< std::tuple_size< std::tuple< T ... > >::value - 1 >( std::tie( t ... ) ) ) ),
+						extract< propositional_letter_actor_helper >(
+							t ...,
+							make_propositional_letter_actor(
+								std::get< std::tuple_size< std::tuple< T ... > >::value - 1 >( std::tie( t ... ) ) ) ) );
 		}
 		template< typename T1, typename T2, typename T3, typename T4, typename T5, typename T6, typename T7, typename T8 >
 		auto type_restore_inner(
