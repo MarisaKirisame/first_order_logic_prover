@@ -181,11 +181,14 @@ namespace first_order_logic
 		template< typename ... T >
 		sentence( type ty, const T & ... t ) : data( new internal( ty, t ... ) ) { }
 		template< typename ... T >
-		sentence( type ty, const T & ... t, const std::initializer_list< sentence > & vec ) : data( new internal( ty, t ..., vec ) ) { }
+		sentence( type ty, const T & ... t, const std::initializer_list< sentence > & vec ) :
+			data( new internal( ty, t ..., vec ) ) { }
 		template< typename ... T >
-		sentence( type ty, const T & ... t, const std::initializer_list< term > & vec ) : data( new internal( ty, t ..., vec ) ) { }
+		sentence( type ty, const T & ... t, const std::initializer_list< term > & vec ) :
+			data( new internal( ty, t ..., vec ) ) { }
 		sentence( const sentence & sen ) : data( sen.data ) { }
 		sentence( ) { }
+		bool operator == ( const sentence & comp ) const { return !( (*this) < comp || comp < (*this) ); }
 		size_t length( ) const;
 		template< typename OUTITER >
 		OUTITER functions( OUTITER result ) const;
@@ -239,6 +242,15 @@ namespace first_order_logic
 					std::set< std::string > & used_name ) const;
 		template< typename OUTITER >
 		OUTITER used_name( OUTITER result ) const;
+		explicit operator bool ( ) const { return data.get( ) != nullptr; }
+		void swap( sentence & sen ) { data.swap( sen.data ); }
+		bool is_atom( ) const
+		{
+			return
+					(*this)->sentence_type == type::equal ||
+					(*this)->sentence_type == type::predicate ||
+					(*this)->sentence_type == type::propositional_letter;
+		}
 	};
 }
 #include "implementation/sentence.hpp"
