@@ -140,7 +140,15 @@ namespace first_order_logic
 	BOOST_AUTO_TEST_CASE( praser ) { BOOST_CHECK( prase( "∀x F(x)" ) ); }
 	BOOST_AUTO_TEST_CASE( resolution_test )
 	{
+		std::cout << std::boolalpha;
 		resolution res( * prase( "∀x F(x)" ) );
+		for ( const auto & i : res.cnf.data )
+		{
+			for ( const literal & ii : i.data )
+			{
+				std::cout << ii.b << " " << ii.data << std::endl;
+			}
+		}
 	}
 }
 #endif //THEOREM_PROVER_EXAMPLE

@@ -346,7 +346,7 @@ namespace first_order_logic
 									make_some_actor(
 										[&]( const variable & v, const sentence & sen )
 										{ ret = make_some( v, make_and( sen, r ) ); } ),
-									error::get( ) );
+									error( ) );
 								assert( ret.data );
 								return ret.move_quantifier_out( );
 							}
@@ -361,7 +361,7 @@ namespace first_order_logic
 									make_some_actor(
 										[&]( const variable & v, const sentence & sen )
 										{ ret = make_some( v, make_and( l, sen ) ); } ),
-									error::get( ) );
+									error( ) );
 								assert( ret.data );
 								return ret.move_quantifier_out( );
 							}
@@ -381,7 +381,7 @@ namespace first_order_logic
 									make_some_actor(
 										[&]( const variable & v, const sentence & sen )
 										{ ret = make_some( v, make_or( sen, r ) ); } ),
-									error::get( ) );
+									error( ) );
 								assert( ret.data );
 								return ret.move_quantifier_out( );
 							}
@@ -396,7 +396,7 @@ namespace first_order_logic
 									make_some_actor(
 										[&]( const variable & v, const sentence & sen )
 										{ ret = make_some( v, make_or( l, sen ) ); } ),
-									error::get( ) );
+									error( ) );
 								assert( ret.data );
 								return ret.move_quantifier_out( );
 							}
@@ -416,7 +416,7 @@ namespace first_order_logic
 										make_some_actor(
 											[&]( const variable & v, const sentence & sss )
 											{ ret = make_all( v, sss ); } ),
-										error::get( ) );
+										error( ) );
 									assert( ret.data );
 									return ret.move_quantifier_out( );
 								}
@@ -478,7 +478,7 @@ namespace first_order_logic
 								} )( s ).skolemization_remove_existential( );
 					}
 				} ),
-			ignore::get( )
+			ignore( )
 		);
 		return ret ? * ret : * this;
 	}
@@ -525,7 +525,7 @@ namespace first_order_logic
 								} )( s ).skolemization_remove_existential( );
 					}
 				} ),
-			error::get( )
+			error( )
 		);
 		return ret ? * ret : * this;
 	}
@@ -646,6 +646,23 @@ namespace first_order_logic
 							return result;
 						} )
 				);
+	}
+
+	sentence sentence::drop_existential( ) const
+	{
+		boost::optional< sentence > sen;
+		type_restore(
+			make_some_actor( [&]( const variable &, const sentence & se ){ sen = se.drop_existential( ); } ),
+			ignore( ) );
+		return sen ? * sen : * this;
+	}
+	sentence sentence::drop_universal( ) const
+	{
+		boost::optional< sentence > sen;
+		type_restore(
+			make_all_actor( [&]( const variable &, const sentence & se ){ sen = se.drop_existential( ); } ),
+			ignore( ) );
+		return sen ? * sen : * this;
 	}
 }
 #endif // IMPLEMENTATION_SENTENCE_HPP

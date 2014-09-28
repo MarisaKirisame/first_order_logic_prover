@@ -165,7 +165,7 @@ namespace first_order_logic
 								make_all_actor(
 									[&]( const variable & va, const sentence & se )
 									{ ret = unify( substitution( { { va, term( var ) } } )( se ), sen, sub ); } ),
-								error::get( ) );
+								error( ) );
 							return ret;
 						} ),
 					make_some_actor(
@@ -176,7 +176,7 @@ namespace first_order_logic
 								make_some_actor(
 									[&]( const variable & va, const sentence & se )
 									{ ret = unify( substitution( { { va, term( var ) } } )( se ), sen, sub ); } ),
-								error::get( ) );
+								error( ) );
 							return ret;
 						} ),
 					make_and_actor(
@@ -190,7 +190,7 @@ namespace first_order_logic
 										auto tem = unify( l, ll, sub );
 										if ( tem ) { ret = unify( r, rr, * tem ); }
 									} ),
-								error::get( ) );
+								error( ) );
 							return ret;
 						} ),
 					make_or_actor(
@@ -204,7 +204,7 @@ namespace first_order_logic
 										auto tem = unify( l, ll, sub );
 										if ( tem ) { ret = unify( r, rr, * tem ); }
 									} ),
-								error::get( ) );
+								error( ) );
 							return ret;
 						} ),
 					make_not_actor(
@@ -213,7 +213,7 @@ namespace first_order_logic
 							boost::optional< substitution > ret;
 							q.type_restore(
 								make_not_actor( [&]( const sentence & s ){ ret = unify( sen, s, sub ); } ),
-								error::get( ) );
+								error( ) );
 							return ret;
 						} ),
 					make_predicate_actor(
@@ -232,7 +232,7 @@ namespace first_order_logic
 											else { break; }
 										}
 									} ),
-								error::get( ) );
+								error( ) );
 							return ret;
 						} ),
 					make_propositional_letter_actor(
@@ -248,7 +248,7 @@ namespace first_order_logic
 										auto tem = unify( l, ll, sub );
 										if ( tem ) { ret = unify( r, rr, * tem ); }
 									} ),
-								error::get( ) );
+								error( ) );
 							return ret;
 						} ) );
 	}

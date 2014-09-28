@@ -38,21 +38,11 @@ namespace first_order_logic
 	{
 		template< typename ... T >
 		void operator( )( const T & ... ) const { }
-		static const ignore & get( )
-		{
-			static ignore ret;
-			return ret;
-		}
 	};
 	struct error
 	{
 		template< typename ... T >
 		void operator( )( const T & ... ) const { throw std::logic_error( "unknown enum type" ); }
-		static const error & get( )
-		{
-			static error ret;
-			return ret;
-		}
 	};
 	template< template< typename > class T, bool is_current >
 	struct extractor;
@@ -97,7 +87,7 @@ namespace first_order_logic
 		auto type_restore_full( const T & ... t ) const
 		{
 			static_assert( std::tuple_size< std::tuple< T ... > >::value == 8, "should be eight arguments" );
-			return type_restore( t ..., error::get( ) );
+			return type_restore( t ..., error( ) );
 		}
 		template< typename ... T >
 		auto type_restore( const T & ... t ) const
@@ -235,6 +225,8 @@ namespace first_order_logic
 		sentence skolemization_remove_universal( std::set< variable > & previous_quantifier ) const;
 		sentence skolemization_remove_existential( ) const;
 		sentence skolemization_remove_universal( ) const;
+		sentence drop_existential( ) const;
+		sentence drop_universal( ) const;
 		sentence rectify( ) const;
 		sentence rectify(
 					std::set< variable > & used_quantifier,
@@ -251,6 +243,9 @@ namespace first_order_logic
 					(*this)->sentence_type == type::predicate ||
 					(*this)->sentence_type == type::propositional_letter;
 		}
+		template< typename OSTREAM >
+		friend OSTREAM & operator << ( OSTREAM & os, const sentence & sen )
+		{ return os << static_cast< std::string >( sen ); }
 	};
 }
 #include "implementation/sentence.hpp"

@@ -89,7 +89,7 @@ namespace first_order_logic
 										move_negation_in( make_not( l ) ),
 										move_negation_in( make_not( r ) ) );
 							} ),
-						ignore::get( ) );
+						ignore( ) );
 				} ),
 			make_and_actor(
 				[&]( const sentence & l, const sentence & r )
@@ -97,7 +97,7 @@ namespace first_order_logic
 			make_or_actor(
 				[&]( const sentence & l, const sentence & r )
 				{ se = make_or( move_negation_in( l ), move_negation_in( r ) ); } ),
-			ignore::get( )
+			ignore( )
 		);
 		return se ? se : prop;
 	}
@@ -126,10 +126,10 @@ namespace first_order_logic
 											move_or_in( make_or( r, ll ) ),
 											move_or_in( make_or( r, rr ) ) );
 							} ),
-							ignore::get( ) );
+							ignore( ) );
 					if ( ! se ) { se = make_or( l, r ); }
 				} ),
-			ignore::get( )
+			ignore( )
 		);
 		return se ? se : prop;
 	}
@@ -150,7 +150,7 @@ namespace first_order_logic
 					make_not_actor(
 						[&]( const sentence & sen )
 						{ ret = { literal( sen, false ) }; } ),
-					ignore::get( )
+					ignore( )
 				);
 		if ( is_ignored ) { ret = { literal( prop, true ) }; }
 		return ret;
@@ -170,7 +170,7 @@ namespace first_order_logic
 						std::copy( cf.begin( ), cf.end( ), std::inserter( cs, cs.end( ) ) );
 						ret = cs;
 					} ),
-					ignore::get( ) );
+					ignore( ) );
 			if ( ! ret.empty( ) ) { return ret; }
 			else { return { get_clause( prop ) }; }
 		}
@@ -187,7 +187,7 @@ namespace first_order_logic
 	{
 		CNF cnf;
 		resolution( const sentence & sen ) :
-			cnf( to_CNF( sen.rectify( ).move_quantifier_out( ).skolemization_remove_existential( ) ) ) { }
+			cnf( to_CNF( sen.rectify( ).move_quantifier_out( ).skolemization_remove_existential( ).drop_universal( ) ) ) { }
 	};
 
 }
