@@ -478,7 +478,7 @@ namespace first_order_logic
 								} )( s ).skolemization_remove_existential( );
 					}
 				} ),
-			error::get( )
+			ignore::get( )
 		);
 		return ret ? * ret : * this;
 	}

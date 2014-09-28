@@ -170,7 +170,7 @@ namespace first_order_logic
 						std::copy( cf.begin( ), cf.end( ), std::inserter( cs, cs.end( ) ) );
 						ret = cs;
 					} ),
-					error::get( ) );
+					ignore::get( ) );
 			if ( ! ret.empty( ) ) { return ret; }
 			else { return { get_clause( prop ) }; }
 		}
@@ -186,7 +186,8 @@ namespace first_order_logic
 	struct resolution
 	{
 		CNF cnf;
-		resolution( const sentence & sen ) : cnf( to_CNF( sen.rectify( ).move_quantifier_out( ).skolemization_remove_existential( ) ) ) { }
+		resolution( const sentence & sen ) :
+			cnf( to_CNF( sen.rectify( ).move_quantifier_out( ).skolemization_remove_existential( ) ) ) { }
 	};
 
 }
