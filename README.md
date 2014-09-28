@@ -8,7 +8,7 @@ This is a library which contain:
  - Gentzen system
  - Forward chaining algorithm
  - Unify
- - Backward chaining algorithm( unimplemented yet )
+ - Backward chaining algorithm
  - Rete algorithm( unimplemented yet )
  - Resolution method( unimplemented yet )
 

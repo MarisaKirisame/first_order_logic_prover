@@ -68,10 +68,7 @@ namespace first_order_logic
 	struct resolution
 	{
 		CNF cnf;
-		resolution( const sentence & )
-		{
-			throw;
-		}
+		resolution( const sentence & sen ) : cnf( to_CNF( sen.rectify( ).move_quantifier_out( ).skolemization_remove_existential( ) ) ) { }
 	};
 	sentence move_negation_in( const sentence & prop )
 	{
