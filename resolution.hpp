@@ -65,11 +65,6 @@ namespace first_order_logic
 	};
 	typedef disjunction< literal > clause;
 	typedef conjunction< clause > CNF;
-	struct resolution
-	{
-		CNF cnf;
-		resolution( const sentence & sen ) : cnf( to_CNF( sen.rectify( ).move_quantifier_out( ).skolemization_remove_existential( ) ) ) { }
-	};
 	sentence move_negation_in( const sentence & prop )
 	{
 		sentence se;
@@ -188,5 +183,11 @@ namespace first_order_logic
 		if ( prop.is_atom( ) ) { return CNF ( { clause ( { literal( prop, true ) } ) } ); }
 		else { return CNF( flatten( pre_CNF( prop ) ) ); }
 	}
+	struct resolution
+	{
+		CNF cnf;
+		resolution( const sentence & sen ) : cnf( to_CNF( sen.rectify( ).move_quantifier_out( ).skolemization_remove_existential( ) ) ) { }
+	};
+
 }
 #endif // RESOLUTION_HPP

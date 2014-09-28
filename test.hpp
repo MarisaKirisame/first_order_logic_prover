@@ -137,9 +137,10 @@ namespace first_order_logic
 		substitution expected = std::map< variable, term > { { variable( "x" ), make_constant( "West" ) } };
 		BOOST_CHECK( res && * res == expected );
 	}
-	BOOST_AUTO_TEST_CASE( praser )
+	BOOST_AUTO_TEST_CASE( praser ) { BOOST_CHECK( prase( "∀x F(x)" ) ); }
+	BOOST_AUTO_TEST_CASE( resolution_test )
 	{
-		BOOST_CHECK( prase( "∀x F(x)" ) );
+		resolution res( * prase( "∀x F(x)" ) );
 	}
 }
 #endif //THEOREM_PROVER_EXAMPLE
