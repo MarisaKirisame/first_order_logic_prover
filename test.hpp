@@ -142,15 +142,33 @@ namespace first_order_logic
 	{
 		std::cout << std::boolalpha;
 		resolution res(
-					make_all(
-						variable( "x" ),
+					make_and(
+						make_some(
+							variable( "x" ),
+							make_and(
+								make_predicate( "Own", { make_constant( "Nono" ), make_variable( "x" ) } ),
+								make_predicate( "Missile", { make_variable( "x" ) } ) ) ),
 						make_all(
-							variable( "y" ),
+							variable( "x" ),
 							make_all(
-								variable( "z" ),
-								make_imply(
-									make_predicate( "American", { make_variable( "x" ) } ),
-									make_predicate( "Criminal", { make_variable( "x" ) } ) ) ) ) ) );
+								variable( "y" ),
+								make_all(
+									variable( "z" ),
+									make_and(
+										make_imply(
+											make_predicate( "American", { make_variable( "x" ) } ),
+											make_and(
+												make_predicate( "Weapon", { make_variable( "y" ) } ),
+												make_and(
+													make_predicate( "Hostile", { make_variable( "z" ) } ),
+													make_predicate(
+														"Sell",
+														{
+															make_variable( "x" ),
+															make_variable( "y" ),
+															make_variable( "z" )
+														} ) ) ) ),
+										make_predicate( "Criminal", { make_variable( "x" ) } ) ) ) ) ) ) );
 		for ( const auto & i : res.cnf.data )
 		{
 			for ( const literal & ii : i.data )
