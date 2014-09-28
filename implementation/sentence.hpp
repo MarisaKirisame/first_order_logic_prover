@@ -660,7 +660,7 @@ namespace first_order_logic
 	{
 		boost::optional< sentence > sen;
 		type_restore(
-			make_all_actor( [&]( const variable &, const sentence & se ){ sen = se.drop_existential( ); } ),
+			make_all_actor( [&]( const variable &, const sentence & se ){ sen = se.drop_universal( ); } ),
 			ignore( ) );
 		return sen ? * sen : * this;
 	}

@@ -141,7 +141,16 @@ namespace first_order_logic
 	BOOST_AUTO_TEST_CASE( resolution_test )
 	{
 		std::cout << std::boolalpha;
-		resolution res( * prase( "∀x F(x)" ) );
+		resolution res(
+					make_all(
+						variable( "x" ),
+						make_all(
+							variable( "y" ),
+							make_all(
+								variable( "z" ),
+								make_imply(
+									make_predicate( "American", { make_variable( "x" ) } ),
+									make_predicate( "Criminal", { make_variable( "x" ) } ) ) ) ) ) );
 		for ( const auto & i : res.cnf.data )
 		{
 			for ( const literal & ii : i.data )
