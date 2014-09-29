@@ -186,12 +186,69 @@ namespace first_order_logic
 		if ( prop.is_atom( ) ) { return CNF ( { clause ( { literal( prop, true ) } ) } ); }
 		else { return CNF( flatten( pre_CNF( prop ) ) ); }
 	}
-	struct resolution
+	bool resolution( const sentence & sen, const sentence & goal )
 	{
-		CNF cnf;
-		resolution( const sentence & sen ) :
-			cnf( to_CNF( sen.rectify( ).move_quantifier_out( ).skolemization_remove_existential( ).drop_universal( ) ) ) { }
-	};
-
+		CNF cnf(
+				to_CNF(
+					make_and( sen, make_not( goal ).restore_quantifier_existential( ) ).
+						rectify( ).
+						move_quantifier_out( ).
+						skolemization_remove_existential( ).
+						drop_universal( ) ) );
+		std::set< clause > to_be_added;
+		bool have_new_inference = true;
+		while ( have_new_inference )
+		{
+			for ( const auto & i : cnf.data )
+			{
+				for ( const literal & ii : i.data )
+				{
+					std::cout << ii.b << " " << ii.data << std::endl;
+				}
+				std::cout << std::endl;
+			}
+			std::cin.get( );
+			have_new_inference = false;
+			for ( const clause & l : cnf.data )
+			{
+				for ( const clause & r : cnf.data )
+				{
+					for ( const literal & ll : l.data )
+					{
+						for ( const literal & rr : r.data )
+						{
+							if ( ll.b != rr.b )
+							{
+								auto un = unify( ll.data, rr.data );
+								if ( un )
+								{
+									clause cl;
+									for ( const literal & ins : l.data )
+									{
+										if ( (*un)(ins.data) != (*un)(ll.data) && (*un)(ins.data) != (*un)(rr.data) )
+										{ cl.data.insert( literal( (*un)( ins.data ), ins.b ) ); }
+									}
+									for ( const literal & ins : r.data )
+									{
+										if ( (*un)(ins.data) != (*un)(ll.data) && (*un)(ins.data) != (*un)(rr.data) )
+										{ cl.data.insert( literal( (*un)( ins.data ), ins.b ) ); }
+									}
+									if ( cl.data.empty( ) ) { return true; }
+									to_be_added.insert( cl );
+								}
+							}
+						}
+					}
+				}
+			}
+			for ( const clause & c : to_be_added )
+			{
+				auto res = cnf.data.insert( c );
+				have_new_inference = have_new_inference || res.second;
+			}
+			to_be_added.clear( );
+		}
+		return false;
+	}
 }
 #endif // RESOLUTION_HPP

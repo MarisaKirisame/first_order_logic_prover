@@ -179,6 +179,7 @@ namespace first_order_logic
 		sentence( const sentence & sen ) : data( sen.data ) { }
 		sentence( ) { }
 		bool operator == ( const sentence & comp ) const { return !( (*this) < comp || comp < (*this) ); }
+		bool operator != ( const sentence & comp ) const { return ! ( (*this) == comp ); }
 		size_t length( ) const;
 		template< typename OUTITER >
 		OUTITER functions( OUTITER result ) const;
@@ -243,6 +244,8 @@ namespace first_order_logic
 					(*this)->sentence_type == type::predicate ||
 					(*this)->sentence_type == type::propositional_letter;
 		}
+		sentence restore_quantifier_existential( ) const;
+		sentence restore_quantifier_universal( ) const;
 		template< typename OSTREAM >
 		friend OSTREAM & operator << ( OSTREAM & os, const sentence & sen )
 		{ return os << static_cast< std::string >( sen ); }

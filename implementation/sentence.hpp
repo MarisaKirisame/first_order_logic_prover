@@ -668,5 +668,21 @@ namespace first_order_logic
 			ignore( ) );
 		return sen ? * sen : * this;
 	}
+	sentence sentence::restore_quantifier_existential( ) const
+	{
+		std::set< variable > var;
+		free_variables( std::inserter( var, var.begin( ) ) );
+		sentence ret = * this;
+		for ( const variable & v : var ) { ret = make_some( v, ret ); }
+		return ret;
+	}
+	sentence sentence::restore_quantifier_universal( ) const
+	{
+		std::set< variable > var;
+		free_variables( std::inserter( var, var.begin( ) ) );
+		sentence ret = * this;
+		for ( const variable & v : var ) { ret = make_all( v, ret ); }
+		return ret;
+	}
 }
 #endif // IMPLEMENTATION_SENTENCE_HPP

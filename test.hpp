@@ -202,27 +202,24 @@ namespace first_order_logic
 						make_predicate( "Hostile", { make_variable( "x" ) } ) ) );
 		sentence axiom6 = make_predicate( "American", { make_constant( "West" ) } );
 		sentence axiom7 = make_predicate( "Enemy", { make_constant( "Nono" ), make_constant( "America" ) } );
-		//resolution res( axiom4 );
-		resolution res(
+		BOOST_CHECK(
+			resolution(
+				make_predicate( "Criminal", { make_constant( "West" ) } ),
+				make_predicate( "Criminal", { make_variable( "x" ) } ) ) );
+		/*BOOST_CHECK(
+			resolution(
+				make_and(
 					make_and(
 						make_and(
 							make_and(
 								make_and(
-									make_and(
-										make_and( axiom1, axiom2 ),
-										axiom3 ),
-									axiom4 ),
-								axiom5 ),
-							axiom6 ),
-						axiom7 ) );
-		for ( const auto & i : res.cnf.data )
-		{
-			for ( const literal & ii : i.data )
-			{
-				std::cout << ii.b << " " << ii.data << std::endl;
-			}
-			std::cout << std::endl;
-		}
+									make_and( axiom1, axiom2 ),
+									axiom3 ),
+								axiom4 ),
+							axiom5 ),
+						axiom6 ),
+					axiom7 ),
+				make_some( variable( "x" ),make_predicate( "Criminal", { make_variable( "x" ) } ) ) ) );*/
 	}
 }
 #endif //THEOREM_PROVER_EXAMPLE
