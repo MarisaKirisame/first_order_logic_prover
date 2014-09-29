@@ -187,7 +187,10 @@ namespace first_order_logic
 	{
 		CNF cnf;
 		resolution( const sentence & sen ) :
-			cnf( to_CNF( sen.rectify( ).move_quantifier_out( ).skolemization_remove_existential( ).drop_universal( ) ) ) { }
+			cnf( to_CNF( sen.rectify( ).move_quantifier_out( ).skolemization_remove_existential( ).drop_universal( ) ) )
+		{
+			std::cout << sen.rectify( );
+		}
 	};
 
 }

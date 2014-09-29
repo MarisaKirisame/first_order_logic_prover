@@ -550,12 +550,14 @@ namespace first_order_logic
 					make_all_actor(
 						[&]( const variable & v, const sentence & sen )
 						{
-							if ( used_quantifier.count( v ) != 0 && free_variable.count( v ) != 0 )
+							if ( used_quantifier.count( v ) != 0 || free_variable.count( v ) != 0 )
 							{
 								std::string gen_str = v.name;
-								while ( used_quantifier.count( variable( gen_str ) ) != 0 &&
-										free_variable.count( variable( gen_str ) ) &&
+								while ( used_quantifier.count( variable( gen_str ) ) != 0 ||
+										free_variable.count( variable( gen_str ) ) != 0 ||
 										used_name.count( gen_str ) != 0 ) { gen_str += "_"; }
+								used_name.insert( gen_str );
+								used_quantifier.insert( variable( gen_str ) );
 								return make_all(
 											variable( gen_str ),
 											substitution( { std::make_pair( v, make_variable( gen_str ) ) } )( sen ) );
@@ -565,12 +567,14 @@ namespace first_order_logic
 					make_some_actor(
 						[&]( const variable & v, const sentence & sen )
 						{
-							if ( used_quantifier.count( v ) != 0 && free_variable.count( v ) != 0 )
+							if ( used_quantifier.count( v ) != 0 || free_variable.count( v ) != 0 )
 							{
 								std::string gen_str = v.name;
-								while ( used_quantifier.count( variable( gen_str ) ) != 0 &&
-										free_variable.count( variable( gen_str ) ) &&
+								while ( used_quantifier.count( variable( gen_str ) ) != 0 ||
+										free_variable.count( variable( gen_str ) ) != 0 ||
 										used_name.count( gen_str ) != 0 ) { gen_str += "_"; }
+								used_name.insert( gen_str );
+								used_quantifier.insert( variable( gen_str ) );
 								return make_some(
 											variable( gen_str ),
 											substitution( { { v, make_variable( gen_str ) } } )( sen ) );
