@@ -136,7 +136,6 @@ namespace first_order_logic
 	clause get_clause( const sentence & prop )
 	{
 		clause ret;
-		bool is_ignored = true;
 		prop.type_restore
 				(
 					make_or_actor(
@@ -152,7 +151,11 @@ namespace first_order_logic
 						{ ret = { literal( sen, false ) }; } ),
 					ignore( )
 				);
-		if ( is_ignored ) { ret = { literal( prop, true ) }; }
+		if ( ret.data.empty( ) )
+		{
+			assert( prop.is_atom( ) );
+			ret = { literal( prop, true ) };
+		}
 		return ret;
 	}
 	std::set< clause > flatten( const sentence & prop )
@@ -187,10 +190,7 @@ namespace first_order_logic
 	{
 		CNF cnf;
 		resolution( const sentence & sen ) :
-			cnf( to_CNF( sen.rectify( ).move_quantifier_out( ).skolemization_remove_existential( ).drop_universal( ) ) )
-		{
-			std::cout << sen.rectify( );
-		}
+			cnf( to_CNF( sen.rectify( ).move_quantifier_out( ).skolemization_remove_existential( ).drop_universal( ) ) ) { }
 	};
 
 }

@@ -141,40 +141,87 @@ namespace first_order_logic
 	BOOST_AUTO_TEST_CASE( resolution_test )
 	{
 		std::cout << std::boolalpha;
+		sentence axiom1 = make_all(
+					variable( "x" ),
+					make_imply(
+						make_predicate(
+							"Missile",
+							{ make_variable( "x" ) } ),
+						make_predicate(
+							"Weapon",
+							{ make_variable( "x" ) } ) ) );
+		sentence axiom2 =
+				make_all(
+					variable( "x" ),
+					make_imply(
+						make_and(
+							make_predicate( "Missile", { make_variable( "x" ) } ),
+							make_predicate( "Own", { make_constant( "Nono" ), make_variable( "x" ) } ) ),
+						make_predicate(
+							"Sell",
+							{
+								make_constant( "West" ),
+								make_variable( "x" ),
+								make_constant( "Nono" )
+							} ) ) );
+		sentence axiom3 =
+				make_some(
+					variable( "x" ),
+					make_and(
+						make_predicate( "Own", { make_constant( "Nono" ), make_variable( "x" ) } ),
+						make_predicate( "Missile", { make_variable( "x" ) } ) ) );
+		sentence axiom4 =
+				make_all(
+					variable( "x" ),
+					make_all(
+						variable( "y" ),
+						make_all(
+							variable( "z" ),
+							make_imply(
+								make_and(
+									make_predicate( "American", { make_variable( "x" ) } ),
+									make_and(
+										make_predicate( "Weapon", { make_variable( "y" ) } ),
+										make_and(
+											make_predicate( "Hostile", { make_variable( "z" ) } ),
+											make_predicate(
+												"Sell",
+												{
+													make_variable( "x" ),
+													make_variable( "y" ),
+													make_variable( "z" )
+												} ) ) ) ),
+								make_predicate( "Criminal", { make_variable( "x" ) } ) ) ) ) );
+		sentence axiom5 =
+				make_all(
+					variable( "x" ),
+					make_imply(
+						make_predicate(
+							"Enemy",
+							{ make_variable( "x" ), make_constant( "America" ) } ),
+						make_predicate( "Hostile", { make_variable( "x" ) } ) ) );
+		sentence axiom6 = make_predicate( "American", { make_constant( "West" ) } );
+		sentence axiom7 = make_predicate( "Enemy", { make_constant( "Nono" ), make_constant( "America" ) } );
+		//resolution res( axiom4 );
 		resolution res(
 					make_and(
-						make_some(
-							variable( "x" ),
+						make_and(
 							make_and(
-								make_predicate( "Own", { make_constant( "Nono" ), make_variable( "x" ) } ),
-								make_predicate( "Missile", { make_variable( "x" ) } ) ) ),
-						make_all(
-							variable( "x" ),
-							make_all(
-								variable( "y" ),
-								make_all(
-									variable( "z" ),
+								make_and(
 									make_and(
-										make_imply(
-											make_predicate( "American", { make_variable( "x" ) } ),
-											make_and(
-												make_predicate( "Weapon", { make_variable( "y" ) } ),
-												make_and(
-													make_predicate( "Hostile", { make_variable( "z" ) } ),
-													make_predicate(
-														"Sell",
-														{
-															make_variable( "x" ),
-															make_variable( "y" ),
-															make_variable( "z" )
-														} ) ) ) ),
-										make_predicate( "Criminal", { make_variable( "x" ) } ) ) ) ) ) ) );
+										make_and( axiom1, axiom2 ),
+										axiom3 ),
+									axiom4 ),
+								axiom5 ),
+							axiom6 ),
+						axiom7 ) );
 		for ( const auto & i : res.cnf.data )
 		{
 			for ( const literal & ii : i.data )
 			{
 				std::cout << ii.b << " " << ii.data << std::endl;
 			}
+			std::cout << std::endl;
 		}
 	}
 }
