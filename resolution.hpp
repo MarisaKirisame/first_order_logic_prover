@@ -199,15 +199,6 @@ namespace first_order_logic
 		bool have_new_inference = true;
 		while ( have_new_inference )
 		{
-			for ( const auto & i : cnf.data )
-			{
-				for ( const literal & ii : i.data )
-				{
-					std::cout << ii.b << " " << ii.data << std::endl;
-				}
-				std::cout << std::endl;
-			}
-			std::cin.get( );
 			have_new_inference = false;
 			for ( const clause & l : cnf.data )
 			{

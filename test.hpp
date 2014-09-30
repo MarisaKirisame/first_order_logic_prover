@@ -204,10 +204,6 @@ namespace first_order_logic
 		sentence axiom7 = make_predicate( "Enemy", { make_constant( "Nono" ), make_constant( "America" ) } );
 		BOOST_CHECK(
 			resolution(
-				make_predicate( "Criminal", { make_constant( "West" ) } ),
-				make_predicate( "Criminal", { make_variable( "x" ) } ) ) );
-		/*BOOST_CHECK(
-			resolution(
 				make_and(
 					make_and(
 						make_and(
@@ -219,7 +215,7 @@ namespace first_order_logic
 							axiom5 ),
 						axiom6 ),
 					axiom7 ),
-				make_some( variable( "x" ),make_predicate( "Criminal", { make_variable( "x" ) } ) ) ) );*/
+				make_predicate( "Criminal", { make_variable( "x" ) } ) ) );
 	}
 }
 #endif //THEOREM_PROVER_EXAMPLE
