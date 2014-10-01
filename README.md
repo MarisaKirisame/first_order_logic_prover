@@ -10,7 +10,7 @@ This is a library which contain:
  - Unify
  - Backward chaining algorithm
  - Rete algorithm( unimplemented yet )
- - Resolution method( unimplemented yet )
+ - Resolution method
 
 Dependency: See .pro. **Use a lot of C++1y feature so need a good compiler.**
 
