@@ -3,14 +3,15 @@ First order logic prover
 ==============
 This is a library which contain:
 
- - First order logic classes.
- - Parser for parsing FOL.
- - Gentzen system
- - Forward chaining algorithm
- - Unify
  - Backward chaining algorithm
- - Rete algorithm( unimplemented yet )
+ - Dependent type First order logic tree( unimplement yet )
+ - First order logic classes.
+ - Forward chaining algorithm
+ - Gentzen system
+ - Parser for parsing FOL.
  - Resolution method
+ - Rete algorithm( unimplemented yet )
+ - Unify
 
 Dependency: See .pro. **Use a lot of C++1y feature so need a good compiler.**
 
