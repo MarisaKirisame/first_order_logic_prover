@@ -14,29 +14,30 @@ namespace first_order_logic
 {
 	BOOST_AUTO_TEST_CASE( gentzen_system_test )
 	{
-		auto fol = make_imply(
-								 make_all( variable( "x" ), make_predicate( "F", { make_variable( "x" ) } ) ),
-								 make_all( variable( "x" ), make_predicate( "F", { make_function( "f", { make_variable( "x" ) } ) } ) ) );
-		auto fol2 = make_imply(
-									make_some
-									(
-										variable( "x" ),
-										make_imply
-										(
-											make_propositional_letter( "p" ),
-											make_predicate( "Q", { make_variable( "x" ) } )
-										)
-									),
-									make_imply
-									(
-										make_propositional_letter( "p" ),
-										make_some
-										(
-											variable( "z" ),
-											make_predicate( "Q", { make_variable( "z" ) } )
-										)
-									)
-								);
+		auto fol =
+				make_imply(
+					make_all( variable( "x" ), make_predicate( "F", { make_variable( "x" ) } ) ),
+					make_all(
+						variable( "x" ),
+						make_predicate( "F", { make_function( "f", { make_variable( "x" ) } ) } ) ) );
+		auto fol2 =
+				make_imply(
+					make_some
+					(
+						variable( "x" ),
+						make_imply
+						(
+							make_propositional_letter( "p" ),
+							make_predicate( "Q", { make_variable( "x" ) } )
+						)
+					),
+					make_imply
+					(
+						make_propositional_letter( "p" ),
+						make_some
+						(
+							variable( "z" ),
+							make_predicate( "Q", { make_variable( "z" ) } ) ) ) );
 		auto fol3 =
 				make_imply
 				(
@@ -69,7 +70,6 @@ namespace first_order_logic
 					),
 					make_predicate( "p", { make_function( "f", { make_variable( "x" ) } ) } )
 				);
-
 		BOOST_CHECK( gentzen_system::is_valid( fol ).second );
 		BOOST_CHECK( gentzen_system::is_valid( fol2 ).second );
 		BOOST_CHECK( gentzen_system::is_valid( fol3 ).second );

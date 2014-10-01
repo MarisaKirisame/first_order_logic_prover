@@ -25,11 +25,7 @@ namespace first_order_logic
 							substitution sub( { std::make_pair( v, make_variable( gen_str ) ) } );
 							return make_some( v, sub( sen ) );
 						} ),
-					make_equal_actor( []( const term & l, const term & r ) { return make_equal( l, r ); } ),
-					make_predicate_actor(
-						[]( const std::string & str, const std::vector< term > & vec )
-						{ return make_predicate( str, vec ); } ),
-					make_propositional_letter_actor( []( const std::string & str ){ return make_propositional_letter( str ); } ),
+					make_atomic_actor( [&]( const atomic_sentence & as ){ return sentence( as ); } ),
 					make_and_actor(
 						[&]( const sentence & l, const sentence & r )
 						{
@@ -90,24 +86,8 @@ namespace first_order_logic
 								static_cast< std::string >( r );
 						} ),
 					make_not_actor( [&]( const sentence & sen ){ return "!" + static_cast< std::string >( sen ); } ),
-					make_equal_actor( [&]( const term & l, const term & r ){ return static_cast< std::string >( l ) + "=" + static_cast< std::string >( r ); } ),
-					make_predicate_actor(
-						[&]( const std::string & str, const std::vector< term > & vec )
-						{
-							std::string stack;
-							auto it = vec.begin( );
-							goto http;
-							while ( it != vec.end( ) )
-							{
-								stack += ", ";
-								http://marisa.moe
-								stack += static_cast< std::string >( * it );
-								++it;
-							}
-							return str + "(" + stack + ")";
-						} ),
-						make_propositional_letter_actor( [&]( const std::string & str ){ return str; } )
-					) +
+					make_atomic_actor( [&]( const atomic_sentence & as ){ return static_cast< std::string >( as ); } )
+				) +
 				")";
 		return (*this)->cache;
 	}
@@ -118,9 +98,7 @@ namespace first_order_logic
 			(
 				make_all_actor( []( const variable &, const sentence & s ){ return s.length( ); } ),
 				make_some_actor( []( const variable &, const sentence & s ){ return s.length( ); } ),
-				make_equal_actor( []( const term & l, const term & r ){ return l.length( ) + r.length( ); } ),
-				make_predicate_actor( []( const std::string &, const std::vector< term > & )->size_t { return 0; } ),
-				make_propositional_letter_actor( []( const std::string & )->size_t{ return 0; } ),
+				make_atomic_actor( []( const atomic_sentence & )->size_t{ return 0; } ),
 				make_and_actor( []( const sentence & l, const sentence & r ){ return l.length( ) + r.length( ); } ),
 				make_or_actor( []( const sentence & l, const sentence & r ){ return l.length( ) + r.length( ); } ),
 				make_not_actor( []( const sentence & sen ){ return sen.length( ); } )
@@ -133,11 +111,11 @@ namespace first_order_logic
 		(
 			make_all_actor( [&]( const variable &, const sentence & s ){ result = s.functions( result ); } ),
 			make_some_actor( [&]( const variable &, const sentence & s ){ result = s.functions( result ); } ),
-			make_equal_actor( [&]( const term & l, const term & r ) { result = l.functions( r.functions( result ) ); } ),
-			make_predicate_actor( [&]( const std::string &, const std::vector< term > & vec ) { for ( const term & t : vec ) { result = t.functions( result ); } } ),
-			make_propositional_letter_actor( []( const std::string & ){ } ),
-			make_and_actor( [&]( const sentence & l, const sentence & r ) { result = l.functions( r.functions( result ) ); } ),
-			make_or_actor( [&]( const sentence & l, const sentence & r ) { result = l.functions( r.functions( result ) ); } ),
+			make_atomic_actor( [&]( const atomic_sentence & as ){ result = as.functions( result ); } ),
+			make_and_actor(
+				[&]( const sentence & l, const sentence & r ) { result = l.functions( r.functions( result ) ); } ),
+			make_or_actor(
+				[&]( const sentence & l, const sentence & r ) { result = l.functions( r.functions( result ) ); } ),
 			make_not_actor( [&]( const sentence & sen ){ result = sen.functions( result ); } )
 		);
 		return result;
@@ -147,19 +125,16 @@ namespace first_order_logic
 	{
 		type_restore_full
 		(
-			make_all_actor( [&]( const variable &, const sentence & s ){ result = s.predicates( result ); } ),
-			make_some_actor( [&]( const variable &, const sentence & s ){ result = s.predicates( result ); } ),
-			make_equal_actor( [&]( const term &, const term & ){ } ),
-			make_predicate_actor(
-				[&]( const std::string & str, const std::vector< term > & vec )
-				{
-					*result = predicate( str, vec.size( ) );
-					++result;
-				} ),
-			make_propositional_letter_actor( []( const std::string & ){ } ),
-			make_and_actor( [&]( const sentence & l, const sentence & r ) { result = l.predicates( r.predicates( result ) ); } ),
-			make_or_actor( [&]( const sentence & l, const sentence & r ) { result = l.predicates( r.predicates( result ) ); } ),
-			make_not_actor( [&]( const sentence & sen ){ result = sen.predicates( result ); } )
+			make_all_actor( [&]( const variable &, const sentence & s ) { result = s.predicates( result ); } ),
+			make_some_actor( [&]( const variable &, const sentence & s ) { result = s.predicates( result ); } ),
+			make_and_actor(
+						[&]( const sentence & l, const sentence & r )
+						{ result = l.predicates( r.predicates( result ) ); } ),
+			make_or_actor(
+						[&]( const sentence & l, const sentence & r )
+						{ result = l.predicates( r.predicates( result ) ); } ),
+			make_not_actor( [&]( const sentence & sen ){ result = sen.predicates( result ); } ),
+			make_atomic_actor( [&]( const atomic_sentence & as ) { result = as.predicates( result ); } )
 		);
 		return result;
 	}
@@ -236,19 +211,15 @@ namespace first_order_logic
 		(
 			make_all_actor( [&]( const variable &, const sentence & s ) { result = s.free_variables( result ); } ),
 			make_some_actor( [&]( const variable &, const sentence & s ) { result = s.free_variables( result ); } ),
-			make_equal_actor( [&]( const term & l, const term & r ) { result = l.variables( r.variables( result ) ); } ),
-				make_predicate_actor(
-					[&]( const std::string &, const std::vector< term > & vec )
-					{ for ( const term & t : vec ) { result = t.variables( result ); } } ),
-				make_propositional_letter_actor( []( const std::string & ){ } ),
-				make_and_actor(
-					[&]( const sentence & l, const sentence & r )
-					{ result = l.free_variables( r.free_variables( result ) ); } ),
-				make_or_actor(
-					[&]( const sentence & l, const sentence & r )
-					{ result = l.free_variables( r.free_variables( result ) ); } ),
-				make_not_actor( [&]( const sentence & sen ){ result = sen.free_variables( result ); } )
-			);
+			make_atomic_actor( [&]( const atomic_sentence & as ){ result = as.free_variables( result ); } ),
+			make_and_actor(
+				[&]( const sentence & l, const sentence & r )
+				{ result = l.free_variables( r.free_variables( result ) ); } ),
+			make_or_actor(
+				[&]( const sentence & l, const sentence & r )
+				{ result = l.free_variables( r.free_variables( result ) ); } ),
+			make_not_actor( [&]( const sentence & sen ){ result = sen.free_variables( result ); } )
+		);
 		return result;
 	}
 	inline bool sentence::have_equal( ) const
@@ -258,12 +229,15 @@ namespace first_order_logic
 			(
 				make_all_actor( [&]( const variable &, const sentence & s ) { return s.have_equal( ); } ),
 				make_some_actor( [&]( const variable &, const sentence & s ) { return s.have_equal( ); } ),
-				make_equal_actor( [&]( const term &, const term & ) { return true; } ),
-				make_predicate_actor( [&]( const std::string &, const std::vector< term > & ){ return false; } ),
-				make_propositional_letter_actor( []( const std::string & ) { return false; } ),
-				make_and_actor( [&]( const sentence & l, const sentence & r ) { return l.have_equal( ) || r.have_equal( ); } ),
-				make_or_actor( [&]( const sentence & l, const sentence & r ) { return l.have_equal( ) || r.have_equal( ); } ),
-				make_not_actor( [&]( const sentence & sen ){ return sen.have_equal( ); } )
+				make_atomic_actor(
+						[&]( const atomic_sentence & as )
+						{ return as->atomic_sentence_type == atomic_sentence::type::equal; } ),
+				make_and_actor(
+						[&]( const sentence & l, const sentence & r ) { return l.have_equal( ) || r.have_equal( ); } ),
+				make_or_actor(
+						[&]( const sentence & l, const sentence & r ) { return l.have_equal( ) || r.have_equal( ); } ),
+				make_not_actor(
+						[&]( const sentence & sen ){ return sen.have_equal( ); } )
 			);
 	}
 	template< typename OUTITER >
@@ -274,14 +248,7 @@ namespace first_order_logic
 			(
 				make_all_actor( [&]( const variable &, const sentence & s ) { return s.constants( result ); } ),
 				make_some_actor( [&]( const variable &, const sentence & s ) { return s.constants( result ); } ),
-				make_equal_actor( [&]( const term & l, const term & r ) { return l.constants( r.constants( result ) ); } ),
-				make_predicate_actor(
-					[&]( const std::string &, const std::vector< term > & vec )
-					{
-						for ( const term & t : vec ) { result = t.constants( result ); }
-						return result;
-					} ),
-				make_propositional_letter_actor( [&]( const std::string & ) { return result; } ),
+				make_atomic_actor( [&]( const atomic_sentence & as ){ return as.constants( result ); } ),
 				make_and_actor(
 					[&]( const sentence & l, const sentence & r ) { return l.constants( r.constants( result ) ); } ),
 				make_or_actor(
@@ -301,9 +268,7 @@ namespace first_order_logic
 					make_and_actor( []( const sentence & l, const sentence & r )
 						{ return l.have_quantifier( ) || r.have_quantifier( ); } ),
 					make_not_actor( []( const sentence & sen ){ return sen.have_quantifier( ); } ),
-					make_equal_actor( []( const term &, const term & ){ return false; } ),
-					make_predicate_actor( []( const std::string &, const std::vector< term > & ){ return false; } ),
-					make_propositional_letter_actor( []( const std::string & ){ return false; } )
+					make_atomic_actor( []( const atomic_sentence & ){ return false; } )
 				);
 	}
 	inline bool sentence::is_in_prenex_form( ) const
@@ -318,20 +283,18 @@ namespace first_order_logic
 					make_and_actor( []( const sentence & l, const sentence & r )
 						{ return ( ! l.have_quantifier( ) ) && ( ! r.have_quantifier( ) ); } ),
 					make_not_actor( []( const sentence & sen ){ return ! sen.have_quantifier( ); } ),
-					make_equal_actor( []( const term &, const term & ){ return true; } ),
-					make_predicate_actor( []( const std::string &, const std::vector< term > & ){ return true; } ),
-					make_propositional_letter_actor( []( const std::string & ){ return true; } )
+					make_atomic_actor( []( const atomic_sentence & ){ return true; } )
 				);
 	}
 	inline sentence sentence::move_quantifier_out( ) const
 	{
 		return type_restore_full
 				(
-					make_all_actor( [&]( const variable & v, const sentence & s ) { return make_all( v, s.move_quantifier_out( ) ); } ),
-					make_some_actor( [&]( const variable & v, const sentence & s ) { return make_some( v, s.move_quantifier_out( ) ); } ),
-					make_equal_actor( [&]( const term & l, const term & r ) { return make_equal( l, r ); } ),
-					make_predicate_actor( [&]( const std::string & str, const std::vector< term > & vec ) { return make_predicate( str, vec ); } ),
-					make_propositional_letter_actor( [&]( const std::string & str ) { return make_propositional_letter( str ); } ),
+					make_all_actor(
+						[&]( const variable & v, const sentence & s ) { return make_all( v, s.move_quantifier_out( ) ); } ),
+					make_some_actor(
+						[&]( const variable & v, const sentence & s ) { return make_some( v, s.move_quantifier_out( ) ); } ),
+					make_atomic_actor( []( const atomic_sentence & as ){ return sentence( as ); } ),
 					make_and_actor(
 						[&]( const sentence & l, const sentence & r )
 						{
@@ -581,12 +544,7 @@ namespace first_order_logic
 							}
 							return make_some( v, sen );
 						} ),
-					make_propositional_letter_actor(
-						[&]( const std::string & str ){ return make_propositional_letter( str ); } ),
-					make_predicate_actor(
-						[&]( const std::string & str, const std::vector< term > & vec )
-						{ return make_predicate( str, vec ); } ),
-					make_equal_actor( [&]( const term & l, const term & r ) { return make_equal( l, r ); } ),
+					make_atomic_actor( [&]( const atomic_sentence & as ){ return sentence( as ); } ),
 					make_or_actor(
 						[&]( const sentence & l, const sentence & r )
 						{
@@ -632,23 +590,7 @@ namespace first_order_logic
 					make_and_actor( [&]( const sentence & l, const sentence & r )
 						{ return l.used_name( r.used_name( result ) ); } ),
 					make_not_actor( [&]( const sentence & sen ) { return sen.used_name( result ); } ),
-					make_equal_actor(
-						[&]( const term & l, const term & r ){ return l.used_name( r.used_name( result ) ); } ),
-					make_predicate_actor(
-						[&]( const std::string & str, const std::vector< term > & vec )
-						{
-							* result = str;
-							++result;
-							for ( const term & t : vec ) { result = t.used_name( result ); }
-							return result;
-						} ),
-					make_propositional_letter_actor(
-						[&]( const std::string & str )
-						{
-							*result = str;
-							++result;
-							return result;
-						} )
+					make_atomic_actor( [&]( const atomic_sentence & sen ){ return sen.used_name( result ); } )
 				);
 	}
 

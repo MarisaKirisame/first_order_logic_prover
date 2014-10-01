@@ -9,20 +9,8 @@
 #include "function_output_iterator.hpp"
 #include "constant.hpp"
 #include <boost/iterator/transform_iterator.hpp>
-#define DEFINE_ACTOR( NAME )\
-template< typename T >\
-struct NAME ## _actor\
-{\
-	T t;\
-	template< typename ... ARG > auto operator ( )( const ARG & ... arg ) const { return t( arg ... ); }\
-	explicit NAME ## _actor( const T & t ) : t( t ) { }\
-};\
-template< typename T >\
-struct NAME ## _actor_helper : boost::mpl::false_{ };\
-template< typename T >\
-struct NAME ## _actor_helper< NAME ## _actor< T > > : boost::mpl::true_{ };\
-template< typename T >\
-NAME ## _actor< T > make_ ## NAME ## _actor( const T & t ) { return NAME ## _actor< T >( t ); }
+#include "named_parameter.hpp"
+#include "atomic_sentence.hpp"
 namespace first_order_logic
 {
 	DEFINE_ACTOR(and);
@@ -30,46 +18,19 @@ namespace first_order_logic
 	DEFINE_ACTOR(not);
 	DEFINE_ACTOR(all);
 	DEFINE_ACTOR(some);
-	DEFINE_ACTOR(equal);
-	DEFINE_ACTOR(predicate);
-	DEFINE_ACTOR(propositional_letter);
+	DEFINE_ACTOR(atomic);
 	struct substitution;
-	struct ignore
-	{
-		template< typename ... T >
-		void operator( )( const T & ... ) const { }
-	};
-	struct error
-	{
-		template< typename ... T >
-		void operator( )( const T & ... ) const { throw std::logic_error( "unknown enum type" ); }
-	};
-	template< template< typename > class T, bool is_current >
-	struct extractor;
-	template< template< typename > class T >
-	struct extractor< T, true >
-	{
-		template< typename FIRST, typename ... REST >
-		auto operator( )( const FIRST & f, const REST & ... ) const { return f; }
-	};
-	template< template< typename > class T >
-	struct extractor< T, false >
-	{
-		template< typename FIRST, typename SECOND, typename ... REST >
-		auto operator( )( const FIRST &, const SECOND & sec, const REST & ... r ) const
-		{ return extractor< T, T< SECOND >::value >( )( sec, r ... ); }
-	};
-	template< template< typename > class T, typename FIRST, typename ... REST >
-	auto extract( const FIRST & f, const REST & ... r ) { return extractor< T, T< FIRST >::value >( )( f, r ... ); }
 	struct sentence
 	{
-		enum class type { logical_and, logical_or, logical_not, all, some, equal, predicate, propositional_letter };
+		enum class type { logical_and, logical_or, logical_not, all, some, atomic };
 		struct internal
 		{
 			type sentence_type;
 			std::string name;
 			mutable std::string cache;
-			std::vector< boost::variant< boost::recursive_wrapper< sentence >, term > > arguments;
+			std::vector< boost::variant< boost::recursive_wrapper< sentence >, atomic_sentence > > arguments;
+			internal( type sentence_type, const atomic_sentence & r ) :
+				sentence_type( sentence_type ), arguments( { r } ) { }
 			template< typename T >
 			internal( type sentence_type, const std::string & name, const T & r ) :
 				sentence_type( sentence_type ), name( name ), arguments( r.begin( ), r.end( ) ) { }
@@ -78,7 +39,8 @@ namespace first_order_logic
 				sentence_type( sentence_type ), arguments( r.begin( ), r.end( ) ) { }
 			internal( type sentence_type, const std::string & name ) :
 				sentence_type( sentence_type ), name( name ) { }
-			internal( type ty, const variable & l, const sentence & r ) : sentence_type( ty ), name( l.name ), arguments( { r } ) { }
+			internal( type ty, const variable & l, const sentence & r ) :
+				sentence_type( ty ), name( l.name ), arguments( { r } ) { }
 		};
 		std::shared_ptr< internal > data;
 		internal * operator ->( ) const { return data.get( ); }
@@ -86,7 +48,7 @@ namespace first_order_logic
 		template< typename ... T >
 		auto type_restore_full( const T & ... t ) const
 		{
-			static_assert( std::tuple_size< std::tuple< T ... > >::value == 8, "should be eight arguments" );
+			static_assert( std::tuple_size< std::tuple< T ... > >::value == 6, "should have six arguments" );
 			return type_restore( t ..., error( ) );
 		}
 		template< typename ... T >
@@ -113,59 +75,46 @@ namespace first_order_logic
 							t ...,
 							make_some_actor(
 								std::get< std::tuple_size< std::tuple< T ... > >::value - 1 >( std::tie( t ... ) ) ) ),
-						extract< equal_actor_helper >(
+						extract< atomic_actor_helper >(
 							t ...,
-							make_equal_actor(
-								std::get< std::tuple_size< std::tuple< T ... > >::value - 1 >( std::tie( t ... ) ) ) ),
-						extract< predicate_actor_helper >(
-							t ...,
-							make_predicate_actor(
-								std::get< std::tuple_size< std::tuple< T ... > >::value - 1 >( std::tie( t ... ) ) ) ),
-						extract< propositional_letter_actor_helper >(
-							t ...,
-							make_propositional_letter_actor(
+							make_atomic_actor(
 								std::get< std::tuple_size< std::tuple< T ... > >::value - 1 >( std::tie( t ... ) ) ) ) );
 		}
-		template< typename T1, typename T2, typename T3, typename T4, typename T5, typename T6, typename T7, typename T8 >
+		template< typename T1, typename T2, typename T3, typename T4, typename T5, typename T6 >
 		auto type_restore_inner(
 				const and_actor< T1 > & and_func,
 				const or_actor< T2 > & or_func,
 				const not_actor< T3 > & not_func,
 				const all_actor< T4 > & all_func,
 				const some_actor< T5 > & some_func,
-				const equal_actor< T6 > & equal_func,
-				const predicate_actor< T7 > & predicate_func,
-				const propositional_letter_actor< T8 > & propositional_letter_func ) const
+				const atomic_actor< T6 > & atomic_func ) const
 		{
 			switch ( (*this)->sentence_type )
 			{
 			case type::logical_and:
-				return and_func( boost::get< sentence >( (*this)->arguments[0] ), boost::get< sentence >( (*this)->arguments[1] ) );
+				return and_func(
+							boost::get< sentence >( (*this)->arguments[0] ),
+							boost::get< sentence >( (*this)->arguments[1] ) );
 			case type::logical_not:
 				return not_func( boost::get< sentence >( (*this)->arguments[0] ) );
 			case type::logical_or:
-				return or_func( boost::get< sentence >( (*this)->arguments[0] ), boost::get< sentence >( (*this)->arguments[1] ) );
+				return or_func(
+							boost::get< sentence >( (*this)->arguments[0] ),
+							boost::get< sentence >( (*this)->arguments[1] ) );
 			case type::all:
-				return all_func( variable( (*this)->name ), boost::get< sentence >( (*this)->arguments[0] ) );
+				return all_func(
+							variable( (*this)->name ),
+							boost::get< sentence >( (*this)->arguments[0] ) );
 			case type::some:
-				return some_func( variable( (*this)->name ), boost::get< sentence >( (*this)->arguments[0] ) );
-			case type::equal:
-				return equal_func( boost::get< term >( (*this)->arguments[0] ), boost::get< term >( (*this)->arguments[1] ) );
-			case type::predicate:
-			{
-				std::vector< term > arg;
-				std::transform(
-					(*this)->arguments.begin( ),
-					(*this)->arguments.end( ),
-					std::back_inserter( arg ),
-					[](const auto & s){ return boost::get< term >( s ); } );
-				return predicate_func( (*this)->name, arg );
-			}
-			case type::propositional_letter:
-				return propositional_letter_func( (*this)->name );
+				return some_func(
+							variable( (*this)->name ),
+							boost::get< sentence >( (*this)->arguments[0] ) );
+			case type::atomic:
+				return atomic_func( boost::get< atomic_sentence >( (*this)->arguments[0] ) );
 			}
 			throw std::invalid_argument( "unknown enum type" );
 		}
+		bool is_atom( ) const { return (*this)->sentence_type == type::atomic; }
 		explicit operator std::string( ) const;
 		sentence( type ty, const variable & l, const sentence & r ) : data( new internal( ty, l, r ) ) { }
 		template< typename ... T >
@@ -178,6 +127,7 @@ namespace first_order_logic
 			data( new internal( ty, t ..., vec ) ) { }
 		sentence( const sentence & sen ) : data( sen.data ) { }
 		sentence( ) { }
+		sentence( const atomic_sentence & as ) : sentence( type::atomic, as ) { }
 		bool operator == ( const sentence & comp ) const { return !( (*this) < comp || comp < (*this) ); }
 		bool operator != ( const sentence & comp ) const { return ! ( (*this) == comp ); }
 		size_t length( ) const;
@@ -237,13 +187,6 @@ namespace first_order_logic
 		OUTITER used_name( OUTITER result ) const;
 		explicit operator bool ( ) const { return data.get( ) != nullptr; }
 		void swap( sentence & sen ) { data.swap( sen.data ); }
-		bool is_atom( ) const
-		{
-			return
-					(*this)->sentence_type == type::equal ||
-					(*this)->sentence_type == type::predicate ||
-					(*this)->sentence_type == type::propositional_letter;
-		}
 		sentence restore_quantifier_existential( ) const;
 		sentence restore_quantifier_universal( ) const;
 		template< typename OSTREAM >

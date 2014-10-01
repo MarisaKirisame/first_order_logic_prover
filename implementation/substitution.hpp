@@ -44,22 +44,14 @@ namespace first_order_logic
 						auto it = data.find( var );
 						return ( it != data.end( ) ) ? make_some( var, sen ) : make_some( var, (*this)(sen) );
 					} ),
-				make_and_actor( [&]( const sentence & l, const sentence & r ){ return make_and( (*this)(l), (*this)(r) ); } ),
-				make_or_actor( [&]( const sentence & l, const sentence & r ){ return make_or( (*this)(l), (*this)(r) ); } ),
-				make_not_actor( [&]( const sentence & sen ){ return make_not( (*this)(sen) ); } ),
-				make_equal_actor( [&]( const term & l, const term & r ){ return make_equal( (*this)(l), (*this)(r) ); } ),
-				make_predicate_actor(
-					[&]( const std::string & str, const std::vector< term > & vec )
-					{
-						std::vector< term > tem;
-						std::transform(
-							vec.begin( ),
-							vec.end( ),
-							std::back_inserter( tem ),
-							[&]( const term & te ){ return(*this)(te); } );
-						return make_predicate( str, tem );
-					} ),
-				make_propositional_letter_actor( [&]( const std::string & str ){ return make_propositional_letter( str ); } )
+				make_and_actor(
+						[&]( const sentence & l, const sentence & r ){ return make_and( (*this)(l), (*this)(r) ); } ),
+				make_or_actor(
+						[&]( const sentence & l, const sentence & r ){ return make_or( (*this)(l), (*this)(r) ); } ),
+				make_not_actor(
+						[&]( const sentence & sen ){ return make_not( (*this)(sen) ); } ),
+				make_atomic_actor(
+						[&]( const atomic_sentence & sen ){ return sentence( (*this)( sen ) ); } )
 			);
 		assert( ret.data );
 		return ret;
@@ -86,7 +78,8 @@ namespace first_order_logic
 		}
 		return ret;
 	}
-	inline boost::optional< substitution > unify( const std::vector< term > & p, const std::vector< term > & q, const substitution & sub )
+	inline boost::optional< substitution > unify(
+			const std::vector< term > & p, const std::vector< term > & q, const substitution & sub )
 	{
 		substitution ret( sub );
 		assert( p.size( ) == q.size( ) );
@@ -153,6 +146,48 @@ namespace first_order_logic
 		auto it = ret.data.insert( { var, t } );
 		return it.first->second == t ? ret : boost::optional< substitution >( );
 	}
+	inline boost::optional< substitution > unify(
+			const atomic_sentence & p, const atomic_sentence & q, const substitution & sub )
+	{
+		if ( p->atomic_sentence_type != q->atomic_sentence_type || p->name != q->name )
+		{ return boost::optional< substitution >( ); }
+		return p.type_restore_full(
+			make_predicate_actor(
+				[&]( const std::string &, const std::vector< term > & ter )
+				{
+					boost::optional< substitution > ret;
+					q.type_restore(
+						make_predicate_actor(
+							[&]( const std::string &, const std::vector< term > & te )
+							{
+								assert( ter.size( ) == te.size( ) );
+								ret = sub;
+								for ( size_t i = 0; i < te.size( ); ++i )
+								{
+									if ( ret ) { ret = unify( ter[i], te[i], * ret ); }
+									else { break; }
+								}
+							} ),
+						error( ) );
+					return ret;
+				} ),
+			make_propositional_letter_actor(
+				[&]( const std::string & ){ return boost::optional< substitution >( sub ); } ),
+			make_equal_actor(
+				[&]( const term & l, const term & r )
+				{
+					boost::optional< substitution > ret;
+					q.type_restore(
+						make_equal_actor(
+							[&]( const term & ll, const term & rr )
+							{
+								auto tem = unify( l, ll, sub );
+								if ( tem ) { ret = unify( r, rr, * tem ); }
+							} ),
+						error( ) );
+					return ret;
+				} ) );
+	}
 	inline boost::optional< substitution > unify( const sentence & p, const sentence & q, const substitution & sub )
 	{
 		if ( p->sentence_type != q->sentence_type || p->name != q->name ) { return boost::optional< substitution >( ); }
@@ -216,38 +251,12 @@ namespace first_order_logic
 								error( ) );
 							return ret;
 						} ),
-					make_predicate_actor(
-						[&]( const std::string &, const std::vector< term > & ter )
+					make_atomic_actor(
+						[&]( const atomic_sentence & as1 )
 						{
 							boost::optional< substitution > ret;
 							q.type_restore(
-								make_predicate_actor(
-									[&]( const std::string &, const std::vector< term > & te )
-									{
-										assert( ter.size( ) == te.size( ) );
-										ret = sub;
-										for ( size_t i = 0; i < te.size( ); ++i )
-										{
-											if ( ret ) { ret = unify( ter[i], te[i], * ret ); }
-											else { break; }
-										}
-									} ),
-								error( ) );
-							return ret;
-						} ),
-					make_propositional_letter_actor(
-						[&]( const std::string & ){ return boost::optional< substitution >( sub ); } ),
-					make_equal_actor(
-						[&]( const term & l, const term & r )
-						{
-							boost::optional< substitution > ret;
-							q.type_restore(
-								make_equal_actor(
-									[&]( const term & ll, const term & rr )
-									{
-										auto tem = unify( l, ll, sub );
-										if ( tem ) { ret = unify( r, rr, * tem ); }
-									} ),
+								make_atomic_actor( [&]( const atomic_sentence & as2 ){ ret = unify( as1, as2, sub ); } ),
 								error( ) );
 							return ret;
 						} ) );

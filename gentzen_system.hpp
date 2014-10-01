@@ -326,14 +326,7 @@ namespace first_order_logic
 										try_insert( temp_sequent, t.first, false );
 									}
 								} ),
-							make_equal_actor(
-								[&]( const term & l, const term & r ) { try_insert( expanded, make_equal( l, r ), t.second ); } ),
-							make_predicate_actor(
-								[&]( const std::string & str, const std::vector< term > & vec )
-								{ try_insert( expanded, make_predicate( str, vec ), t.second ); } ),
-							make_propositional_letter_actor(
-								[&]( const std::string & str )
-								{ try_insert( expanded, make_propositional_letter( str ), t.second ); } ),
+							make_atomic_actor( [&]( const atomic_sentence & as ) { try_insert( expanded, as, t.second ); } ),
 							make_and_actor(
 								[&]( const sentence & l, const sentence & r )
 								{

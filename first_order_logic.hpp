@@ -1,6 +1,7 @@
 #ifndef FIRST_ORDER_LOGIC_FIRST_ORDER_LOGIC
 #define FIRST_ORDER_LOGIC_FIRST_ORDER_LOGIC
 #include "sentence.hpp"
+#include "atomic_sentence.hpp"
 #include "term.hpp"
 #include "variable.hpp"
 #include "forward/first_order_logic.hpp"
@@ -15,11 +16,11 @@ namespace first_order_logic
 	inline term make_variable( const std::string & s )
 	{ return term( variable( s ) ); }
 
-	inline sentence make_predicate( const std::string & s, const std::vector< term > & t )
-	{ return sentence( sentence::type::predicate, s, t ); }
+	inline atomic_sentence make_predicate( const std::string & s, const std::vector< term > & t )
+	{ return atomic_sentence( atomic_sentence::type::predicate, s, t ); }
 
-	inline sentence make_propositional_letter( const std::string & s )
-	{ return sentence( sentence::type::propositional_letter, s ); }
+	inline atomic_sentence make_propositional_letter( const std::string & s )
+	{ return atomic_sentence( atomic_sentence::type::propositional_letter, s ); }
 
 	inline sentence make_not( const sentence & s )
 	{ return sentence( sentence::type::logical_not, { s } ); }
@@ -42,7 +43,7 @@ namespace first_order_logic
 	inline sentence make_some( const variable & l, const sentence & r )
 	{ return sentence( sentence::type::some, l, r ); }
 
-	inline sentence make_equal( const term & l, const term & r )
-	{ return sentence( sentence::type::equal, { l, r } ); }
+	inline atomic_sentence make_equal( const term & l, const term & r )
+	{ return atomic_sentence( atomic_sentence::type::equal, { l, r } ); }
 }
 #endif //FIRST_ORDER_LOGIC_FIRST_ORDER_LOGIC

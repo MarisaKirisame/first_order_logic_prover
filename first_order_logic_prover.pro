@@ -25,7 +25,9 @@ HEADERS += \
     implementation/substitution.hpp \
     implementation/sentence.hpp \
     first_order_logic.hpp \
-    resolution.hpp
+    resolution.hpp \
+    atomic_sentence.hpp \
+    named_parameter.hpp
 
 OTHER_FILES += \
     theorem_prover.pro.user \
