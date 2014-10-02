@@ -25,6 +25,8 @@ namespace first_order_logic
 			internal( type sentence_type, const std::string & name ) :
 				atomic_sentence_type( sentence_type ), name( name ) { }
 		};
+		bool operator < ( const atomic_sentence & as ) const
+		{ return static_cast< std::string >( * this ) < static_cast< std::string >( as ); }
 		std::shared_ptr< internal > data;
 		template< typename ... T >
 		auto type_restore_full( const T & ... t ) const
@@ -99,6 +101,7 @@ namespace first_order_logic
 		template< typename ... T >
 		atomic_sentence( type ty, const T & ... t, const std::initializer_list< term > & vec ) :
 			data( new internal( ty, t ..., vec ) ) { }
+		atomic_sentence( ) { }
 		template< typename OUTITER >
 		OUTITER constants( OUTITER result ) const
 		{

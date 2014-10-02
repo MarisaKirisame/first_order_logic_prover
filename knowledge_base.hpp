@@ -8,7 +8,7 @@ namespace first_order_logic
 	struct knowledge_base
 	{
 		std::vector< definite_clause > kb;
-		std::vector< sentence< > > known_facts;
+		std::vector< atomic_sentence > known_facts;
 		template< typename ITER >
 		ITER matching_facts( const sentence< > & match, const substitution & sub, ITER result ) const
 		{
@@ -35,15 +35,15 @@ namespace first_order_logic
 			return ret;
 		}
 		bool try_infer_forward(
-				const std::vector< sentence< > > & premise,
-				const sentence< > & conclusion,
+				const std::vector< atomic_sentence > & premise,
+				const atomic_sentence & conclusion,
 				const substitution & rename,
-				const sentence< > & query )
+				const atomic_sentence & query )
 		{
 			bool ret = false;
-			std::vector< sentence< > > new_known_facts;
+			std::vector< atomic_sentence > new_known_facts;
 			substitution s;
-			std::vector< sentence< > > gp;
+			std::vector< atomic_sentence > gp;
 			auto generate =
 					[&,this]( const auto & self, const substitution & sub )->void
 					{
@@ -54,7 +54,7 @@ namespace first_order_logic
 								rename( premise[ gp.size( ) ] ),
 								sub,
 								make_function_output_iterator(
-									[&]( const std::pair< sentence< >, substitution > & p )
+									[&]( const std::pair< atomic_sentence, substitution > & p )
 									{
 										if ( ( new_known_facts.empty( ) ) || ( ! unify( new_known_facts.back( ), query ) ) )
 										{
@@ -66,12 +66,12 @@ namespace first_order_logic
 						}
 					};
 			generate( generate, s );
-			for ( const sentence< > & sen : new_known_facts )
+			for ( const atomic_sentence & sen : new_known_facts )
 			{
 				if ( std::none_of(
 						known_facts.begin( ),
 						known_facts.end( ),
-						[&]( const sentence< > & s ){ return unify( sen, s ); } ) )
+						[&]( const atomic_sentence & s ){ return unify( sen, s ); } ) )
 				{
 					known_facts.push_back( sen );
 					ret = true;
@@ -79,9 +79,9 @@ namespace first_order_logic
 			}
 			return ret;
 		}
-		boost::optional< substitution > forward_chaining( const sentence< > & sen )
+		boost::optional< substitution > forward_chaining( const atomic_sentence & sen )
 		{
-			for ( const sentence< > & se : known_facts )
+			for ( const atomic_sentence & se : known_facts )
 			{
 				auto ret = unify( se, sen );
 				if ( ret ) { return ret; }
@@ -107,23 +107,23 @@ namespace first_order_logic
 			}
 			return boost::optional< substitution >( );
 		}
-		boost::optional< substitution > backward_chaining( const sentence< > & sen )
+		boost::optional< substitution > backward_chaining( const atomic_sentence & sen )
 		{
-			for ( const sentence< > & se : known_facts )
+			for ( const atomic_sentence & se : known_facts )
 			{
 				auto ret = unify( se, sen );
 				if ( ret ) { return ret; }
 			}
 			if ( known_facts.empty( ) ) { return boost::optional< substitution >( ); }
 			std::set< std::string > var_name = variable_name( );
-			std::map< sentence< >, std::vector< std::vector< sentence< > > > > requiring_fact;
+			std::map< atomic_sentence, std::vector< std::vector< atomic_sentence > > > requiring_fact;
 			bool progress = true;
 			auto try_add =
-					[&]( const sentence< > & s )
+					[&]( const atomic_sentence & s )
 					{
 						if ( requiring_fact.count( s ) == 0 )
 						{
-							std::vector< std::vector< sentence< > > > deduct_from;
+							std::vector< std::vector< atomic_sentence > > deduct_from;
 							for ( const definite_clause & dc : kb )
 							{
 								assert( ! dc.premise.empty( ) );
@@ -136,8 +136,8 @@ namespace first_order_logic
 								auto ret = unify( rename( dc.conclusion ), s );
 								if ( ret )
 								{
-									std::vector< sentence< > > tem;
-									for ( const sentence< > & se : dc.premise )
+									std::vector< atomic_sentence > tem;
+									for ( const atomic_sentence & se : dc.premise )
 									{ tem.push_back( ( *ret )( rename( se ) ) ); }
 									deduct_from.push_back( tem );
 								}
@@ -152,10 +152,11 @@ namespace first_order_logic
 				progress = false;
 				auto ret = unify( known_facts.back( ), sen );
 				if ( ret ) { return ret; }
-				std::vector< sentence< > > add;
-				for ( const std::pair< sentence< >, std::vector< std::vector< sentence< > > > > & p : requiring_fact )
+				std::vector< atomic_sentence > add;
+				for ( const std::pair< atomic_sentence, std::vector< std::vector< atomic_sentence > > > & p :
+					  requiring_fact )
 				{
-					for ( const std::vector< sentence< > > & vec : p.second )
+					for ( const std::vector< atomic_sentence > & vec : p.second )
 					{
 						substitution rename =
 								rename_variable(

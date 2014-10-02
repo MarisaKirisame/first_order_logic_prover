@@ -188,6 +188,15 @@ namespace first_order_logic
 					return ret;
 				} ) );
 	}
+	inline boost::optional< substitution > unify(
+			const sentence< > & p, const atomic_sentence & q, const substitution & sub )
+	{
+		boost::optional< atomic_sentence > as;
+		p.type_restore( make_atomic_actor( [&]( const atomic_sentence & asen ){ as = asen; } ), error( ) );
+		return as ? unify( * as, q, sub ) : boost::optional< substitution >( );
+	}
+	inline boost::optional< substitution > unify(
+			const atomic_sentence & p, const sentence< > & q, const substitution & sub ) { return unify( q, p, sub ); }
 	inline boost::optional< substitution > unify( const sentence< > & p, const sentence< > & q, const substitution & sub )
 	{
 		if ( p->sentence_type != q->sentence_type || p->name != q->name ) { return boost::optional< substitution >( ); }
@@ -287,6 +296,13 @@ namespace first_order_logic
 	}
 	template< typename F, typename GENERATOR >
 	void rename_variable( const sentence< > & sen, const F & usable, const GENERATOR & gen, substitution & renamed )
+	{
+		std::set< variable > tem;
+		sen.free_variables( std::inserter( tem, tem.begin( ) ) );
+		rename_variable( tem.begin( ), tem.end( ), usable, gen, renamed );
+	}
+	template< typename F, typename GENERATOR >
+	void rename_variable( const atomic_sentence & sen, const F & usable, const GENERATOR & gen, substitution & renamed )
 	{
 		std::set< variable > tem;
 		sen.free_variables( std::inserter( tem, tem.begin( ) ) );

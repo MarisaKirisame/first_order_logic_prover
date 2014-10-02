@@ -8,9 +8,10 @@ namespace first_order_logic
 {
 	struct definite_clause
 	{
-		std::vector< sentence< > > premise;
-		sentence< > conclusion;
-		definite_clause( const std::vector< sentence< > > & p, const sentence< > & c ) : premise( p ), conclusion( c )
+		std::vector< atomic_sentence > premise;
+		atomic_sentence conclusion;
+		definite_clause( const std::vector< atomic_sentence > & p, const atomic_sentence & c ) :
+			premise( p ), conclusion( c )
 		{ assert( p.size( ) != 0 ); }
 	};
 }

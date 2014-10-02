@@ -23,6 +23,10 @@ namespace first_order_logic
 		static boost::optional< substitution > join( const substitution & l, const substitution & r );
 	};
 	boost::optional< substitution > unify(
+			const sentence< > & p, const atomic_sentence & q, const substitution & sub );
+	boost::optional< substitution > unify(
+			const atomic_sentence & p, const sentence< > & q, const substitution & sub );
+	boost::optional< substitution > unify(
 			const term & p, const term & q, const substitution & sub );
 	boost::optional< substitution > unify(
 			const std::vector< term > & p, const std::vector< term > & q, const substitution & sub );
