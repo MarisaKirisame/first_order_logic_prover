@@ -27,7 +27,9 @@ HEADERS += \
     first_order_logic.hpp \
     resolution.hpp \
     atomic_sentence.hpp \
-    named_parameter.hpp
+    named_parameter.hpp \
+    sentence_helper.hpp \
+    TMP.hpp
 
 OTHER_FILES += \
     theorem_prover.pro.user \

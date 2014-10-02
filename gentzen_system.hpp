@@ -24,17 +24,17 @@ namespace first_order_logic
 			term new_variable( )
 			{
 				term ret = make_variable( std::to_string( unused++ ) );
-				cv_map.insert( std::make_pair( ret, std::set< sentence< > >( ) ) );
+				cv_map.insert( std::make_pair( ret, std::set< free_sentence >( ) ) );
 				return ret;
 			}
-			std::map< sentence< >, bool > sequent;
-			std::map< sentence< >, bool > temp_sequent;
+			std::map< free_sentence, bool > sequent;
+			std::map< free_sentence, bool > temp_sequent;
 			std::map
 			<
 				term,
-				std::set< sentence< > >
+				std::set< free_sentence >
 			> cv_map, term_map;
-			std::map< sentence< >, bool > expanded;
+			std::map< free_sentence, bool > expanded;
 			size_t unused = 0;
 			std::set< function > functions;
 			std::set< predicate > predicates;
@@ -44,8 +44,8 @@ namespace first_order_logic
 			bool have_branch = false;
 			struct contradiction { proof_tree pt; };
 			void try_insert(
-				std::map< sentence< >, bool > & m,
-				const sentence< > & t,
+				std::map< free_sentence, bool > & m,
+				const free_sentence & t,
 				bool b )
 			{
 				if ( m.insert( std::make_pair( t, b ) ).first->second != b )
@@ -100,7 +100,7 @@ namespace first_order_logic
 							args.push_back( make_variable( "s" + std::to_string( i ) ) );
 							argt.push_back( make_variable( "t" + std::to_string( i ) ) );
 						} );
-					sentence< > and_stack = make_and( make_equal( args[0], argt[0] ), make_equal( args[1], argt[1] ) );
+					free_sentence and_stack = make_and( make_equal( args[0], argt[0] ), make_equal( args[1], argt[1] ) );
 					for ( size_t i = 2; i < f.arity; ++i )
 					{ and_stack = make_and( and_stack, make_equal( args[i], argt[i] ) ); }
 					auto add =
@@ -153,7 +153,7 @@ namespace first_order_logic
 							args.push_back( make_variable( "s" + std::to_string( i ) ) );
 							argt.push_back( make_variable( "t" + std::to_string( i ) ) );
 						} );
-					sentence< > and_stack =
+					free_sentence and_stack =
 							make_and( make_equal( args[0], argt[0] ), make_equal( args[1], argt[1] ) );
 					try_insert(
 						sequent,
@@ -222,7 +222,7 @@ namespace first_order_logic
 			std::pair< std::string, std::string > pair_str( ) const
 			{
 				std::string postive, negative;
-				auto function = [&]( const std::pair< sentence< >, bool > & val )
+				auto function = [&]( const std::pair< free_sentence, bool > & val )
 				{
 					std::string & str = val.second ? postive : negative;
 					if ( ! str.empty( ) ) { str += ","; }
@@ -272,19 +272,19 @@ namespace first_order_logic
 					sequent.swap( temp_sequent );
 					auto f = tg.generate( );
 					assert( f.size( ) == 1 );
-					term_map.insert( std::make_pair( f[0], std::set< sentence< > >( ) ) );
+					term_map.insert( std::make_pair( f[0], std::set< free_sentence >( ) ) );
 				}
 				if ( sequent.empty( ) ) { return false; }
 				while ( ( ! sequent.empty( ) ) && branch.empty( ) )
 				{
-					std::pair< sentence< >, bool > t = * sequent.begin( );
+					std::pair< free_sentence, bool > t = * sequent.begin( );
 					sequent.erase( sequent.begin( ) );
 					try
 					{
 						t.first.type_restore_full
 						(
 							make_all_actor(
-								[&]( const variable & var, const sentence< > & sen )
+								[&]( const variable & var, const free_sentence & sen )
 								{
 									if ( t.second )
 									{
@@ -316,7 +316,7 @@ namespace first_order_logic
 									}
 								} ),
 							make_some_actor(
-								[&]( const variable & var, const sentence< > & sen )
+								[&]( const variable & var, const free_sentence & sen )
 								{
 									if ( t.second ) { try_insert( sequent, substitution( { { var, term( new_variable( ) ) } } )( sen ), true ); }
 									else
@@ -344,7 +344,7 @@ namespace first_order_logic
 								} ),
 							make_atomic_actor( [&]( const atomic_sentence & as ) { try_insert( expanded, as, t.second ); } ),
 							make_and_actor(
-								[&]( const sentence< > & l, const sentence< > & r )
+								[&]( const free_sentence & l, const free_sentence & r )
 								{
 									if ( t.second )
 									{
@@ -372,7 +372,7 @@ namespace first_order_logic
 									}
 								} ),
 							make_or_actor(
-								[&]( const sentence< > & l, const sentence< > & r )
+								[&]( const free_sentence & l, const free_sentence & r )
 								{
 									if ( t.second )
 									{
@@ -400,7 +400,7 @@ namespace first_order_logic
 										try_insert( sequent, r, false );
 									}
 								} ),
-							make_not_actor( [&]( const sentence< > & sen ) { try_insert( sequent, sen, ! t.second ); } )
+							make_not_actor( [&]( const free_sentence & sen ) { try_insert( sequent, sen, ! t.second ); } )
 						);
 					}
 					catch ( contradiction & con )
@@ -433,7 +433,7 @@ namespace first_order_logic
 				functions( t.functions ),
 				predicates( t.predicates ),
 				tg( this, 1, cv_map, functions ) { }
-			sequence( const sentence< > & t ) :
+			sequence( const free_sentence & t ) :
 				sequent( { { t, false } } ), tg( this, 1, cv_map, functions )
 			{
 				t.functions( std::inserter( functions, functions.begin( ) ) );
@@ -441,14 +441,14 @@ namespace first_order_logic
 				t.cv
 				(
 					make_function_output_iterator(
-						[&]( const term & t ){ cv_map.insert( std::make_pair( t, std::set< sentence< > >( ) ) ); } )
+						[&]( const term & t ){ cv_map.insert( std::make_pair( t, std::set< free_sentence >( ) ) ); } )
 				);
 				term_map = cv_map;
 				if ( cv_map.empty( ) ) { new_variable( ); }
 				if ( t.have_equal( ) ) { add_equal_generator( ); }
 			}
 		};
-		static std::pair< proof_tree, bool > is_valid( sentence< > & te )
+		static std::pair< proof_tree, bool > is_valid( free_sentence & te )
 		{
 			sequence t( te );
 			bool res = t.is_valid( );

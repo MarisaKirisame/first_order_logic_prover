@@ -15,17 +15,20 @@ namespace first_order_logic
 		std::map< variable, term > data;
 		term operator ( )( const term & t ) const;
 		atomic_sentence operator ( )( const atomic_sentence & as ) const;
-		sentence< > operator ( )( const sentence< > & s ) const;
+		template< typename T >
+		sentence< T > operator ( )( const sentence< T > & s ) const;
 		substitution( const std::map< variable, term > & data ) : data( data ) { }
 		substitution( ) { }
 		bool operator ==( const substitution & s ) const { return data == s.data; }
 		bool coherent( const substitution & comp ) const;
 		static boost::optional< substitution > join( const substitution & l, const substitution & r );
 	};
+	template< typename T >
 	boost::optional< substitution > unify(
-			const sentence< > & p, const atomic_sentence & q, const substitution & sub );
+			const sentence< T > & p, const atomic_sentence & q, const substitution & sub );
+	template< typename T >
 	boost::optional< substitution > unify(
-			const atomic_sentence & p, const sentence< > & q, const substitution & sub );
+			const atomic_sentence & p, const sentence< T > & q, const substitution & sub );
 	boost::optional< substitution > unify(
 			const term & p, const term & q, const substitution & sub );
 	boost::optional< substitution > unify(
@@ -36,16 +39,17 @@ namespace first_order_logic
 			const term & p, const term & q, const substitution & sub );
 	boost::optional< substitution > unify(
 			const variable & var, const term & t, const substitution & sub );
+	template< typename T >
 	boost::optional< substitution > unify(
-			const sentence< > & p, const sentence< > & q, const substitution & sub );
+			const sentence< T > & p, const sentence< T > & q, const substitution & sub );
 	boost::optional< substitution > unify(
 			const atomic_sentence & p, const atomic_sentence & q, const substitution & sub );
 	template< typename F, typename GENERATOR >
 	void rename_variable( const term & t, const F & usable, const GENERATOR & gen, substitution & renamed );
 	template< typename F, typename GENERATOR >
 	void rename_variable( const variable & sen, const F & usable, const GENERATOR & gen, substitution & renamed );
-	template< typename F, typename GENERATOR >
-	void rename_variable( const sentence< > & sen, const F & usable, const GENERATOR & gen, substitution & renamed );
+	template< typename F, typename T, typename GENERATOR >
+	void rename_variable( const sentence< T > & sen, const F & usable, const GENERATOR & gen, substitution & renamed );
 	template< typename INITER, typename F, typename GENERATOR >
 	void rename_variable( INITER begin, INITER end, const F & usable, const GENERATOR & gen, substitution & renamed );
 	template< typename ... T >

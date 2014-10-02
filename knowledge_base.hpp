@@ -10,7 +10,7 @@ namespace first_order_logic
 		std::vector< definite_clause > kb;
 		std::vector< atomic_sentence > known_facts;
 		template< typename ITER >
-		ITER matching_facts( const sentence< > & match, const substitution & sub, ITER result ) const
+		ITER matching_facts( const atomic_sentence & match, const substitution & sub, ITER result ) const
 		{
 			for ( auto i = known_facts.begin( ); i != known_facts.end( ); ++i )
 			{
@@ -25,7 +25,7 @@ namespace first_order_logic
 		{
 			std::set< std::string > ret;
 			auto extract =
-					[&]( const sentence< > & s )
+					[&]( const atomic_sentence & s )
 					{ s.cv( make_function_output_iterator( [&]( const term & t ){ ret.insert( t->name ); } ) ); };
 			for ( const definite_clause & dc : kb )
 			{

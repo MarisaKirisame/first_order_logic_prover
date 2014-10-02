@@ -2,6 +2,7 @@
 #define ATOMIC_SENTENCE_HPP
 #include "term.hpp"
 #include "named_parameter.hpp"
+#include "sentence.hpp"
 namespace first_order_logic
 {
 	DEFINE_ACTOR(equal);
@@ -27,6 +28,10 @@ namespace first_order_logic
 		};
 		bool operator < ( const atomic_sentence & as ) const
 		{ return static_cast< std::string >( * this ) < static_cast< std::string >( as ); }
+		bool operator == ( const atomic_sentence & as ) const
+		{ return static_cast< std::string >( * this ) == static_cast< std::string >( as ); }
+		bool operator != ( const atomic_sentence & as ) const
+		{ return static_cast< std::string >( * this ) != static_cast< std::string >( as ); }
 		std::shared_ptr< internal > data;
 		template< typename ... T >
 		auto type_restore_full( const T & ... t ) const
@@ -174,6 +179,13 @@ namespace first_order_logic
 						++result;
 					} ),
 				make_propositional_letter_actor( []( const std::string & ){ } ) );
+			return result;
+		}
+		template< typename OUTITER >
+		OUTITER cv( OUTITER result ) const
+		{
+			free_variables( constants( make_function_output_iterator(
+										[&]( const auto & v ) { *result = term( v ); ++result; } ) ) );
 			return result;
 		}
 	};

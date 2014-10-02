@@ -51,9 +51,9 @@ namespace first_order_logic
 	};
 	struct literal
 	{
-		sentence< > data;
+		atomic_sentence data;
 		bool b;
-		literal( const sentence< > & d, bool b ) : data( d ), b( b ) { }
+		literal( const atomic_sentence & d, bool b ) : data( d ), b( b ) { }
 		bool operator < ( const literal & comp ) const { return std::tie( data, b ) < std::tie( comp.data, comp.b ); }
 		bool operator == ( const literal & comp ) const { return std::tie( data, b ) == std::tie( comp.data, comp.b ); }
 		literal conjugate( ) const
@@ -65,25 +65,25 @@ namespace first_order_logic
 	};
 	typedef disjunction< literal > clause;
 	typedef conjunction< clause > CNF;
-	sentence< > move_negation_in( const sentence< > & prop )
+	free_sentence move_negation_in( const free_sentence & prop )
 	{
-		sentence< > se;
+		boost::optional< free_sentence > se;
 		prop.type_restore
 		(
 			make_not_actor(
-				[&]( const sentence< > & sen )
+				[&]( const free_sentence & sen )
 				{
 					sen.type_restore(
-						make_not_actor( [&]( const sentence< > & sen ){ se = move_negation_in( sen ); } ),
+						make_not_actor( [&]( const free_sentence & sen ){ se = move_negation_in( sen ); } ),
 						make_and_actor(
-							[&]( const sentence< > & l, const sentence< > & r )
+							[&]( const free_sentence & l, const free_sentence & r )
 							{
 								se = make_or(
 										move_negation_in( make_not( l ) ),
 										move_negation_in( make_not( r ) ) );
 							} ),
 						make_or_actor(
-							[&]( const sentence< > & l, const sentence< > & r )
+							[&]( const free_sentence & l, const free_sentence & r )
 							{
 								se = make_and(
 										move_negation_in( make_not( l ) ),
@@ -92,35 +92,35 @@ namespace first_order_logic
 						ignore( ) );
 				} ),
 			make_and_actor(
-				[&]( const sentence< > & l, const sentence< > & r )
+				[&]( const free_sentence & l, const free_sentence & r )
 				{ se = make_and( move_negation_in( l ), move_negation_in( r ) ); } ),
 			make_or_actor(
-				[&]( const sentence< > & l, const sentence< > & r )
+				[&]( const free_sentence & l, const free_sentence & r )
 				{ se = make_or( move_negation_in( l ), move_negation_in( r ) ); } ),
 			ignore( )
 		);
-		return se ? se : prop;
+		return se ? * se : prop;
 	}
-	sentence< > move_or_in( const sentence< > & prop )
+	free_sentence move_or_in( const free_sentence & prop )
 	{
-		sentence< > se;
+		free_sentence se;
 		prop.type_restore
 		(
-			make_not_actor( [&]( const sentence< > & sen ) { se = make_not( move_or_in( sen ) ); } ),
+			make_not_actor( [&]( const free_sentence & sen ) { se = make_not( move_or_in( sen ) ); } ),
 			make_and_actor(
-				[&]( const sentence< > & l, const sentence< > & r ) { se = make_and( move_or_in( l ), move_or_in( r ) ); } ),
+				[&]( const free_sentence & l, const free_sentence & r ) { se = make_and( move_or_in( l ), move_or_in( r ) ); } ),
 			make_or_actor(
-				[&]( sentence< > l, sentence< > r )
+				[&]( free_sentence l, free_sentence r )
 				{
 					if ( l.is_atom( ) || r.is_atom( ) )
 					{
 						se = make_or( l, r );
 						return;
 					}
-					else if ( r->sentence_type == sentence< >::type::logical_and ) { l.swap( r ); }
+					else if ( r->type == sentence_type::logical_and ) { l.swap( r ); }
 					l.type_restore(
 						make_and_actor(
-							[&]( const sentence< > & ll, const sentence< > & rr )
+							[&]( const free_sentence & ll, const free_sentence & rr )
 							{
 								se = make_and(
 											move_or_in( make_or( r, ll ) ),
@@ -133,13 +133,13 @@ namespace first_order_logic
 		);
 		return se ? se : prop;
 	}
-	clause get_clause( const sentence< > & prop )
+	clause get_clause( const free_sentence & prop )
 	{
-		clause ret;
+		/*clause ret;
 		prop.type_restore
 				(
 					make_or_actor(
-						[&]( const sentence< > & l, const sentence< > & r )
+						[&]( const free_sentence & l, const free_sentence & r )
 						{
 							auto cf = get_clause( l );
 							auto cs = get_clause( r );
@@ -147,7 +147,7 @@ namespace first_order_logic
 							ret = cs;
 						} ),
 					make_not_actor(
-						[&]( const sentence< > & sen )
+						[&]( const free_sentence & sen )
 						{ ret = { literal( sen, false ) }; } ),
 					ignore( )
 				);
@@ -156,17 +156,18 @@ namespace first_order_logic
 			assert( prop.is_atom( ) );
 			ret = { literal( prop, true ) };
 		}
-		return ret;
+		return ret;*/
+		throw prop;
 	}
-	std::set< clause > flatten( const sentence< > & prop )
+	std::set< clause > flatten( const free_sentence & prop )
 	{
-		if ( prop.is_atom( ) ) { return { clause( { literal( prop, true ) } ) }; }
+		/*if ( prop.is_atom( ) ) { return { clause( { literal( prop, true ) } ) }; }
 		else
 		{
 			std::set< clause > ret;
 			prop.type_restore(
 				make_and_actor(
-					[&]( const sentence< > & l, const sentence< > & r )
+					[&]( const free_sentence & l, const free_sentence & r )
 					{
 						auto cf = flatten( l );
 						auto cs = flatten( r );
@@ -176,17 +177,19 @@ namespace first_order_logic
 					ignore( ) );
 			if ( ! ret.empty( ) ) { return ret; }
 			else { return { get_clause( prop ) }; }
-		}
+		}*/
+		throw prop;
 	}
 
-	sentence< > pre_CNF( const sentence< > & prop ) { return move_or_in( move_negation_in( prop ) ); }
+	free_sentence pre_CNF( const free_sentence & prop ) { return move_or_in( move_negation_in( prop ) ); }
 
-	CNF to_CNF( const sentence< > & prop )
+	CNF to_CNF( const free_sentence & prop )
 	{
-		if ( prop.is_atom( ) ) { return CNF ( { clause ( { literal( prop, true ) } ) } ); }
-		else { return CNF( flatten( pre_CNF( prop ) ) ); }
+		throw prop;
+		//if ( prop.is_atom( ) ) { return CNF ( { clause ( { literal( prop, true ) } ) } ); }
+		//else { return CNF( flatten( pre_CNF( prop ) ) ); }
 	}
-	bool resolution( const sentence< > & sen, const sentence< > & goal )
+	bool resolution( const free_sentence & sen, const free_sentence & goal )
 	{
 		CNF cnf(
 				to_CNF(

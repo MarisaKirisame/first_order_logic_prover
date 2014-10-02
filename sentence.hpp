@@ -1,17 +1,18 @@
 #ifndef FIRST_ORDER_LOGIC_COMPLEX_SENTENCE_HPP
 #define FIRST_ORDER_LOGIC_COMPLEX_SENTENCE_HPP
+#include <type_traits>
 #include "function.hpp"
 #include "predicate.hpp"
 #include "term.hpp"
 #include <boost/variant.hpp>
 #include "proof_tree.hpp"
-#include <boost/mpl/bool.hpp>
 #include "function_output_iterator.hpp"
 #include "constant.hpp"
 #include <boost/iterator/transform_iterator.hpp>
 #include "named_parameter.hpp"
-#include "atomic_sentence.hpp"
 #include "forward/first_order_logic.hpp"
+#include "sentence_helper.hpp"
+#include "TMP.hpp"
 namespace first_order_logic
 {
 	DEFINE_ACTOR(and);
@@ -21,66 +22,79 @@ namespace first_order_logic
 	DEFINE_ACTOR(some);
 	DEFINE_ACTOR(atomic);
 	struct substitution;
-	template< >
-	struct sentence< >
+	template< typename T >
+	struct sentence
 	{
-		enum class type { logical_and, logical_or, logical_not, all, some, atomic };
+		typedef typename pop_front< T >::type next_vec;
+		typedef typename
+		std::conditional
+		<
+			empty< next_vec >::value,
+			atomic_sentence,
+			sentence< next_vec >
+		>::type next;
 		struct internal
 		{
-			type sentence_type;
+			sentence_type type;
 			std::string name;
 			mutable std::string cache;
-			std::vector< boost::variant< boost::recursive_wrapper< sentence< > >, atomic_sentence > > arguments;
-			internal( type sentence_type, const atomic_sentence & r ) :
-				sentence_type( sentence_type ), arguments( { r } ) { }
-			template< typename T >
-			internal( type sentence_type, const std::string & name, const T & r ) :
-				sentence_type( sentence_type ), name( name ), arguments( r.begin( ), r.end( ) ) { }
-			template< typename T >
-			internal( type sentence_type, const T & r ) :
-				sentence_type( sentence_type ), arguments( r.begin( ), r.end( ) ) { }
-			internal( type sentence_type, const std::string & name ) :
-				sentence_type( sentence_type ), name( name ) { }
-			internal( type ty, const variable & l, const sentence< > & r ) :
-				sentence_type( ty ), name( l.name ), arguments( { r } ) { }
+			std::vector< boost::variant< boost::recursive_wrapper< sentence< T > >, next > > arguments;
+			internal( sentence_type st, const atomic_sentence & r ) :
+				type( st ), arguments( { r } ) { }
+			template< typename TT >
+			internal( sentence_type st, const std::string & name, const TT & r ) :
+				type( st ), name( name ), arguments( r.begin( ), r.end( ) ) { }
+			template< typename TT >
+			internal( sentence_type st, const TT & r ) :
+				type( st ), arguments( r.begin( ), r.end( ) ) { }
+			internal( sentence_type st, const std::string & name ) :
+				type( st ), name( name ) { }
+			internal( sentence_type ty, const variable & l, const sentence< T > & r ) :
+				type( ty ), name( l.name ), arguments( { r } ) { }
 		};
 		std::shared_ptr< internal > data;
 		internal * operator ->( ) const { return data.get( ); }
 		internal & operator * ( ) const { return * data; }
-		template< typename ... T >
-		auto type_restore_full( const T & ... t ) const
+		template< typename ... ACTORS >
+		auto type_restore_full( const ACTORS & ... t ) const
 		{
-			static_assert( std::tuple_size< std::tuple< T ... > >::value == 6, "should have six arguments" );
+			static_assert( std::tuple_size< std::tuple< ACTORS ... > >::value == 6, "should have six arguments" );
 			return type_restore( t ..., error( ) );
 		}
-		template< typename ... T >
-		auto type_restore( const T & ... t ) const
+		template< typename ... ACTORS >
+		auto type_restore( const ACTORS & ... t ) const
 		{
 			return type_restore_inner(
 						extract< and_actor_helper >(
 							t ...,
 							make_and_actor(
-								std::get< std::tuple_size< std::tuple< T ... > >::value - 1 >( std::tie( t ... ) ) ) ),
+								std::get< std::tuple_size< std::tuple< ACTORS ... > >::value - 1 >
+								( std::tie( t ... ) ) ) ),
 						extract< or_actor_helper >(
 							t ...,
 							make_or_actor(
-								std::get< std::tuple_size< std::tuple< T ... > >::value - 1 >( std::tie( t ... ) ) ) ),
+								std::get< std::tuple_size< std::tuple< ACTORS ... > >::value - 1 >
+								( std::tie( t ... ) ) ) ),
 						extract< not_actor_helper >(
 							t ...,
 							make_not_actor(
-								std::get< std::tuple_size< std::tuple< T ... > >::value - 1 >( std::tie( t ... ) ) ) ),
+								std::get< std::tuple_size< std::tuple< ACTORS ... > >::value - 1 >
+								( std::tie( t ... ) ) ) ),
 						extract< all_actor_helper >(
 							t ...,
 							make_all_actor(
-								std::get< std::tuple_size< std::tuple< T ... > >::value - 1 >( std::tie( t ... ) ) ) ),
+								std::get< std::tuple_size< std::tuple< ACTORS ... > >::value - 1 >
+								( std::tie( t ... ) ) ) ),
 						extract< some_actor_helper >(
 							t ...,
 							make_some_actor(
-								std::get< std::tuple_size< std::tuple< T ... > >::value - 1 >( std::tie( t ... ) ) ) ),
+								std::get< std::tuple_size< std::tuple< ACTORS ... > >::value - 1 >
+								( std::tie( t ... ) ) ) ),
 						extract< atomic_actor_helper >(
 							t ...,
 							make_atomic_actor(
-								std::get< std::tuple_size< std::tuple< T ... > >::value - 1 >( std::tie( t ... ) ) ) ) );
+								std::get< std::tuple_size< std::tuple< ACTORS ... > >::value - 1 >
+								( std::tie( t ... ) ) ) ) );
 		}
 		template< typename T1, typename T2, typename T3, typename T4, typename T5, typename T6 >
 		auto type_restore_inner(
@@ -91,47 +105,50 @@ namespace first_order_logic
 				const some_actor< T5 > & some_func,
 				const atomic_actor< T6 > & atomic_func ) const
 		{
-			switch ( (*this)->sentence_type )
+			switch ( (*this)->type )
 			{
-			case type::logical_and:
+			case sentence_type::logical_and:
 				return and_func(
-							boost::get< sentence< > >( (*this)->arguments[0] ),
-							boost::get< sentence< > >( (*this)->arguments[1] ) );
-			case type::logical_not:
-				return not_func( boost::get< sentence< > >( (*this)->arguments[0] ) );
-			case type::logical_or:
+							boost::get< sentence< T > >( (*this)->arguments[0] ),
+							boost::get< sentence< T > >( (*this)->arguments[1] ) );
+			case sentence_type::logical_not:
+				return not_func( boost::get< sentence< T > >( (*this)->arguments[0] ) );
+			case sentence_type::logical_or:
 				return or_func(
-							boost::get< sentence< > >( (*this)->arguments[0] ),
-							boost::get< sentence< > >( (*this)->arguments[1] ) );
-			case type::all:
+							boost::get< sentence< T > >( (*this)->arguments[0] ),
+							boost::get< sentence< T > >( (*this)->arguments[1] ) );
+			case sentence_type::all:
 				return all_func(
 							variable( (*this)->name ),
-							boost::get< sentence< > >( (*this)->arguments[0] ) );
-			case type::some:
+							boost::get< sentence< T > >( (*this)->arguments[0] ) );
+			case sentence_type::some:
 				return some_func(
 							variable( (*this)->name ),
-							boost::get< sentence< > >( (*this)->arguments[0] ) );
-			case type::atomic:
+							boost::get< sentence< T > >( (*this)->arguments[0] ) );
+			case sentence_type::atomic:
 				return atomic_func( boost::get< atomic_sentence >( (*this)->arguments[0] ) );
+			case sentence_type::pass:
+				throw;
 			}
-			throw std::invalid_argument( "unknown enum type" );
+			throw std::invalid_argument( "unknown enum sentence_type" );
 		}
-		bool is_atom( ) const { return (*this)->sentence_type == type::atomic; }
+		bool is_atom( ) const { return (*this)->type == sentence_type::atomic; }
 		explicit operator std::string( ) const;
-		sentence( type ty, const variable & l, const sentence< > & r ) : data( new internal( ty, l, r ) ) { }
-		template< typename ... T >
-		sentence( type ty, const T & ... t ) : data( new internal( ty, t ... ) ) { }
-		template< typename ... T >
-		sentence( type ty, const T & ... t, const std::initializer_list< sentence< > > & vec ) :
+		sentence( sentence_type ty, const variable & l, const sentence< T > & r ) :
+			data( new internal( ty, l, r ) ) { }
+		template< typename ... TT >
+		sentence( sentence_type ty, const TT & ... t ) : data( new internal( ty, t ... ) ) { }
+		template< typename ... TT >
+		sentence( sentence_type ty, const TT & ... t, const std::initializer_list< sentence< T > > & vec ) :
 			data( new internal( ty, t ..., vec ) ) { }
-		template< typename ... T >
-		sentence( type ty, const T & ... t, const std::initializer_list< term > & vec ) :
+		template< typename ... TT >
+		sentence( sentence_type ty, const TT & ... t, const std::initializer_list< term > & vec ) :
 			data( new internal( ty, t ..., vec ) ) { }
-		sentence( const sentence< > & sen ) : data( sen.data ) { }
+		sentence( const sentence< T > & sen ) : data( sen.data ) { }
 		sentence( ) { }
-		sentence( const atomic_sentence & as ) : sentence( type::atomic, as ) { }
-		bool operator == ( const sentence< > & comp ) const { return !( (*this) < comp || comp < (*this) ); }
-		bool operator != ( const sentence< > & comp ) const { return ! ( (*this) == comp ); }
+		sentence( const atomic_sentence & as ) : sentence( sentence_type::atomic, as ) { }
+		bool operator == ( const sentence< T > & comp ) const { return !( (*this) < comp || comp < (*this) ); }
+		bool operator != ( const sentence< T > & comp ) const { return ! ( (*this) == comp ); }
 		size_t length( ) const;
 		template< typename OUTITER >
 		OUTITER functions( OUTITER result ) const;
@@ -153,7 +170,7 @@ namespace first_order_logic
 										[&]( const auto & v ) { *result = term( v ); ++result; } ) ) );
 			return result;
 		}
-		bool operator < ( const sentence< > & comp ) const
+		bool operator < ( const sentence< T > & comp ) const
 		{
 			if ( length( ) < comp.length( ) ) { return true; }
 			if ( length( ) > comp.length( ) ) { return false; }
@@ -161,7 +178,7 @@ namespace first_order_logic
 		}
 		bool have_quantifier( ) const;
 		bool is_in_prenex_form( ) const;
-		sentence< > standardize_bound_variable( ) const
+		sentence< T > standardize_bound_variable( ) const
 		{
 			std::set< std::string > term_map;
 			cv( make_function_output_iterator(
@@ -172,28 +189,30 @@ namespace first_order_logic
 					} ) );
 			return standardize_bound_variable( term_map );
 		}
-		sentence< > standardize_bound_variable( std::set< std::string > & term_map ) const;
-		sentence< > move_quantifier_out( ) const;
-		sentence< > skolemization_remove_existential( std::set< variable > & previous_quantifier ) const;
-		sentence< > skolemization_remove_universal( std::set< variable > & previous_quantifier ) const;
-		sentence< > skolemization_remove_existential( ) const;
-		sentence< > skolemization_remove_universal( ) const;
-		sentence< > drop_existential( ) const;
-		sentence< > drop_universal( ) const;
-		sentence< > rectify( ) const;
-		sentence< > rectify(
+		sentence< T > standardize_bound_variable( std::set< std::string > & term_map ) const;
+		sentence< T > move_quantifier_out( ) const;
+		sentence< T > skolemization_remove_existential( std::set< variable > & previous_quantifier ) const;
+		sentence< T > skolemization_remove_universal( std::set< variable > & previous_quantifier ) const;
+		sentence< T > skolemization_remove_existential( ) const;
+		sentence< T > skolemization_remove_universal( ) const;
+		sentence< T > drop_existential( ) const;
+		sentence< T > drop_universal( ) const;
+		sentence< T > rectify( ) const;
+		sentence< T > rectify(
 					std::set< variable > & used_quantifier,
 					const std::set< variable > & free_variable,
 					std::set< std::string > & used_name ) const;
 		template< typename OUTITER >
 		OUTITER used_name( OUTITER result ) const;
 		explicit operator bool ( ) const { return data.get( ) != nullptr; }
-		void swap( sentence< > & sen ) { data.swap( sen.data ); }
-		sentence< > restore_quantifier_existential( ) const;
-		sentence< > restore_quantifier_universal( ) const;
+		void swap( sentence< T > & sen ) { data.swap( sen.data ); }
+		sentence< T > restore_quantifier_existential( ) const;
+		sentence< T > restore_quantifier_universal( ) const;
 		template< typename OSTREAM >
-		friend OSTREAM & operator << ( OSTREAM & os, const sentence< > & sen )
+		friend OSTREAM & operator << ( OSTREAM & os, const sentence< T > & sen )
 		{ return os << static_cast< std::string >( sen ); }
+		template< typename TO >
+		operator sentence< TO >( ) const { throw; }
 	};
 }
 #include "implementation/sentence.hpp"

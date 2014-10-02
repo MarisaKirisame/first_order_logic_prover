@@ -27,31 +27,32 @@ namespace first_order_logic
 		}
 		throw std::invalid_argument( "unknown enum type" );
 	}
-	inline sentence< > substitution::operator ( )( const sentence< > & s ) const
+	template< typename T >
+	sentence< T > substitution::operator ( )( const sentence< T > & s ) const
 	{
-		sentence< > ret =
+		sentence< T > ret =
 			s.type_restore_full
 			(
 				make_all_actor(
-					[&]( const variable & var, const sentence< > & sen )
+					[&]( const variable & var, const sentence< T > & sen )
 					{
 						auto it = data.find( var );
 						return ( it != data.end( ) ) ? make_all( var, sen ) : make_all( var, (*this)(sen) );
 					} ),
 				make_some_actor(
-					[&]( const variable & var, const sentence< > & sen )
+					[&]( const variable & var, const sentence< T > & sen )
 					{
 						auto it = data.find( var );
 						return ( it != data.end( ) ) ? make_some( var, sen ) : make_some( var, (*this)(sen) );
 					} ),
 				make_and_actor(
-						[&]( const sentence< > & l, const sentence< > & r ){ return make_and( (*this)(l), (*this)(r) ); } ),
+						[&]( const sentence< T > & l, const sentence< T > & r ){ return make_and( (*this)(l), (*this)(r) ); } ),
 				make_or_actor(
-						[&]( const sentence< > & l, const sentence< > & r ){ return make_or( (*this)(l), (*this)(r) ); } ),
+						[&]( const sentence< T > & l, const sentence< T > & r ){ return make_or( (*this)(l), (*this)(r) ); } ),
 				make_not_actor(
-						[&]( const sentence< > & sen ){ return make_not( (*this)(sen) ); } ),
+						[&]( const sentence< T > & sen ){ return make_not( (*this)(sen) ); } ),
 				make_atomic_actor(
-						[&]( const atomic_sentence & sen ){ return sentence< >( (*this)( sen ) ); } )
+						[&]( const atomic_sentence & sen ){ return sentence< T >( (*this)( sen ) ); } )
 			);
 		assert( ret.data );
 		return ret;
@@ -188,48 +189,51 @@ namespace first_order_logic
 					return ret;
 				} ) );
 	}
-	inline boost::optional< substitution > unify(
-			const sentence< > & p, const atomic_sentence & q, const substitution & sub )
+	template< typename T >
+	boost::optional< substitution > unify(
+			const sentence< T > & p, const atomic_sentence & q, const substitution & sub )
 	{
 		boost::optional< atomic_sentence > as;
 		p.type_restore( make_atomic_actor( [&]( const atomic_sentence & asen ){ as = asen; } ), error( ) );
 		return as ? unify( * as, q, sub ) : boost::optional< substitution >( );
 	}
-	inline boost::optional< substitution > unify(
-			const atomic_sentence & p, const sentence< > & q, const substitution & sub ) { return unify( q, p, sub ); }
-	inline boost::optional< substitution > unify( const sentence< > & p, const sentence< > & q, const substitution & sub )
+	template< typename T >
+	boost::optional< substitution > unify(
+			const atomic_sentence & p, const sentence< T > & q, const substitution & sub ) { return unify( q, p, sub ); }
+	template< typename T >
+	boost::optional< substitution > unify( const sentence< T > & p, const sentence< T > & q, const substitution & sub )
 	{
 		if ( p->sentence_type != q->sentence_type || p->name != q->name ) { return boost::optional< substitution >( ); }
 		return p.type_restore_full(
 					make_all_actor(
-						[&]( const variable & var, const sentence< > & sen )
+						[&]( const variable & var, const sentence< T > & sen )
 						{
 							boost::optional< substitution > ret;
 							q.type_restore(
 								make_all_actor(
-									[&]( const variable & va, const sentence< > & se )
+									[&]( const variable & va, const sentence< T > & se )
 									{ ret = unify( substitution( { { va, term( var ) } } )( se ), sen, sub ); } ),
 								error( ) );
 							return ret;
 						} ),
 					make_some_actor(
-						[&]( const variable & var, const sentence< > & sen )
+						[&]( const variable & var, const sentence< T > & sen )
 						{
 							boost::optional< substitution > ret;
 							q.type_restore(
 								make_some_actor(
-									[&]( const variable & va, const sentence< > & se )
+									[&]( const variable & va, const sentence< T > & se )
 									{ ret = unify( substitution( { { va, term( var ) } } )( se ), sen, sub ); } ),
 								error( ) );
 							return ret;
 						} ),
 					make_and_actor(
-						[&]( const sentence< > & l, const sentence< > & r )
+						[&]( const sentence< T > & l, const sentence< T > & r )
 						{
 							boost::optional< substitution > ret;
 							q.type_restore(
 								make_and_actor(
-									[&]( const sentence< > & ll, const sentence< > & rr )
+									[&]( const sentence< T > & ll, const sentence< T > & rr )
 									{
 										auto tem = unify( l, ll, sub );
 										if ( tem ) { ret = unify( r, rr, * tem ); }
@@ -238,12 +242,12 @@ namespace first_order_logic
 							return ret;
 						} ),
 					make_or_actor(
-						[&]( const sentence< > & l, const sentence< > & r )
+						[&]( const sentence< T > & l, const sentence< T > & r )
 						{
 							boost::optional< substitution > ret;
 							q.type_restore(
 								make_or_actor(
-									[&]( const sentence< > & ll, const sentence< > & rr )
+									[&]( const sentence< T > & ll, const sentence< T > & rr )
 									{
 										auto tem = unify( l, ll, sub );
 										if ( tem ) { ret = unify( r, rr, * tem ); }
@@ -252,11 +256,11 @@ namespace first_order_logic
 							return ret;
 						} ),
 					make_not_actor(
-						[&]( const sentence< > & sen )
+						[&]( const sentence< T > & sen )
 						{
 							boost::optional< substitution > ret;
 							q.type_restore(
-								make_not_actor( [&]( const sentence< > & s ){ ret = unify( sen, s, sub ); } ),
+								make_not_actor( [&]( const sentence< T > & s ){ ret = unify( sen, s, sub ); } ),
 								error( ) );
 							return ret;
 						} ),
@@ -294,8 +298,8 @@ namespace first_order_logic
 									 variable( sen.name ),
 									 make_variable( gen_str ) ) ); }
 	}
-	template< typename F, typename GENERATOR >
-	void rename_variable( const sentence< > & sen, const F & usable, const GENERATOR & gen, substitution & renamed )
+	template< typename F, typename T, typename GENERATOR >
+	void rename_variable( const sentence< T > & sen, const F & usable, const GENERATOR & gen, substitution & renamed )
 	{
 		std::set< variable > tem;
 		sen.free_variables( std::inserter( tem, tem.begin( ) ) );

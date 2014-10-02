@@ -14,13 +14,13 @@ namespace first_order_logic
 {
 	BOOST_AUTO_TEST_CASE( gentzen_system_test )
 	{
-		auto fol =
+		free_sentence fol =
 				make_imply(
 					make_all( variable( "x" ), make_predicate( "F", { make_variable( "x" ) } ) ),
 					make_all(
 						variable( "x" ),
 						make_predicate( "F", { make_function( "f", { make_variable( "x" ) } ) } ) ) );
-		auto fol2 =
+		free_sentence fol2 =
 				make_imply(
 					make_some
 					(
@@ -38,7 +38,7 @@ namespace first_order_logic
 						(
 							variable( "z" ),
 							make_predicate( "Q", { make_variable( "z" ) } ) ) ) );
-		auto fol3 =
+		free_sentence fol3 =
 				make_imply
 				(
 					make_and
@@ -60,7 +60,7 @@ namespace first_order_logic
 						make_some( variable( "z" ), make_predicate( "Q", { make_variable( "z" ) } ) )
 					)
 				);
-		auto fol4 =
+		free_sentence fol4 =
 				make_imply
 				(
 					make_and
@@ -141,7 +141,7 @@ namespace first_order_logic
 	BOOST_AUTO_TEST_CASE( resolution_test )
 	{
 		std::cout << std::boolalpha;
-		sentence< > axiom1 = make_all(
+		free_sentence axiom1 = make_all(
 					variable( "x" ),
 					make_imply(
 						make_predicate(
@@ -150,7 +150,7 @@ namespace first_order_logic
 						make_predicate(
 							"Weapon",
 							{ make_variable( "x" ) } ) ) );
-		sentence< > axiom2 =
+		free_sentence axiom2 =
 				make_all(
 					variable( "x" ),
 					make_imply(
@@ -164,13 +164,13 @@ namespace first_order_logic
 								make_variable( "x" ),
 								make_constant( "Nono" )
 							} ) ) );
-		sentence< > axiom3 =
+		free_sentence axiom3 =
 				make_some(
 					variable( "x" ),
 					make_and(
 						make_predicate( "Own", { make_constant( "Nono" ), make_variable( "x" ) } ),
 						make_predicate( "Missile", { make_variable( "x" ) } ) ) );
-		sentence< > axiom4 =
+		free_sentence axiom4 =
 				make_all(
 					variable( "x" ),
 					make_all(
@@ -192,7 +192,7 @@ namespace first_order_logic
 													make_variable( "z" )
 												} ) ) ) ),
 								make_predicate( "Criminal", { make_variable( "x" ) } ) ) ) ) );
-		sentence< > axiom5 =
+		free_sentence axiom5 =
 				make_all(
 					variable( "x" ),
 					make_imply(
@@ -200,8 +200,8 @@ namespace first_order_logic
 							"Enemy",
 							{ make_variable( "x" ), make_constant( "America" ) } ),
 						make_predicate( "Hostile", { make_variable( "x" ) } ) ) );
-		sentence< > axiom6 = make_predicate( "American", { make_constant( "West" ) } );
-		sentence< > axiom7 = make_predicate( "Enemy", { make_constant( "Nono" ), make_constant( "America" ) } );
+		free_sentence axiom6 = make_predicate( "American", { make_constant( "West" ) } );
+		free_sentence axiom7 = make_predicate( "Enemy", { make_constant( "Nono" ), make_constant( "America" ) } );
 		BOOST_CHECK(
 			resolution(
 				make_and(
