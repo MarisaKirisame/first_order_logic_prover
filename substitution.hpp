@@ -15,7 +15,7 @@ namespace first_order_logic
 		std::map< variable, term > data;
 		term operator ( )( const term & t ) const;
 		atomic_sentence operator ( )( const atomic_sentence & as ) const;
-		sentence operator ( )( const sentence & s ) const;
+		sentence< > operator ( )( const sentence< > & s ) const;
 		substitution( const std::map< variable, term > & data ) : data( data ) { }
 		substitution( ) { }
 		bool operator ==( const substitution & s ) const { return data == s.data; }
@@ -33,7 +33,7 @@ namespace first_order_logic
 	boost::optional< substitution > unify(
 			const variable & var, const term & t, const substitution & sub );
 	boost::optional< substitution > unify(
-			const sentence & p, const sentence & q, const substitution & sub );
+			const sentence< > & p, const sentence< > & q, const substitution & sub );
 	boost::optional< substitution > unify(
 			const atomic_sentence & p, const atomic_sentence & q, const substitution & sub );
 	template< typename F, typename GENERATOR >
@@ -41,7 +41,7 @@ namespace first_order_logic
 	template< typename F, typename GENERATOR >
 	void rename_variable( const variable & sen, const F & usable, const GENERATOR & gen, substitution & renamed );
 	template< typename F, typename GENERATOR >
-	void rename_variable( const sentence & sen, const F & usable, const GENERATOR & gen, substitution & renamed );
+	void rename_variable( const sentence< > & sen, const F & usable, const GENERATOR & gen, substitution & renamed );
 	template< typename INITER, typename F, typename GENERATOR >
 	void rename_variable( INITER begin, INITER end, const F & usable, const GENERATOR & gen, substitution & renamed );
 	template< typename ... T >

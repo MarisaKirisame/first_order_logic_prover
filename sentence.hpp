@@ -11,6 +11,7 @@
 #include <boost/iterator/transform_iterator.hpp>
 #include "named_parameter.hpp"
 #include "atomic_sentence.hpp"
+#include "forward/first_order_logic.hpp"
 namespace first_order_logic
 {
 	DEFINE_ACTOR(and);
@@ -20,7 +21,8 @@ namespace first_order_logic
 	DEFINE_ACTOR(some);
 	DEFINE_ACTOR(atomic);
 	struct substitution;
-	struct sentence
+	template< >
+	struct sentence< >
 	{
 		enum class type { logical_and, logical_or, logical_not, all, some, atomic };
 		struct internal
@@ -28,7 +30,7 @@ namespace first_order_logic
 			type sentence_type;
 			std::string name;
 			mutable std::string cache;
-			std::vector< boost::variant< boost::recursive_wrapper< sentence >, atomic_sentence > > arguments;
+			std::vector< boost::variant< boost::recursive_wrapper< sentence< > >, atomic_sentence > > arguments;
 			internal( type sentence_type, const atomic_sentence & r ) :
 				sentence_type( sentence_type ), arguments( { r } ) { }
 			template< typename T >
@@ -39,7 +41,7 @@ namespace first_order_logic
 				sentence_type( sentence_type ), arguments( r.begin( ), r.end( ) ) { }
 			internal( type sentence_type, const std::string & name ) :
 				sentence_type( sentence_type ), name( name ) { }
-			internal( type ty, const variable & l, const sentence & r ) :
+			internal( type ty, const variable & l, const sentence< > & r ) :
 				sentence_type( ty ), name( l.name ), arguments( { r } ) { }
 		};
 		std::shared_ptr< internal > data;
@@ -93,22 +95,22 @@ namespace first_order_logic
 			{
 			case type::logical_and:
 				return and_func(
-							boost::get< sentence >( (*this)->arguments[0] ),
-							boost::get< sentence >( (*this)->arguments[1] ) );
+							boost::get< sentence< > >( (*this)->arguments[0] ),
+							boost::get< sentence< > >( (*this)->arguments[1] ) );
 			case type::logical_not:
-				return not_func( boost::get< sentence >( (*this)->arguments[0] ) );
+				return not_func( boost::get< sentence< > >( (*this)->arguments[0] ) );
 			case type::logical_or:
 				return or_func(
-							boost::get< sentence >( (*this)->arguments[0] ),
-							boost::get< sentence >( (*this)->arguments[1] ) );
+							boost::get< sentence< > >( (*this)->arguments[0] ),
+							boost::get< sentence< > >( (*this)->arguments[1] ) );
 			case type::all:
 				return all_func(
 							variable( (*this)->name ),
-							boost::get< sentence >( (*this)->arguments[0] ) );
+							boost::get< sentence< > >( (*this)->arguments[0] ) );
 			case type::some:
 				return some_func(
 							variable( (*this)->name ),
-							boost::get< sentence >( (*this)->arguments[0] ) );
+							boost::get< sentence< > >( (*this)->arguments[0] ) );
 			case type::atomic:
 				return atomic_func( boost::get< atomic_sentence >( (*this)->arguments[0] ) );
 			}
@@ -116,20 +118,20 @@ namespace first_order_logic
 		}
 		bool is_atom( ) const { return (*this)->sentence_type == type::atomic; }
 		explicit operator std::string( ) const;
-		sentence( type ty, const variable & l, const sentence & r ) : data( new internal( ty, l, r ) ) { }
+		sentence( type ty, const variable & l, const sentence< > & r ) : data( new internal( ty, l, r ) ) { }
 		template< typename ... T >
 		sentence( type ty, const T & ... t ) : data( new internal( ty, t ... ) ) { }
 		template< typename ... T >
-		sentence( type ty, const T & ... t, const std::initializer_list< sentence > & vec ) :
+		sentence( type ty, const T & ... t, const std::initializer_list< sentence< > > & vec ) :
 			data( new internal( ty, t ..., vec ) ) { }
 		template< typename ... T >
 		sentence( type ty, const T & ... t, const std::initializer_list< term > & vec ) :
 			data( new internal( ty, t ..., vec ) ) { }
-		sentence( const sentence & sen ) : data( sen.data ) { }
+		sentence( const sentence< > & sen ) : data( sen.data ) { }
 		sentence( ) { }
 		sentence( const atomic_sentence & as ) : sentence( type::atomic, as ) { }
-		bool operator == ( const sentence & comp ) const { return !( (*this) < comp || comp < (*this) ); }
-		bool operator != ( const sentence & comp ) const { return ! ( (*this) == comp ); }
+		bool operator == ( const sentence< > & comp ) const { return !( (*this) < comp || comp < (*this) ); }
+		bool operator != ( const sentence< > & comp ) const { return ! ( (*this) == comp ); }
 		size_t length( ) const;
 		template< typename OUTITER >
 		OUTITER functions( OUTITER result ) const;
@@ -151,7 +153,7 @@ namespace first_order_logic
 										[&]( const auto & v ) { *result = term( v ); ++result; } ) ) );
 			return result;
 		}
-		bool operator < ( const sentence & comp ) const
+		bool operator < ( const sentence< > & comp ) const
 		{
 			if ( length( ) < comp.length( ) ) { return true; }
 			if ( length( ) > comp.length( ) ) { return false; }
@@ -159,7 +161,7 @@ namespace first_order_logic
 		}
 		bool have_quantifier( ) const;
 		bool is_in_prenex_form( ) const;
-		sentence standardize_bound_variable( ) const
+		sentence< > standardize_bound_variable( ) const
 		{
 			std::set< std::string > term_map;
 			cv( make_function_output_iterator(
@@ -170,27 +172,27 @@ namespace first_order_logic
 					} ) );
 			return standardize_bound_variable( term_map );
 		}
-		sentence standardize_bound_variable( std::set< std::string > & term_map ) const;
-		sentence move_quantifier_out( ) const;
-		sentence skolemization_remove_existential( std::set< variable > & previous_quantifier ) const;
-		sentence skolemization_remove_universal( std::set< variable > & previous_quantifier ) const;
-		sentence skolemization_remove_existential( ) const;
-		sentence skolemization_remove_universal( ) const;
-		sentence drop_existential( ) const;
-		sentence drop_universal( ) const;
-		sentence rectify( ) const;
-		sentence rectify(
+		sentence< > standardize_bound_variable( std::set< std::string > & term_map ) const;
+		sentence< > move_quantifier_out( ) const;
+		sentence< > skolemization_remove_existential( std::set< variable > & previous_quantifier ) const;
+		sentence< > skolemization_remove_universal( std::set< variable > & previous_quantifier ) const;
+		sentence< > skolemization_remove_existential( ) const;
+		sentence< > skolemization_remove_universal( ) const;
+		sentence< > drop_existential( ) const;
+		sentence< > drop_universal( ) const;
+		sentence< > rectify( ) const;
+		sentence< > rectify(
 					std::set< variable > & used_quantifier,
 					const std::set< variable > & free_variable,
 					std::set< std::string > & used_name ) const;
 		template< typename OUTITER >
 		OUTITER used_name( OUTITER result ) const;
 		explicit operator bool ( ) const { return data.get( ) != nullptr; }
-		void swap( sentence & sen ) { data.swap( sen.data ); }
-		sentence restore_quantifier_existential( ) const;
-		sentence restore_quantifier_universal( ) const;
+		void swap( sentence< > & sen ) { data.swap( sen.data ); }
+		sentence< > restore_quantifier_existential( ) const;
+		sentence< > restore_quantifier_universal( ) const;
 		template< typename OSTREAM >
-		friend OSTREAM & operator << ( OSTREAM & os, const sentence & sen )
+		friend OSTREAM & operator << ( OSTREAM & os, const sentence< > & sen )
 		{ return os << static_cast< std::string >( sen ); }
 	};
 }

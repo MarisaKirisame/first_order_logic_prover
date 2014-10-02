@@ -4,13 +4,13 @@
 #include "substitution.hpp"
 namespace first_order_logic
 {
-	inline sentence sentence::standardize_bound_variable( std::set< std::string > & term_map ) const
+	sentence< > sentence< >::standardize_bound_variable( std::set< std::string > & term_map ) const
 	{
 		return
 				type_restore_full
 				(
 					make_all_actor(
-						[&]( const variable & v, const sentence & sen )
+						[&]( const variable & v, const sentence< > & sen )
 						{
 							std::string gen_str = v.name;
 							while ( term_map.count( gen_str ) != 0 ) { gen_str += "_"; }
@@ -18,33 +18,33 @@ namespace first_order_logic
 							return make_all( v, sub( sen ) );
 						} ),
 					make_some_actor(
-						[&]( const variable & v, const sentence & sen )
+						[&]( const variable & v, const sentence< > & sen )
 						{
 							std::string gen_str = v.name;
 							while ( term_map.count( gen_str ) != 0 ) { gen_str += "_"; }
 							substitution sub( { std::make_pair( v, make_variable( gen_str ) ) } );
 							return make_some( v, sub( sen ) );
 						} ),
-					make_atomic_actor( [&]( const atomic_sentence & as ){ return sentence( as ); } ),
+					make_atomic_actor( [&]( const atomic_sentence & as ){ return sentence< >( as ); } ),
 					make_and_actor(
-						[&]( const sentence & l, const sentence & r )
+						[&]( const sentence< > & l, const sentence< > & r )
 						{
 							return make_and(
 										l.standardize_bound_variable( term_map ),
 										r.standardize_bound_variable( term_map ) );
 						} ),
 					make_or_actor(
-						[&]( const sentence & l, const sentence & r )
+						[&]( const sentence< > & l, const sentence< > & r )
 						{
 							return make_or(
 										l.standardize_bound_variable( term_map ),
 										r.standardize_bound_variable( term_map ) );
 						} ),
 					make_not_actor
-						( [&]( const sentence & s ){ return make_not( s.standardize_bound_variable( term_map ) ); } )
+						( [&]( const sentence< > & s ){ return make_not( s.standardize_bound_variable( term_map ) ); } )
 				);
 	}
-	inline sentence::operator std::string( ) const
+	inline sentence< >::operator std::string( ) const
 	{
 		if ( ! (*this)->cache.empty( ) ) { return (*this)->cache; }
 		(*this)->cache =
@@ -52,7 +52,7 @@ namespace first_order_logic
 				type_restore_full
 				(
 					make_and_actor(
-						[&]( const sentence & l, const sentence & r )
+						[&]( const sentence< > & l, const sentence< > & r )
 						{
 							return
 								static_cast< std::string >( l ) +
@@ -60,7 +60,7 @@ namespace first_order_logic
 								static_cast< std::string >( r );
 						} ),
 					make_some_actor(
-						[&]( const variable & var, const sentence & sen )
+						[&]( const variable & var, const sentence< > & sen )
 						{
 							return
 								"∃" +
@@ -69,7 +69,7 @@ namespace first_order_logic
 								static_cast< std::string >( sen );
 						} ),
 					make_all_actor(
-						[&]( const variable & var, const sentence & sen )
+						[&]( const variable & var, const sentence< > & sen )
 						{
 							return
 								"∀" +
@@ -78,80 +78,80 @@ namespace first_order_logic
 								static_cast< std::string >( sen );
 						} ),
 					make_or_actor(
-						[&]( const sentence & l, const sentence & r )
+						[&]( const sentence< > & l, const sentence< > & r )
 						{
 							return
 								static_cast< std::string >( l ) +
 								"\\/" +
 								static_cast< std::string >( r );
 						} ),
-					make_not_actor( [&]( const sentence & sen ){ return "!" + static_cast< std::string >( sen ); } ),
+					make_not_actor( [&]( const sentence< > & sen ){ return "!" + static_cast< std::string >( sen ); } ),
 					make_atomic_actor( [&]( const atomic_sentence & as ){ return static_cast< std::string >( as ); } )
 				) +
 				")";
 		return (*this)->cache;
 	}
-	inline size_t sentence::length( ) const
+	inline size_t sentence< >::length( ) const
 	{
 		return
 			type_restore_full
 			(
-				make_all_actor( []( const variable &, const sentence & s ){ return s.length( ); } ),
-				make_some_actor( []( const variable &, const sentence & s ){ return s.length( ); } ),
+				make_all_actor( []( const variable &, const sentence< > & s ){ return s.length( ); } ),
+				make_some_actor( []( const variable &, const sentence< > & s ){ return s.length( ); } ),
 				make_atomic_actor( []( const atomic_sentence & )->size_t{ return 0; } ),
-				make_and_actor( []( const sentence & l, const sentence & r ){ return l.length( ) + r.length( ); } ),
-				make_or_actor( []( const sentence & l, const sentence & r ){ return l.length( ) + r.length( ); } ),
-				make_not_actor( []( const sentence & sen ){ return sen.length( ); } )
+				make_and_actor( []( const sentence< > & l, const sentence< > & r ){ return l.length( ) + r.length( ); } ),
+				make_or_actor( []( const sentence< > & l, const sentence< > & r ){ return l.length( ) + r.length( ); } ),
+				make_not_actor( []( const sentence< > & sen ){ return sen.length( ); } )
 			);
 	}
 	template< typename OUTITER >
-	OUTITER sentence::functions( OUTITER result ) const
+	OUTITER sentence< >::functions( OUTITER result ) const
 	{
 		type_restore_full
 		(
-			make_all_actor( [&]( const variable &, const sentence & s ){ result = s.functions( result ); } ),
-			make_some_actor( [&]( const variable &, const sentence & s ){ result = s.functions( result ); } ),
+			make_all_actor( [&]( const variable &, const sentence< > & s ){ result = s.functions( result ); } ),
+			make_some_actor( [&]( const variable &, const sentence< > & s ){ result = s.functions( result ); } ),
 			make_atomic_actor( [&]( const atomic_sentence & as ){ result = as.functions( result ); } ),
 			make_and_actor(
-				[&]( const sentence & l, const sentence & r ) { result = l.functions( r.functions( result ) ); } ),
+				[&]( const sentence< > & l, const sentence< > & r ) { result = l.functions( r.functions( result ) ); } ),
 			make_or_actor(
-				[&]( const sentence & l, const sentence & r ) { result = l.functions( r.functions( result ) ); } ),
-			make_not_actor( [&]( const sentence & sen ){ result = sen.functions( result ); } )
+				[&]( const sentence< > & l, const sentence< > & r ) { result = l.functions( r.functions( result ) ); } ),
+			make_not_actor( [&]( const sentence< > & sen ){ result = sen.functions( result ); } )
 		);
 		return result;
 	}
 	template< typename OUTITER >
-	OUTITER sentence::predicates( OUTITER result ) const
+	OUTITER sentence< >::predicates( OUTITER result ) const
 	{
 		type_restore_full
 		(
-			make_all_actor( [&]( const variable &, const sentence & s ) { result = s.predicates( result ); } ),
-			make_some_actor( [&]( const variable &, const sentence & s ) { result = s.predicates( result ); } ),
+			make_all_actor( [&]( const variable &, const sentence< > & s ) { result = s.predicates( result ); } ),
+			make_some_actor( [&]( const variable &, const sentence< > & s ) { result = s.predicates( result ); } ),
 			make_and_actor(
-						[&]( const sentence & l, const sentence & r )
+						[&]( const sentence< > & l, const sentence< > & r )
 						{ result = l.predicates( r.predicates( result ) ); } ),
 			make_or_actor(
-						[&]( const sentence & l, const sentence & r )
+						[&]( const sentence< > & l, const sentence< > & r )
 						{ result = l.predicates( r.predicates( result ) ); } ),
-			make_not_actor( [&]( const sentence & sen ){ result = sen.predicates( result ); } ),
+			make_not_actor( [&]( const sentence< > & sen ){ result = sen.predicates( result ); } ),
 			make_atomic_actor( [&]( const atomic_sentence & as ) { result = as.predicates( result ); } )
 		);
 		return result;
 	}
 	template< typename OUTITER >
-	OUTITER sentence::variables( OUTITER result ) const
+	OUTITER sentence< >::variables( OUTITER result ) const
 	{
 		type_restore_full
 		(
 			make_all_actor(
-				[&]( const variable & var, const sentence & s )
+				[&]( const variable & var, const sentence< > & s )
 				{
 					*result = var;
 					++result;
 					result = s.variables( result );
 				} ),
 				make_some_actor(
-				[&]( const variable & var, const sentence & s )
+				[&]( const variable & var, const sentence< > & s )
 				{
 					*result = var;
 					++result;
@@ -163,27 +163,27 @@ namespace first_order_logic
 					{ for ( const term & t : vec ) { result = t.variables( result ); } } ),
 				make_propositional_letter_actor( []( const std::string & ){ } ),
 				make_and_actor(
-					[&]( const sentence & l, const sentence & r ) { result = l.variables( r.variables( result ) ); } ),
+					[&]( const sentence< > & l, const sentence< > & r ) { result = l.variables( r.variables( result ) ); } ),
 				make_or_actor(
-					[&]( const sentence & l, const sentence & r ) { result = l.variables( r.variables( result ) ); } ),
-				make_not_actor( [&]( const sentence & sen ){ result = sen.variables( result ); } )
+					[&]( const sentence< > & l, const sentence< > & r ) { result = l.variables( r.variables( result ) ); } ),
+				make_not_actor( [&]( const sentence< > & sen ){ result = sen.variables( result ); } )
 			);
 		return result;
 	}
 	template< typename OUTITER >
-	OUTITER sentence::bounded_variables( OUTITER result ) const
+	OUTITER sentence< >::bounded_variables( OUTITER result ) const
 	{
 		type_restore_full
 		(
 			make_all_actor(
-				[&]( const variable & var, const sentence & s )
+				[&]( const variable & var, const sentence< > & s )
 				{
 					*result = var;
 					++result;
 					result = s.bounded_variables( result );
 				} ),
 			make_some_actor(
-				[&]( const variable & var, const sentence & s )
+				[&]( const variable & var, const sentence< > & s )
 				{
 					*result = var;
 					++result;
@@ -195,134 +195,136 @@ namespace first_order_logic
 				{ for ( const term & t : vec ) { result = t.variables( result ); } } ),
 			make_propositional_letter_actor( []( const std::string & ){ } ),
 			make_and_actor(
-				[&]( const sentence & l, const sentence & r )
+				[&]( const sentence< > & l, const sentence< > & r )
 				{ result = l.bounded_variables( r.bounded_variables( result ) ); } ),
 			make_or_actor(
-				[&]( const sentence & l, const sentence & r )
+				[&]( const sentence< > & l, const sentence< > & r )
 				{ result = l.bounded_variables( r.bounded_variables( result ) ); } ),
-			make_not_actor( [&]( const sentence & sen ){ result = sen.bounded_variables( result ); } )
+			make_not_actor( [&]( const sentence< > & sen ){ result = sen.bounded_variables( result ); } )
 		);
 		return result;
 	}
 	template< typename OUTITER >
-	OUTITER sentence::free_variables( OUTITER result ) const
+	OUTITER sentence< >::free_variables( OUTITER result ) const
 	{
 		type_restore_full
 		(
-			make_all_actor( [&]( const variable &, const sentence & s ) { result = s.free_variables( result ); } ),
-			make_some_actor( [&]( const variable &, const sentence & s ) { result = s.free_variables( result ); } ),
+			make_all_actor( [&]( const variable &, const sentence< > & s ) { result = s.free_variables( result ); } ),
+			make_some_actor( [&]( const variable &, const sentence< > & s ) { result = s.free_variables( result ); } ),
 			make_atomic_actor( [&]( const atomic_sentence & as ){ result = as.free_variables( result ); } ),
 			make_and_actor(
-				[&]( const sentence & l, const sentence & r )
+				[&]( const sentence< > & l, const sentence< > & r )
 				{ result = l.free_variables( r.free_variables( result ) ); } ),
 			make_or_actor(
-				[&]( const sentence & l, const sentence & r )
+				[&]( const sentence< > & l, const sentence< > & r )
 				{ result = l.free_variables( r.free_variables( result ) ); } ),
-			make_not_actor( [&]( const sentence & sen ){ result = sen.free_variables( result ); } )
+			make_not_actor( [&]( const sentence< > & sen ){ result = sen.free_variables( result ); } )
 		);
 		return result;
 	}
-	inline bool sentence::have_equal( ) const
+	inline bool sentence< >::have_equal( ) const
 	{
 		return
 			type_restore_full
 			(
-				make_all_actor( [&]( const variable &, const sentence & s ) { return s.have_equal( ); } ),
-				make_some_actor( [&]( const variable &, const sentence & s ) { return s.have_equal( ); } ),
+				make_all_actor( [&]( const variable &, const sentence< > & s ) { return s.have_equal( ); } ),
+				make_some_actor( [&]( const variable &, const sentence< > & s ) { return s.have_equal( ); } ),
 				make_atomic_actor(
 						[&]( const atomic_sentence & as )
 						{ return as->atomic_sentence_type == atomic_sentence::type::equal; } ),
 				make_and_actor(
-						[&]( const sentence & l, const sentence & r ) { return l.have_equal( ) || r.have_equal( ); } ),
+						[&]( const sentence< > & l, const sentence< > & r ) { return l.have_equal( ) || r.have_equal( ); } ),
 				make_or_actor(
-						[&]( const sentence & l, const sentence & r ) { return l.have_equal( ) || r.have_equal( ); } ),
+						[&]( const sentence< > & l, const sentence< > & r ) { return l.have_equal( ) || r.have_equal( ); } ),
 				make_not_actor(
-						[&]( const sentence & sen ){ return sen.have_equal( ); } )
+						[&]( const sentence< > & sen ){ return sen.have_equal( ); } )
 			);
 	}
 	template< typename OUTITER >
-	OUTITER sentence::constants( OUTITER result ) const
+	OUTITER sentence< >::constants( OUTITER result ) const
 	{
 		return
 			type_restore_full
 			(
-				make_all_actor( [&]( const variable &, const sentence & s ) { return s.constants( result ); } ),
-				make_some_actor( [&]( const variable &, const sentence & s ) { return s.constants( result ); } ),
+				make_all_actor( [&]( const variable &, const sentence< > & s ) { return s.constants( result ); } ),
+				make_some_actor( [&]( const variable &, const sentence< > & s ) { return s.constants( result ); } ),
 				make_atomic_actor( [&]( const atomic_sentence & as ){ return as.constants( result ); } ),
 				make_and_actor(
-					[&]( const sentence & l, const sentence & r ) { return l.constants( r.constants( result ) ); } ),
+					[&]( const sentence< > & l, const sentence< > & r ) { return l.constants( r.constants( result ) ); } ),
 				make_or_actor(
-					[&]( const sentence & l, const sentence & r ) { return l.constants( r.constants( result ) ); } ),
-				make_not_actor( [&]( const sentence & sen ){ return sen.constants( result ); } )
+					[&]( const sentence< > & l, const sentence< > & r ) { return l.constants( r.constants( result ) ); } ),
+				make_not_actor( [&]( const sentence< > & sen ){ return sen.constants( result ); } )
 			);
 	}
-	inline bool sentence::have_quantifier( ) const
+	inline bool sentence< >::have_quantifier( ) const
 	{
 		return
 				type_restore_full
 				(
-					make_all_actor( []( const variable &, const sentence & ){ return true; } ),
-					make_some_actor( []( const variable &, const sentence & ){ return true; } ),
-					make_or_actor( []( const sentence & l, const sentence & r )
+					make_all_actor( []( const variable &, const sentence< > & ){ return true; } ),
+					make_some_actor( []( const variable &, const sentence< > & ){ return true; } ),
+					make_or_actor( []( const sentence< > & l, const sentence< > & r )
 						{ return l.have_quantifier( ) || r.have_quantifier( ); } ),
-					make_and_actor( []( const sentence & l, const sentence & r )
+					make_and_actor( []( const sentence< > & l, const sentence< > & r )
 						{ return l.have_quantifier( ) || r.have_quantifier( ); } ),
-					make_not_actor( []( const sentence & sen ){ return sen.have_quantifier( ); } ),
+					make_not_actor( []( const sentence< > & sen ){ return sen.have_quantifier( ); } ),
 					make_atomic_actor( []( const atomic_sentence & ){ return false; } )
 				);
 	}
-	inline bool sentence::is_in_prenex_form( ) const
+	inline bool sentence< >::is_in_prenex_form( ) const
 	{
 		return
 				type_restore_full
 				(
-					make_all_actor( []( const variable &, const sentence &  sen ){ return sen.is_in_prenex_form( ); } ),
-					make_some_actor( []( const variable &, const sentence & sen ){ return sen.is_in_prenex_form( ); } ),
-					make_or_actor( []( const sentence & l, const sentence & r )
+					make_all_actor( []( const variable &, const sentence< > &  sen ){ return sen.is_in_prenex_form( ); } ),
+					make_some_actor( []( const variable &, const sentence< > & sen ){ return sen.is_in_prenex_form( ); } ),
+					make_or_actor( []( const sentence< > & l, const sentence< > & r )
 						{ return ( ! l.have_quantifier( ) ) && ( ! r.have_quantifier( ) ); } ),
-					make_and_actor( []( const sentence & l, const sentence & r )
+					make_and_actor( []( const sentence< > & l, const sentence< > & r )
 						{ return ( ! l.have_quantifier( ) ) && ( ! r.have_quantifier( ) ); } ),
-					make_not_actor( []( const sentence & sen ){ return ! sen.have_quantifier( ); } ),
+					make_not_actor( []( const sentence< > & sen ){ return ! sen.have_quantifier( ); } ),
 					make_atomic_actor( []( const atomic_sentence & ){ return true; } )
 				);
 	}
-	inline sentence sentence::move_quantifier_out( ) const
+	inline sentence< > sentence< >::move_quantifier_out( ) const
 	{
 		return type_restore_full
 				(
 					make_all_actor(
-						[&]( const variable & v, const sentence & s ) { return make_all( v, s.move_quantifier_out( ) ); } ),
+						[&]( const variable & v, const sentence< > & s )
+						{ return make_all( v, s.move_quantifier_out( ) ); } ),
 					make_some_actor(
-						[&]( const variable & v, const sentence & s ) { return make_some( v, s.move_quantifier_out( ) ); } ),
+						[&]( const variable & v, const sentence< > & s )
+						{ return make_some( v, s.move_quantifier_out( ) ); } ),
 					make_atomic_actor( []( const atomic_sentence & as ){ return sentence( as ); } ),
 					make_and_actor(
-						[&]( const sentence & l, const sentence & r )
+						[&]( const sentence< > & l, const sentence< > & r )
 						{
-							sentence ll = l.move_quantifier_out( );
-							if ( ll->sentence_type == sentence::type::all || ll->sentence_type == sentence::type::some )
+							sentence< > ll = l.move_quantifier_out( );
+							if ( ll->sentence_type == sentence< >::type::all || ll->sentence_type == sentence< >::type::some )
 							{
-								sentence ret;
+								sentence< > ret;
 								ll.type_restore(
 									make_all_actor(
-										[&]( const variable & v, const sentence & sen )
+										[&]( const variable & v, const sentence< > & sen )
 										{ ret = make_all( v, make_and( sen, r ) ); } ),
 									make_some_actor(
-										[&]( const variable & v, const sentence & sen )
+										[&]( const variable & v, const sentence< > & sen )
 										{ ret = make_some( v, make_and( sen, r ) ); } ),
 									error( ) );
 								assert( ret.data );
 								return ret.move_quantifier_out( );
 							}
-							sentence rr = r.move_quantifier_out( );
-							if ( rr->sentence_type == sentence::type::all || rr->sentence_type == sentence::type::some )
+							sentence< > rr = r.move_quantifier_out( );
+							if ( rr->sentence_type == sentence< >::type::all || rr->sentence_type == sentence< >::type::some )
 							{
-								sentence ret;
+								sentence< > ret;
 								rr.type_restore(
 									make_all_actor(
-										[&]( const variable & v, const sentence & sen )
+										[&]( const variable & v, const sentence< > & sen )
 										{ ret = make_all( v, make_and( l, sen ) ); } ),
 									make_some_actor(
-										[&]( const variable & v, const sentence & sen )
+										[&]( const variable & v, const sentence< > & sen )
 										{ ret = make_some( v, make_and( l, sen ) ); } ),
 									error( ) );
 								assert( ret.data );
@@ -331,33 +333,33 @@ namespace first_order_logic
 							return make_and( l, r );
 						} ),
 					make_or_actor(
-						[&]( const sentence & l, const sentence & r )
+						[&]( const sentence< > & l, const sentence< > & r )
 						{
-							sentence ll = l.move_quantifier_out( );
-							if ( ll->sentence_type == sentence::type::all || ll->sentence_type == sentence::type::some )
+							sentence< > ll = l.move_quantifier_out( );
+							if ( ll->sentence_type == sentence< >::type::all || ll->sentence_type == sentence< >::type::some )
 							{
-								sentence ret;
+								sentence< > ret;
 								ll.type_restore(
 									make_all_actor(
-										[&]( const variable & v, const sentence & sen )
+										[&]( const variable & v, const sentence< > & sen )
 										{ ret = make_all( v, make_or( sen, r ) ); } ),
 									make_some_actor(
-										[&]( const variable & v, const sentence & sen )
+										[&]( const variable & v, const sentence< > & sen )
 										{ ret = make_some( v, make_or( sen, r ) ); } ),
 									error( ) );
 								assert( ret.data );
 								return ret.move_quantifier_out( );
 							}
-							sentence rr = r.move_quantifier_out( );
-							if ( rr->sentence_type == sentence::type::all || rr->sentence_type == sentence::type::some )
+							sentence< > rr = r.move_quantifier_out( );
+							if ( rr->sentence_type == sentence< >::type::all || rr->sentence_type == sentence< >::type::some )
 							{
-								sentence ret;
+								sentence< > ret;
 									rr.type_restore(
 									make_all_actor(
-										[&]( const variable & v, const sentence & sen )
+										[&]( const variable & v, const sentence< > & sen )
 										{ ret = make_all( v, make_or( l, sen ) ); } ),
 									make_some_actor(
-										[&]( const variable & v, const sentence & sen )
+										[&]( const variable & v, const sentence< > & sen )
 										{ ret = make_some( v, make_or( l, sen ) ); } ),
 									error( ) );
 								assert( ret.data );
@@ -366,18 +368,18 @@ namespace first_order_logic
 							return make_or( l, r );
 						} ),
 						make_not_actor(
-							[&]( const sentence & sen )
+							[&]( const sentence< > & sen )
 							{
-								sentence ss = sen.move_quantifier_out( );
-								if ( ss->sentence_type == sentence::type::all || ss->sentence_type == sentence::type::some )
+								sentence< > ss = sen.move_quantifier_out( );
+								if ( ss->sentence_type == sentence< >::type::all || ss->sentence_type == sentence< >::type::some )
 								{
-									sentence ret;
+									sentence< > ret;
 									ss.type_restore(
 										make_all_actor(
-											[&]( const variable & v, const sentence & sss )
+											[&]( const variable & v, const sentence< > & sss )
 											{ ret = make_some( v, sss ); } ),
 										make_some_actor(
-											[&]( const variable & v, const sentence & sss )
+											[&]( const variable & v, const sentence< > & sss )
 											{ ret = make_all( v, sss ); } ),
 										error( ) );
 									assert( ret.data );
@@ -388,33 +390,33 @@ namespace first_order_logic
 				);
 	}
 
-	inline sentence sentence::skolemization_remove_existential( ) const
+	inline sentence< > sentence< >::skolemization_remove_existential( ) const
 	{
 		if ( ! is_in_prenex_form( ) ) { return move_quantifier_out( ).skolemization_remove_existential( ); }
 		std::set< variable > s;
 		return skolemization_remove_existential( s );
 	}
 
-	inline sentence sentence::skolemization_remove_universal( ) const
+	inline sentence< > sentence< >::skolemization_remove_universal( ) const
 	{
 		if ( ! is_in_prenex_form( ) ) { return move_quantifier_out( ).skolemization_remove_universal( ); }
 		std::set< variable > s;
 		return skolemization_remove_universal( s );
 	}
 
-	inline sentence sentence::skolemization_remove_existential( std::set< variable > & previous_quantifier ) const
+	inline sentence< > sentence< >::skolemization_remove_existential( std::set< variable > & previous_quantifier ) const
 	{
-		boost::optional< sentence > ret;
+		boost::optional< sentence< > > ret;
 		type_restore
 		(
 			make_all_actor(
-				[&]( const variable & v, const sentence & s )
+				[&]( const variable & v, const sentence< > & s )
 				{
 					previous_quantifier.insert( v );
 					ret = make_all( v, s.skolemization_remove_existential( ) );
 				} ),
 			make_some_actor(
-				[&]( const variable & v, const sentence & s )
+				[&]( const variable & v, const sentence< > & s )
 				{
 					if ( previous_quantifier.empty( ) )
 					{
@@ -446,19 +448,19 @@ namespace first_order_logic
 		return ret ? * ret : * this;
 	}
 
-	inline sentence sentence::skolemization_remove_universal( std::set< variable > & previous_quantifier ) const
+	inline sentence< > sentence< >::skolemization_remove_universal( std::set< variable > & previous_quantifier ) const
 	{
-		boost::optional< sentence > ret;
+		boost::optional< sentence< > > ret;
 		type_restore
 		(
 			make_some_actor(
-				[&]( const variable & v, const sentence & s )
+				[&]( const variable & v, const sentence< > & s )
 				{
 					previous_quantifier.insert( v );
 					ret = make_some( v, s.skolemization_remove_existential( ) );
 				} ),
 			make_all_actor(
-				[&]( const variable & v, const sentence & s )
+				[&]( const variable & v, const sentence< > & s )
 				{
 					if ( previous_quantifier.empty( ) )
 					{
@@ -493,7 +495,7 @@ namespace first_order_logic
 		return ret ? * ret : * this;
 	}
 
-	inline sentence sentence::rectify( ) const
+	inline sentence< > sentence< >::rectify( ) const
 	{
 		std::set< variable > sv;
 		std::set< std::string > used_name;
@@ -503,7 +505,7 @@ namespace first_order_logic
 		return rectify( sv, var, used_name );
 	}
 
-	inline sentence sentence::rectify(
+	inline sentence< > sentence< >::rectify(
 			std::set< variable > & used_quantifier,
 			const std::set< variable > & free_variable,
 			std::set< std::string > & used_name ) const
@@ -511,7 +513,7 @@ namespace first_order_logic
 		return type_restore_full
 				(
 					make_all_actor(
-						[&]( const variable & v, const sentence & sen )
+						[&]( const variable & v, const sentence< > & sen )
 						{
 							if ( used_quantifier.count( v ) != 0 || free_variable.count( v ) != 0 )
 							{
@@ -528,7 +530,7 @@ namespace first_order_logic
 							return make_all( v, sen );
 						} ),
 					make_some_actor(
-						[&]( const variable & v, const sentence & sen )
+						[&]( const variable & v, const sentence< > & sen )
 						{
 							if ( used_quantifier.count( v ) != 0 || free_variable.count( v ) != 0 )
 							{
@@ -546,83 +548,83 @@ namespace first_order_logic
 						} ),
 					make_atomic_actor( [&]( const atomic_sentence & as ){ return sentence( as ); } ),
 					make_or_actor(
-						[&]( const sentence & l, const sentence & r )
+						[&]( const sentence< > & l, const sentence< > & r )
 						{
 							return make_or(
 									l.rectify( used_quantifier, free_variable, used_name ),
 									r.rectify( used_quantifier, free_variable, used_name ) );
 						} ),
 					make_and_actor(
-						[&]( const sentence & l, const sentence & r )
+						[&]( const sentence< > & l, const sentence< > & r )
 						{
 							return make_and(
 									l.rectify( used_quantifier, free_variable, used_name ),
 									r.rectify( used_quantifier, free_variable, used_name ) );
 						} ),
 					make_not_actor(
-						[&]( const sentence & sen )
+						[&]( const sentence< > & sen )
 						{ return make_not( sen.rectify( used_quantifier, free_variable, used_name ) ); } )
 				);
 	}
 
 	template< typename OUTITER >
-	OUTITER sentence::used_name( OUTITER result ) const
+	OUTITER sentence< >::used_name( OUTITER result ) const
 	{
 		return
 				type_restore_full
 				(
 					make_all_actor(
-						[&]( const variable & v, const sentence & s )
+						[&]( const variable & v, const sentence< > & s )
 						{
 							* result = v.name;
 							++result;
 							return s.used_name( result );
 						} ),
 					make_some_actor(
-						[&]( const variable & v, const sentence & s )
+						[&]( const variable & v, const sentence< > & s )
 						{
 							* result = v.name;
 							++result;
 							return s.used_name( result );
 						} ),
-					make_or_actor( [&]( const sentence & l, const sentence & r )
+					make_or_actor( [&]( const sentence< > & l, const sentence< > & r )
 						{ return l.used_name( r.used_name( result ) ); } ),
-					make_and_actor( [&]( const sentence & l, const sentence & r )
+					make_and_actor( [&]( const sentence< > & l, const sentence< > & r )
 						{ return l.used_name( r.used_name( result ) ); } ),
-					make_not_actor( [&]( const sentence & sen ) { return sen.used_name( result ); } ),
+					make_not_actor( [&]( const sentence< > & sen ) { return sen.used_name( result ); } ),
 					make_atomic_actor( [&]( const atomic_sentence & sen ){ return sen.used_name( result ); } )
 				);
 	}
 
-	sentence sentence::drop_existential( ) const
+	sentence< > sentence< >::drop_existential( ) const
 	{
-		boost::optional< sentence > sen;
+		boost::optional< sentence< > > sen;
 		type_restore(
-			make_some_actor( [&]( const variable &, const sentence & se ){ sen = se.drop_existential( ); } ),
+			make_some_actor( [&]( const variable &, const sentence< > & se ){ sen = se.drop_existential( ); } ),
 			ignore( ) );
 		return sen ? * sen : * this;
 	}
-	sentence sentence::drop_universal( ) const
+	sentence< > sentence< >::drop_universal( ) const
 	{
-		boost::optional< sentence > sen;
+		boost::optional< sentence< > > sen;
 		type_restore(
-			make_all_actor( [&]( const variable &, const sentence & se ){ sen = se.drop_universal( ); } ),
+			make_all_actor( [&]( const variable &, const sentence< > & se ){ sen = se.drop_universal( ); } ),
 			ignore( ) );
 		return sen ? * sen : * this;
 	}
-	sentence sentence::restore_quantifier_existential( ) const
+	sentence< > sentence< >::restore_quantifier_existential( ) const
 	{
 		std::set< variable > var;
 		free_variables( std::inserter( var, var.begin( ) ) );
-		sentence ret = * this;
+		sentence< > ret = * this;
 		for ( const variable & v : var ) { ret = make_some( v, ret ); }
 		return ret;
 	}
-	sentence sentence::restore_quantifier_universal( ) const
+	sentence< > sentence< >::restore_quantifier_universal( ) const
 	{
 		std::set< variable > var;
 		free_variables( std::inserter( var, var.begin( ) ) );
-		sentence ret = * this;
+		sentence< > ret = * this;
 		for ( const variable & v : var ) { ret = make_all( v, ret ); }
 		return ret;
 	}

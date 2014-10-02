@@ -141,7 +141,7 @@ namespace first_order_logic
 	BOOST_AUTO_TEST_CASE( resolution_test )
 	{
 		std::cout << std::boolalpha;
-		sentence axiom1 = make_all(
+		sentence< > axiom1 = make_all(
 					variable( "x" ),
 					make_imply(
 						make_predicate(
@@ -150,7 +150,7 @@ namespace first_order_logic
 						make_predicate(
 							"Weapon",
 							{ make_variable( "x" ) } ) ) );
-		sentence axiom2 =
+		sentence< > axiom2 =
 				make_all(
 					variable( "x" ),
 					make_imply(
@@ -164,13 +164,13 @@ namespace first_order_logic
 								make_variable( "x" ),
 								make_constant( "Nono" )
 							} ) ) );
-		sentence axiom3 =
+		sentence< > axiom3 =
 				make_some(
 					variable( "x" ),
 					make_and(
 						make_predicate( "Own", { make_constant( "Nono" ), make_variable( "x" ) } ),
 						make_predicate( "Missile", { make_variable( "x" ) } ) ) );
-		sentence axiom4 =
+		sentence< > axiom4 =
 				make_all(
 					variable( "x" ),
 					make_all(
@@ -192,7 +192,7 @@ namespace first_order_logic
 													make_variable( "z" )
 												} ) ) ) ),
 								make_predicate( "Criminal", { make_variable( "x" ) } ) ) ) ) );
-		sentence axiom5 =
+		sentence< > axiom5 =
 				make_all(
 					variable( "x" ),
 					make_imply(
@@ -200,8 +200,8 @@ namespace first_order_logic
 							"Enemy",
 							{ make_variable( "x" ), make_constant( "America" ) } ),
 						make_predicate( "Hostile", { make_variable( "x" ) } ) ) );
-		sentence axiom6 = make_predicate( "American", { make_constant( "West" ) } );
-		sentence axiom7 = make_predicate( "Enemy", { make_constant( "Nono" ), make_constant( "America" ) } );
+		sentence< > axiom6 = make_predicate( "American", { make_constant( "West" ) } );
+		sentence< > axiom7 = make_predicate( "Enemy", { make_constant( "Nono" ), make_constant( "America" ) } );
 		BOOST_CHECK(
 			resolution(
 				make_and(

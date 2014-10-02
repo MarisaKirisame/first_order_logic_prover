@@ -25,7 +25,7 @@ namespace first_order_logic
 		namespace qi = spirit::qi;
 		namespace encoding  = boost::spirit::unicode;
 		template< typename IT >
-		struct FOL_grammar : qi::grammar< IT, sentence( ), encoding::space_type >
+		struct FOL_grammar : qi::grammar< IT, sentence< >( ), encoding::space_type >
 		{
 			FOL_grammar( ) : FOL_grammar::base_type( expression )
 			{
@@ -88,7 +88,7 @@ namespace first_order_logic
 			qi::rule< IT, term( ), encoding::space_type >
 				function,
 				term_exp;
-			qi::rule< IT, sentence( ), encoding::space_type >
+			qi::rule< IT, sentence< >( ), encoding::space_type >
 				with_equality,
 				predicate,
 				expression,
@@ -101,14 +101,14 @@ namespace first_order_logic
 			qi::rule< IT, std::string( ), encoding::space_type> text;
 		};
 	}
-	boost::optional< sentence > prase( const std::string & s )
+	boost::optional< sentence< > > prase( const std::string & s )
 	{
 		auto i = s.begin( );
 		auto e = s.end( );
-		sentence ret;
+		sentence< > ret;
 		FOL_grammar< decltype( i ) > fol;
 		bool succeed = boost::spirit::qi::phrase_parse( i, e, fol, boost::spirit::unicode::space, ret );
-		if ( ! ( succeed && i == e ) ) { return boost::optional< sentence >( ); }
+		if ( ! ( succeed && i == e ) ) { return boost::optional< sentence< > >( ); }
 		return ret;
 	}
 }
