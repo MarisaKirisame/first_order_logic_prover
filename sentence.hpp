@@ -39,13 +39,13 @@ namespace first_order_logic
 			std::string name;
 			mutable std::string cache;
 			std::vector< boost::variant< boost::recursive_wrapper< sentence< T > >, next > > arguments;
-			internal( sentence_type st, const atomic_sentence & r ) :
+			internal( sentence_type st, const sentence< T > & r ) :
 				type( st ), arguments( { r } ) { }
-			template< typename TT >
-			internal( sentence_type st, const std::string & name, const TT & r ) :
-				type( st ), name( name ), arguments( r.begin( ), r.end( ) ) { }
-			template< typename TT >
-			internal( sentence_type st, const TT & r ) :
+			internal( sentence_type st, const next & r ) :
+				type( st ), arguments( { r } ) { }
+			internal( sentence_type st, const std::initializer_list< next > & r ) :
+				type( st ), arguments( r.begin( ), r.end( ) ) { }
+			internal( sentence_type st, const std::initializer_list< sentence< T > > & r ) :
 				type( st ), arguments( r.begin( ), r.end( ) ) { }
 			internal( sentence_type st, const std::string & name ) :
 				type( st ), name( name ) { }
@@ -134,19 +134,14 @@ namespace first_order_logic
 		}
 		bool is_atom( ) const { return (*this)->type == sentence_type::atomic; }
 		explicit operator std::string( ) const;
+		sentence( sentence_type ty, const std::initializer_list< next > & il ) :
+			data( new internal( ty, il ) ) { }
+		sentence( sentence_type ty, const std::initializer_list< sentence< T > > & il ) :
+			data( new internal( ty, il ) ) { }
 		sentence( sentence_type ty, const variable & l, const sentence< T > & r ) :
 			data( new internal( ty, l, r ) ) { }
-		template< typename ... TT >
-		sentence( sentence_type ty, const TT & ... t ) : data( new internal( ty, t ... ) ) { }
-		template< typename ... TT >
-		sentence( sentence_type ty, const TT & ... t, const std::initializer_list< sentence< T > > & vec ) :
-			data( new internal( ty, t ..., vec ) ) { }
-		template< typename ... TT >
-		sentence( sentence_type ty, const TT & ... t, const std::initializer_list< term > & vec ) :
-			data( new internal( ty, t ..., vec ) ) { }
-		sentence( const sentence< T > & sen ) : data( sen.data ) { }
 		sentence( ) { }
-		sentence( const atomic_sentence & as ) : sentence( sentence_type::atomic, as ) { }
+		sentence( const atomic_sentence & ) { throw; }
 		bool operator == ( const sentence< T > & comp ) const { return !( (*this) < comp || comp < (*this) ); }
 		bool operator != ( const sentence< T > & comp ) const { return ! ( (*this) == comp ); }
 		size_t length( ) const;

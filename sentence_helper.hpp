@@ -29,6 +29,8 @@ namespace first_order_logic
 	template< typename T >
 	struct sentence_common< T, T > { typedef T type; };
 	template< typename T >
+	struct sentence_common< sentence< T >, sentence< T > > { typedef sentence< T > type; };
+	template< typename T >
 	struct sentence_common< sentence< T >, atomic_sentence > { typedef sentence< T > type; };
 	template< typename T >
 	struct sentence_common< atomic_sentence, sentence< T > > { typedef sentence< T > type; };
@@ -38,13 +40,13 @@ namespace first_order_logic
 		typedef typename
 		std::conditional
 		<
-			std::is_convertible< T1, T2 >::value,
-			T2,
+			std::is_convertible< sentence< T1 >, sentence< T2 > >::value,
+			sentence< T2 >,
 			typename
 			std::conditional
 			<
-				std::is_convertible< T2, T1 >::value,
-				T1,
+				std::is_convertible< sentence< T2 >, sentence< T1 > >::value,
+				sentence< T1 >,
 				free_sentence
 			>::type
 		>::type type;

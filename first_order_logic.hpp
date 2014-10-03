@@ -22,5 +22,53 @@ namespace first_order_logic
 
 	inline atomic_sentence make_propositional_letter( const std::string & s )
 	{ return atomic_sentence( atomic_sentence::type::propositional_letter, s ); }
+
+	template< typename T >
+	typename add_sentence< sentence_type::logical_not, T >::type
+	make_not( const T & s )
+	{ return typename add_sentence< sentence_type::logical_not, T >::type( sentence_type::logical_not, { s } ); }
+
+	template< typename T1, typename T2 >
+	typename add_sentence< sentence_type::logical_and, typename sentence_common< T1, T2 >::type >::type
+	make_and( const T1 & l, const T2 & r )
+	{
+		return typename add_sentence< sentence_type::logical_and, typename sentence_common< T1, T2 >::type >::type
+				(
+					sentence_type::logical_and,
+					{
+						static_cast< typename sentence_common< T1, T2 >::type >( l ),
+						static_cast< typename sentence_common< T1, T2 >::type >( r )
+					}
+				);
+	}
+
+	template< typename T1, typename T2 >
+	typename add_sentence< sentence_type::logical_or, typename sentence_common< T1, T2 >::type >::type
+	make_or( const T1 & l, const T2 & r )
+	{
+		return typename add_sentence< sentence_type::logical_or, typename sentence_common< T1, T2 >::type >::type
+				(
+					sentence_type::logical_or,
+					{
+						static_cast< typename sentence_common< T1, T2 >::type >( l ),
+						static_cast< typename sentence_common< T1, T2 >::type >( r )
+					}
+				);
+	}
+
+	template< typename T >
+	typename add_sentence< sentence_type::all, T >::type make_all( const variable & l, const T & s )
+	{ return typename add_sentence< sentence_type::all, T >::type( sentence_type::all, l, s ); }
+
+	template< typename T >
+	typename add_sentence< sentence_type::all, T >::type make_some( const variable & l, const T & s )
+	{ return typename add_sentence< sentence_type::all, T >::type( sentence_type::some, l, s ); }
+
+	template< typename T >
+	typename add_sentence< sentence_type::all, T >::type make_some( const variable & l, const T & s );
+
+	atomic_sentence make_equal( const term & l, const term & r )
+	{ return atomic_sentence( atomic_sentence::type::equal, { l, r } ); }
+
 }
 #endif //FIRST_ORDER_LOGIC_FIRST_ORDER_LOGIC

@@ -17,13 +17,13 @@ namespace first_order_logic
 			std::string name;
 			mutable std::string cache;
 			std::vector< term > arguments;
-			template< typename T >
-			internal( type sentence_type, const std::string & name, const T & r ) :
+			explicit internal( type sentence_type, const std::string & name, const std::initializer_list< term > & r ) :
 				atomic_sentence_type( sentence_type ), name( name ), arguments( r.begin( ), r.end( ) ) { }
-			template< typename T >
-			internal( type sentence_type, const T & r ) :
+			explicit internal( type sentence_type, const std::string & name, const std::vector< term > & r ) :
+				atomic_sentence_type( sentence_type ), name( name ), arguments( r.begin( ), r.end( ) ) { }
+			explicit internal( type sentence_type, const std::initializer_list< term > & r ) :
 				atomic_sentence_type( sentence_type ), arguments( r.begin( ), r.end( ) ) { }
-			internal( type sentence_type, const std::string & name ) :
+			explicit internal( type sentence_type, const std::string & name ) :
 				atomic_sentence_type( sentence_type ), name( name ) { }
 		};
 		bool operator < ( const atomic_sentence & as ) const
@@ -74,7 +74,7 @@ namespace first_order_logic
 			throw std::invalid_argument( "unknown enum type" );
 		}
 		const internal * operator -> ( ) const { return data.get( ); }
-		inline operator std::string( ) const
+		explicit operator std::string( ) const
 		{
 			if ( ! (*this)->cache.empty( ) ) { return (*this)->cache; }
 			return (*this)->cache =
@@ -101,11 +101,12 @@ namespace first_order_logic
 						make_propositional_letter_actor( [&]( const std::string & str ){ return str; } )
 					);
 		}
-		template< typename ... T >
-		atomic_sentence( const T & ... t ) : data( new internal( t ... ) ) { }
-		template< typename ... T >
-		atomic_sentence( type ty, const T & ... t, const std::initializer_list< term > & vec ) :
-			data( new internal( ty, t ..., vec ) ) { }
+		atomic_sentence( type ty, const std::string & str, const std::vector< term > & ter ) :
+			data( new internal( ty, str, ter ) ) { }
+		atomic_sentence( type ty, const std::initializer_list< term > & ter ) :
+			data( new internal( ty, ter ) ) { }
+		atomic_sentence( type ty, const std::string & str ) :
+			data( new internal( ty, str ) ) { }
 		atomic_sentence( ) { }
 		template< typename OUTITER >
 		OUTITER constants( OUTITER result ) const
@@ -188,6 +189,8 @@ namespace first_order_logic
 										[&]( const auto & v ) { *result = term( v ); ++result; } ) ) );
 			return result;
 		}
+		template< typename TO >
+		operator sentence< TO >( ) const { throw; }
 	};
 }
 #endif // ATOMIC_SENTENCE_HPP
