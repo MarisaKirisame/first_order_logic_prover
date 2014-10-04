@@ -51,7 +51,7 @@ namespace first_order_logic
 		if ( ! (*this)->cache.empty( ) ) { return (*this)->cache; }
 		(*this)->cache =
 				"(" +
-				type_restore_full
+				type_restore_full< std::string >
 				(
 					make_and_actor(
 						[&]( const sentence< T > & l, const sentence< T > & r )
@@ -97,7 +97,7 @@ namespace first_order_logic
 	size_t sentence< T >::length( ) const
 	{
 		return
-			type_restore_full
+			type_restore_full< size_t >
 			(
 				make_all_actor( []( const variable &, const sentence< T > & s ){ return s.length( ); } ),
 				make_some_actor( []( const variable &, const sentence< T > & s ){ return s.length( ); } ),
@@ -111,7 +111,7 @@ namespace first_order_logic
 	template< typename OUTITER >
 	OUTITER sentence< T >::functions( OUTITER result ) const
 	{
-		type_restore_full
+		type_restore_full< void >
 		(
 			make_all_actor( [&]( const variable &, const sentence< T > & s ){ result = s.functions( result ); } ),
 			make_some_actor( [&]( const variable &, const sentence< T > & s ){ result = s.functions( result ); } ),
@@ -128,7 +128,7 @@ namespace first_order_logic
 	template< typename OUTITER >
 	OUTITER sentence< T >::predicates( OUTITER result ) const
 	{
-		type_restore_full
+		type_restore_full< void >
 		(
 			make_all_actor( [&]( const variable &, const sentence< T > & s ) { result = s.predicates( result ); } ),
 			make_some_actor( [&]( const variable &, const sentence< T > & s ) { result = s.predicates( result ); } ),
@@ -215,7 +215,7 @@ namespace first_order_logic
 	template< typename OUTITER >
 	OUTITER sentence< T >::free_variables( OUTITER result ) const
 	{
-		type_restore_full
+		type_restore_full< void >
 		(
 			make_all_actor( [&]( const variable &, const sentence< T > & s ) { result = s.free_variables( result ); } ),
 			make_some_actor( [&]( const variable &, const sentence< T > & s ) { result = s.free_variables( result ); } ),
@@ -234,7 +234,7 @@ namespace first_order_logic
 	bool sentence< T >::have_equal( ) const
 	{
 		return
-			type_restore_full
+			type_restore_full< bool >
 			(
 				make_all_actor( [&]( const variable &, const sentence< T > & s ) { return s.have_equal( ); } ),
 				make_some_actor( [&]( const variable &, const sentence< T > & s ) { return s.have_equal( ); } ),
@@ -254,7 +254,7 @@ namespace first_order_logic
 	OUTITER sentence< T >::constants( OUTITER result ) const
 	{
 		return
-			type_restore_full
+			type_restore_full< OUTITER >
 			(
 				make_all_actor( [&]( const variable &, const sentence< T > & s ) { return s.constants( result ); } ),
 				make_some_actor( [&]( const variable &, const sentence< T > & s ) { return s.constants( result ); } ),
@@ -270,7 +270,7 @@ namespace first_order_logic
 	bool sentence< T >::have_quantifier( ) const
 	{
 		return
-				type_restore_full
+				type_restore_full< bool >
 				(
 					make_all_actor( []( const variable &, const sentence< T > & ){ return true; } ),
 					make_some_actor( []( const variable &, const sentence< T > & ){ return true; } ),
@@ -286,7 +286,7 @@ namespace first_order_logic
 	bool sentence< T >::is_in_prenex_form( ) const
 	{
 		return
-				type_restore_full
+				type_restore_full< bool >
 				(
 					make_all_actor( []( const variable &, const sentence< T > &  sen ){ return sen.is_in_prenex_form( ); } ),
 					make_some_actor( []( const variable &, const sentence< T > & sen ){ return sen.is_in_prenex_form( ); } ),
@@ -301,7 +301,7 @@ namespace first_order_logic
 	template< typename T >
 	sentence< T > sentence< T >::move_quantifier_out( ) const
 	{
-		return type_restore_full
+		return type_restore_full< sentence< T > >
 				(
 					make_all_actor(
 						[&]( const variable & v, const sentence< T > & s )
@@ -317,14 +317,14 @@ namespace first_order_logic
 							if ( ll->type == sentence_type::all || ll->type == sentence_type::some )
 							{
 								sentence< T > ret;
-								ll.type_restore(
+								ll.type_restore< void >(
 									make_all_actor(
 										[&]( const variable & v, const sentence< T > & sen )
 										{ ret = make_all( v, make_and( sen, r ) ); } ),
 									make_some_actor(
 										[&]( const variable & v, const sentence< T > & sen )
 										{ ret = make_some( v, make_and( sen, r ) ); } ),
-									error( ) );
+									error< >( ) );
 								assert( ret.data );
 								return ret.move_quantifier_out( );
 							}
@@ -332,14 +332,14 @@ namespace first_order_logic
 							if ( rr->type == sentence_type::all || rr->type == sentence_type::some )
 							{
 								sentence< T > ret;
-								rr.type_restore(
+								rr.type_restore< void >(
 									make_all_actor(
 										[&]( const variable & v, const sentence< T > & sen )
 										{ ret = make_all( v, make_and( l, sen ) ); } ),
 									make_some_actor(
 										[&]( const variable & v, const sentence< T > & sen )
 										{ ret = make_some( v, make_and( l, sen ) ); } ),
-									error( ) );
+									error< >( ) );
 								assert( ret.data );
 								return ret.move_quantifier_out( );
 							}
@@ -352,14 +352,14 @@ namespace first_order_logic
 							if ( ll->type == sentence_type::all || ll->type == sentence_type::some )
 							{
 								sentence< T > ret;
-								ll.type_restore(
+								ll.type_restore< void >(
 									make_all_actor(
 										[&]( const variable & v, const sentence< T > & sen )
 										{ ret = make_all( v, make_or( sen, r ) ); } ),
 									make_some_actor(
 										[&]( const variable & v, const sentence< T > & sen )
 										{ ret = make_some( v, make_or( sen, r ) ); } ),
-									error( ) );
+									error< >( ) );
 								assert( ret.data );
 								return ret.move_quantifier_out( );
 							}
@@ -367,14 +367,14 @@ namespace first_order_logic
 							if ( rr->type == sentence_type::all || rr->type == sentence_type::some )
 							{
 								sentence< T > ret;
-									rr.type_restore(
+									rr.type_restore< void >(
 									make_all_actor(
 										[&]( const variable & v, const sentence< T > & sen )
 										{ ret = make_all( v, make_or( l, sen ) ); } ),
 									make_some_actor(
 										[&]( const variable & v, const sentence< T > & sen )
 										{ ret = make_some( v, make_or( l, sen ) ); } ),
-									error( ) );
+									error< >( ) );
 								assert( ret.data );
 								return ret.move_quantifier_out( );
 							}
@@ -389,14 +389,14 @@ namespace first_order_logic
 										ss->type == sentence_type::some )
 								{
 									sentence< T > ret;
-									ss.type_restore(
+									ss.type_restore< void >(
 										make_all_actor(
 											[&]( const variable & v, const sentence< T > & sss )
 											{ ret = make_some( v, sss ); } ),
 										make_some_actor(
 											[&]( const variable & v, const sentence< T > & sss )
 											{ ret = make_all( v, sss ); } ),
-										error( ) );
+										error< >( ) );
 									assert( ret.data );
 									return ret.move_quantifier_out( );
 								}
@@ -422,7 +422,7 @@ namespace first_order_logic
 	sentence< T > sentence< T >::skolemization_remove_existential( std::set< variable > & previous_quantifier ) const
 	{
 		boost::optional< sentence< T > > ret;
-		type_restore
+		type_restore< void >
 		(
 			make_all_actor(
 				[&]( const variable & v, const sentence< T > & s )
@@ -458,7 +458,7 @@ namespace first_order_logic
 								} )( s ).skolemization_remove_existential( );
 					}
 				} ),
-			ignore( )
+			ignore< >( )
 		);
 		return ret ? * ret : * this;
 	}
@@ -505,7 +505,7 @@ namespace first_order_logic
 								} )( s ).skolemization_remove_existential( );
 					}
 				} ),
-			error( )
+			error< >( )
 		);
 		return ret ? * ret : * this;
 	}
@@ -525,7 +525,7 @@ namespace first_order_logic
 		const std::set< variable > & free_variable,
 		std::set< std::string > & used_name ) const
 	{
-		return type_restore_full
+		return type_restore_full< sentence< T > >
 				(
 					make_all_actor(
 						[&]( const variable & v, const sentence< T > & sen )
@@ -586,7 +586,7 @@ namespace first_order_logic
 	OUTITER sentence< T >::used_name( OUTITER result ) const
 	{
 		return
-				type_restore_full
+				type_restore_full< OUTITER >
 				(
 					make_all_actor(
 						[&]( const variable & v, const sentence< T > & s )
@@ -616,16 +616,16 @@ namespace first_order_logic
 		boost::optional< sentence< T > > sen;
 		type_restore(
 			make_some_actor( [&]( const variable &, const sentence< T > & se ){ sen = se.drop_existential( ); } ),
-			ignore( ) );
+			ignore< >( ) );
 		return sen ? * sen : * this;
 	}
 	template< typename T >
 	sentence< T > sentence< T >::drop_universal( ) const
 	{
 		boost::optional< sentence< T > > sen;
-		type_restore(
+		type_restore< void >(
 			make_all_actor( [&]( const variable &, const sentence< T > & se ){ sen = se.drop_universal( ); } ),
-			ignore( ) );
+			ignore< >( ) );
 		return sen ? * sen : * this;
 	}
 	template< typename T >

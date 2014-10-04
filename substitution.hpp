@@ -58,7 +58,7 @@ namespace first_order_logic
 	substitution rename_variable( const T & ... );
 	atomic_sentence substitution::operator ( )( const atomic_sentence & as ) const
 	{
-		return as.type_restore_full
+		return as.type_restore_full< atomic_sentence >
 				(
 					make_equal_actor( [&]( const term & l, const term & r ){ return make_equal( (*this)(l), (*this)(r) ); } ),
 					make_predicate_actor(

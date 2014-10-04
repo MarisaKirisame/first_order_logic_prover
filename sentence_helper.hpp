@@ -7,7 +7,7 @@ namespace first_order_logic
 	template< typename T >
 	struct sentence;
 	struct atomic_sentence;
-	enum class sentence_type { logical_and = 0, logical_or = 1, logical_not = 2, all = 3, some = 4, pass = 5, atomic };
+	enum class sentence_type { logical_and = 0, logical_or = 1, logical_not = 2, all = 3, some = 4, pass = 5 };
 	typedef
 	sentence
 	<

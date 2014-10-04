@@ -33,16 +33,16 @@ namespace first_order_logic
 		bool operator != ( const atomic_sentence & as ) const
 		{ return static_cast< std::string >( * this ) != static_cast< std::string >( as ); }
 		std::shared_ptr< internal > data;
-		template< typename ... T >
-		auto type_restore_full( const T & ... t ) const
+		template< typename RET, typename ... T >
+		RET type_restore_full( const T & ... t ) const
 		{
 			static_assert( std::tuple_size< std::tuple< T ... > >::value == 3, "should have three arguments" );
-			return type_restore( t ..., error( ) );
+			return type_restore< RET >( t ..., error< RET >( ) );
 		}
-		template< typename ... T >
-		auto type_restore( const T & ... t ) const
+		template< typename RET, typename ... T >
+		RET type_restore( const T & ... t ) const
 		{
-			return type_restore_inner(
+			return type_restore_inner< RET >(
 						extract< equal_actor_helper >(
 							t ...,
 							make_equal_actor(
@@ -56,8 +56,8 @@ namespace first_order_logic
 							make_propositional_letter_actor(
 								std::get< std::tuple_size< std::tuple< T ... > >::value - 1 >( std::tie( t ... ) ) ) ) );
 		}
-		template< typename T1, typename T2, typename T3 >
-		auto type_restore_inner(
+		template< typename RET, typename T1, typename T2, typename T3 >
+		RET type_restore_inner(
 				const equal_actor< T1 > & equal_func,
 				const predicate_actor< T2 > & predicate_func,
 				const propositional_letter_actor< T3 > & propositional_letter_func ) const
@@ -78,7 +78,7 @@ namespace first_order_logic
 		{
 			if ( ! (*this)->cache.empty( ) ) { return (*this)->cache; }
 			return (*this)->cache =
-					type_restore_full
+					type_restore_full< std::string >
 					(
 						make_equal_actor(
 							[&]( const term & l, const term & r )
@@ -112,21 +112,21 @@ namespace first_order_logic
 		OUTITER constants( OUTITER result ) const
 		{
 			return
-					type_restore_full(
+					type_restore_full< OUTITER >(
 						make_equal_actor(
 							[&]( const term & l, const term & r ) { return l.constants( r.constants( result ) ); } ),
-					make_predicate_actor(
-						[&]( const std::string &, const std::vector< term > & vec )
-						{
-							for ( const term & t : vec ) { result = t.constants( result ); }
-							return result;
-						} ),
-					make_propositional_letter_actor( [&]( const std::string & ) { return result; } ) );
+						make_predicate_actor(
+							[&]( const std::string &, const std::vector< term > & vec )
+							{
+								for ( const term & t : vec ) { result = t.constants( result ); }
+								return result;
+							} ),
+						make_propositional_letter_actor( [&]( const std::string & ) { return result; } ) );
 		}
 		template< typename OUTITER >
 		OUTITER free_variables( OUTITER result ) const
 		{
-			type_restore_full(
+			type_restore_full< void >(
 				make_equal_actor(
 					[&]( const term & l, const term & r ) { result = l.variables( r.variables( result ) ); } ),
 				make_predicate_actor(
@@ -138,7 +138,7 @@ namespace first_order_logic
 		template< typename OUTITER >
 		OUTITER functions( OUTITER result ) const
 		{
-			type_restore_full(
+			type_restore_full< void >(
 				make_equal_actor( [&]( const term & l, const term & r ) { result = l.functions( r.functions( result ) ); } ),
 				make_predicate_actor(
 					[&]( const std::string &, const std::vector< term > & vec )
@@ -149,7 +149,7 @@ namespace first_order_logic
 		template< typename OUTITER >
 		OUTITER used_name( OUTITER result ) const
 		{
-			return type_restore_full(
+			return type_restore_full< OUTITER >(
 			make_equal_actor(
 				[&]( const term & l, const term & r ){ return l.used_name( r.used_name( result ) ); } ),
 			make_predicate_actor(
@@ -171,7 +171,7 @@ namespace first_order_logic
 		template< typename OUTITER >
 		OUTITER predicates( OUTITER result ) const
 		{
-			type_restore_full(
+			type_restore_full< void >(
 				make_equal_actor( [&]( const term &, const term & ){ } ),
 				make_predicate_actor(
 					[&]( const std::string & str, const std::vector< term > & vec )

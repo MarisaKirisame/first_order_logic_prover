@@ -31,7 +31,7 @@ namespace first_order_logic
 	sentence< T > substitution::operator ( )( const sentence< T > & s ) const
 	{
 		sentence< T > ret =
-			s.type_restore_full
+			s.template type_restore_full< sentence< T > >
 			(
 				make_all_actor(
 					[&]( const variable & var, const sentence< T > & sen )
@@ -152,12 +152,12 @@ namespace first_order_logic
 	{
 		if ( p->atomic_sentence_type != q->atomic_sentence_type || p->name != q->name )
 		{ return boost::optional< substitution >( ); }
-		return p.type_restore_full(
+		return p.type_restore_full< boost::optional< substitution > >(
 			make_predicate_actor(
 				[&]( const std::string &, const std::vector< term > & ter )
 				{
 					boost::optional< substitution > ret;
-					q.type_restore(
+					q.type_restore< void >(
 						make_predicate_actor(
 							[&]( const std::string &, const std::vector< term > & te )
 							{
@@ -169,7 +169,7 @@ namespace first_order_logic
 									else { break; }
 								}
 							} ),
-						error( ) );
+						error< >( ) );
 					return ret;
 				} ),
 			make_propositional_letter_actor(
@@ -178,14 +178,14 @@ namespace first_order_logic
 				[&]( const term & l, const term & r )
 				{
 					boost::optional< substitution > ret;
-					q.type_restore(
+					q.type_restore< void >(
 						make_equal_actor(
 							[&]( const term & ll, const term & rr )
 							{
 								auto tem = unify( l, ll, sub );
 								if ( tem ) { ret = unify( r, rr, * tem ); }
 							} ),
-						error( ) );
+						error< >( ) );
 					return ret;
 				} ) );
 	}
@@ -194,7 +194,7 @@ namespace first_order_logic
 			const sentence< T > & p, const atomic_sentence & q, const substitution & sub )
 	{
 		boost::optional< atomic_sentence > as;
-		p.type_restore( make_atomic_actor( [&]( const atomic_sentence & asen ){ as = asen; } ), error( ) );
+		p.type_restore( make_atomic_actor( [&]( const atomic_sentence & asen ){ as = asen; } ), error< >( ) );
 		return as ? unify( * as, q, sub ) : boost::optional< substitution >( );
 	}
 	template< typename T >
@@ -213,7 +213,7 @@ namespace first_order_logic
 								make_all_actor(
 									[&]( const variable & va, const sentence< T > & se )
 									{ ret = unify( substitution( { { va, term( var ) } } )( se ), sen, sub ); } ),
-								error( ) );
+								error< >( ) );
 							return ret;
 						} ),
 					make_some_actor(
@@ -224,7 +224,7 @@ namespace first_order_logic
 								make_some_actor(
 									[&]( const variable & va, const sentence< T > & se )
 									{ ret = unify( substitution( { { va, term( var ) } } )( se ), sen, sub ); } ),
-								error( ) );
+								error< >( ) );
 							return ret;
 						} ),
 					make_and_actor(
@@ -238,7 +238,7 @@ namespace first_order_logic
 										auto tem = unify( l, ll, sub );
 										if ( tem ) { ret = unify( r, rr, * tem ); }
 									} ),
-								error( ) );
+								error< >( ) );
 							return ret;
 						} ),
 					make_or_actor(
@@ -252,7 +252,7 @@ namespace first_order_logic
 										auto tem = unify( l, ll, sub );
 										if ( tem ) { ret = unify( r, rr, * tem ); }
 									} ),
-								error( ) );
+								error< >( ) );
 							return ret;
 						} ),
 					make_not_actor(
@@ -261,7 +261,7 @@ namespace first_order_logic
 							boost::optional< substitution > ret;
 							q.type_restore(
 								make_not_actor( [&]( const sentence< T > & s ){ ret = unify( sen, s, sub ); } ),
-								error( ) );
+								error< >( ) );
 							return ret;
 						} ),
 					make_atomic_actor(
@@ -270,7 +270,7 @@ namespace first_order_logic
 							boost::optional< substitution > ret;
 							q.type_restore(
 								make_atomic_actor( [&]( const atomic_sentence & as2 ){ ret = unify( as1, as2, sub ); } ),
-								error( ) );
+								error< >( ) );
 							return ret;
 						} ) );
 	}

@@ -281,7 +281,7 @@ namespace first_order_logic
 					sequent.erase( sequent.begin( ) );
 					try
 					{
-						t.first.type_restore_full
+						t.first.type_restore_full< void >
 						(
 							make_all_actor(
 								[&]( const variable & var, const free_sentence & sen )

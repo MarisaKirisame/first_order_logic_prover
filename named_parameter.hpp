@@ -16,15 +16,17 @@ template< typename T >\
 NAME ## _actor< T > make_ ## NAME ## _actor( const T & t ) { return NAME ## _actor< T >( t ); }
 namespace first_order_logic
 {
+	template< typename RET = void >
 	struct ignore
 	{
 		template< typename ... T >
-		void operator( )( const T & ... ) const { }
+		RET operator( )( const T & ... ) const { }
 	};
+	template< typename RET = void >
 	struct error
 	{
 		template< typename ... T >
-		void operator( )( const T & ... ) const { throw std::logic_error( "unknown enum type" ); }
+		RET operator( )( const T & ... ) const { throw std::logic_error( "unknown enum type" ); }
 	};
 	template< template< typename > class T, bool is_current >
 	struct extractor;
@@ -43,5 +45,5 @@ namespace first_order_logic
 	};
 	template< template< typename > class T, typename FIRST, typename ... REST >
 	auto extract( const FIRST & f, const REST & ... r ) { return extractor< T, T< FIRST >::value >( )( f, r ... ); }
-};
+}
 #endif // ANYPLACE_PARAMETER_HPP

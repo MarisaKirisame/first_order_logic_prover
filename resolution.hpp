@@ -68,12 +68,12 @@ namespace first_order_logic
 	free_sentence move_negation_in( const free_sentence & prop )
 	{
 		boost::optional< free_sentence > se;
-		prop.type_restore
+		prop.type_restore< void >
 		(
 			make_not_actor(
 				[&]( const free_sentence & sen )
 				{
-					sen.type_restore(
+					sen.type_restore< void >(
 						make_not_actor( [&]( const free_sentence & sen ){ se = move_negation_in( sen ); } ),
 						make_and_actor(
 							[&]( const free_sentence & l, const free_sentence & r )
@@ -89,7 +89,7 @@ namespace first_order_logic
 										move_negation_in( make_not( l ) ),
 										move_negation_in( make_not( r ) ) );
 							} ),
-						ignore( ) );
+						ignore< >( ) );
 				} ),
 			make_and_actor(
 				[&]( const free_sentence & l, const free_sentence & r )
@@ -97,14 +97,14 @@ namespace first_order_logic
 			make_or_actor(
 				[&]( const free_sentence & l, const free_sentence & r )
 				{ se = make_or( move_negation_in( l ), move_negation_in( r ) ); } ),
-			ignore( )
+			ignore< >( )
 		);
 		return se ? * se : prop;
 	}
 	free_sentence move_or_in( const free_sentence & prop )
 	{
 		free_sentence se;
-		prop.type_restore
+		prop.type_restore< void >
 		(
 			make_not_actor( [&]( const free_sentence & sen ) { se = make_not( move_or_in( sen ) ); } ),
 			make_and_actor(
@@ -112,13 +112,13 @@ namespace first_order_logic
 			make_or_actor(
 				[&]( free_sentence l, free_sentence r )
 				{
-					if ( l.is_atom( ) || r.is_atom( ) )
+					if ( l.is_atomic( ) || r.is_atomic( ) )
 					{
 						se = make_or( l, r );
 						return;
 					}
 					else if ( r->type == sentence_type::logical_and ) { l.swap( r ); }
-					l.type_restore(
+					l.type_restore< void >(
 						make_and_actor(
 							[&]( const free_sentence & ll, const free_sentence & rr )
 							{
@@ -126,10 +126,10 @@ namespace first_order_logic
 											move_or_in( make_or( r, ll ) ),
 											move_or_in( make_or( r, rr ) ) );
 							} ),
-							ignore( ) );
+							ignore< >( ) );
 					if ( ! se ) { se = make_or( l, r ); }
 				} ),
-			ignore( )
+			ignore< >( )
 		);
 		return se ? se : prop;
 	}
@@ -149,7 +149,7 @@ namespace first_order_logic
 					make_not_actor(
 						[&]( const free_sentence & sen )
 						{ ret = { literal( sen, false ) }; } ),
-					ignore( )
+					ignore< >( )
 				);
 		if ( ret.data.empty( ) )
 		{
@@ -174,7 +174,7 @@ namespace first_order_logic
 						std::copy( cf.begin( ), cf.end( ), std::inserter( cs, cs.end( ) ) );
 						ret = cs;
 					} ),
-					ignore( ) );
+					ignore< >( ) );
 			if ( ! ret.empty( ) ) { return ret; }
 			else { return { get_clause( prop ) }; }
 		}*/
