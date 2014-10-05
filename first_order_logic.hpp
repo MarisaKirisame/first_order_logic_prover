@@ -24,15 +24,31 @@ namespace first_order_logic
 	{ return atomic_sentence( atomic_sentence::type::propositional_letter, s ); }
 
 	template< typename T >
-	typename add_sentence< sentence_type::logical_not, T >::type
+	typename add_sentence_front< T, set_c< sentence_type, sentence_type::logical_not > >::type
 	make_not( const T & s )
-	{ return typename add_sentence< sentence_type::logical_not, T >::type( sentence_type::logical_not, { s } ); }
+	{
+		return typename
+				add_sentence_front
+				<
+					T,
+					set_c< sentence_type, sentence_type::logical_not >
+				>::type( sentence_type::logical_not, { s } );
+	}
 
 	template< typename T1, typename T2 >
-	typename add_sentence< sentence_type::logical_and, typename sentence_common< T1, T2 >::type >::type
+	typename add_sentence_front
+	<
+		typename sentence_common< T1, T2 >::type,
+		set_c< sentence_type, sentence_type::logical_and >
+	>::type
 	make_and( const T1 & l, const T2 & r )
 	{
-		return typename add_sentence< sentence_type::logical_and, typename sentence_common< T1, T2 >::type >::type
+		return
+				typename add_sentence_front
+				<
+					typename sentence_common< T1, T2 >::type,
+					set_c< sentence_type, sentence_type::logical_and >
+				>::type
 				(
 					sentence_type::logical_and,
 					{
@@ -43,10 +59,19 @@ namespace first_order_logic
 	}
 
 	template< typename T1, typename T2 >
-	typename add_sentence< sentence_type::logical_or, typename sentence_common< T1, T2 >::type >::type
+	typename add_sentence_front
+	<
+		typename sentence_common< T1, T2 >::type,
+		set_c< sentence_type, sentence_type::logical_or >
+	>::type
 	make_or( const T1 & l, const T2 & r )
 	{
-		return typename add_sentence< sentence_type::logical_or, typename sentence_common< T1, T2 >::type >::type
+		return
+				typename add_sentence_front
+				<
+					typename sentence_common< T1, T2 >::type,
+					set_c< sentence_type, sentence_type::logical_or >
+				>::type
 				(
 					sentence_type::logical_or,
 					{
@@ -57,15 +82,20 @@ namespace first_order_logic
 	}
 
 	template< typename T >
-	typename add_sentence< sentence_type::all, T >::type make_all( const variable & l, const T & s )
-	{ return typename add_sentence< sentence_type::all, T >::type( sentence_type::all, l, s ); }
+	typename add_sentence_front< T, set_c< sentence_type, sentence_type::all > >::type
+	make_all( const variable & l, const T & s )
+	{
+		return typename add_sentence_front< T, set_c< sentence_type, sentence_type::all > >::type(
+					sentence_type::all, l, s );
+	}
 
 	template< typename T >
-	typename add_sentence< sentence_type::all, T >::type make_some( const variable & l, const T & s )
-	{ return typename add_sentence< sentence_type::all, T >::type( sentence_type::some, l, s ); }
-
-	template< typename T >
-	typename add_sentence< sentence_type::all, T >::type make_some( const variable & l, const T & s );
+	typename add_sentence_front< T, set_c< sentence_type, sentence_type::some > >::type
+	make_some( const variable & l, const T & s )
+	{
+		return typename add_sentence_front< T, set_c< sentence_type, sentence_type::some > >::type(
+					sentence_type::some, l, s );
+	}
 
 	atomic_sentence make_equal( const term & l, const term & r )
 	{ return atomic_sentence( atomic_sentence::type::equal, { l, r } ); }

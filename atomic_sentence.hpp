@@ -189,8 +189,6 @@ namespace first_order_logic
 										[&]( const auto & v ) { *result = term( v ); ++result; } ) ) );
 			return result;
 		}
-		template< typename TO >
-		operator sentence< TO >( ) const { throw; }
 	};
 }
 #endif // ATOMIC_SENTENCE_HPP

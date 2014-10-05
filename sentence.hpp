@@ -13,7 +13,7 @@
 #include "forward/first_order_logic.hpp"
 #include "sentence_helper.hpp"
 #include "TMP.hpp"
-#include "../misc/expansion.hpp"
+#include "converter.hpp"
 namespace first_order_logic
 {
 	DEFINE_ACTOR(and);
@@ -144,43 +144,35 @@ namespace first_order_logic
 			typename =
 				std::enable_if_t
 				<
-					! std::is_same< decltype( and_converter< TO >( )( std::declval< sentence< T > >( ), std::declval< sentence< T > >( ) ) ), boost::mpl::false_ >::value &&
-					! std::is_same< decltype( or_converter< TO >( )( std::declval< sentence< T > >( ), std::declval< sentence< T > >( ) ) ), boost::mpl::false_ >::value &&
-					! std::is_same< decltype( not_converter< TO >( )( std::declval< sentence< T > >( ) ) ), boost::mpl::false_ >::value &&
-					! std::is_same< decltype( all_converter< TO >( )( std::declval< variable >( ), std::declval< sentence< T > >( ) ) ), boost::mpl::false_ >::value &&
-					! std::is_same< decltype( some_converter< TO >( )( std::declval< variable >( ), std::declval< sentence< T > >( ) ) ), boost::mpl::false_ >::value
+					! std::is_same<
+						decltype( and_converter< TO >( )( std::declval< sentence< T > >( ),
+						std::declval< sentence< T > >( ) ) ), void >::value &&
+					! std::is_same<
+						decltype( or_converter< TO >( )( std::declval< sentence< T > >( ),
+						std::declval< sentence< T > >( ) ) ), void >::value &&
+					! std::is_same<
+						decltype( not_converter< TO >( )( std::declval< sentence< T > >( ) ) ),
+						void >::value &&
+					! std::is_same<
+						decltype( all_converter< TO >( )( std::declval< variable >( ), std::declval< sentence< T > >( ) ) ),
+						void >::value &&
+					! std::is_same<
+						decltype( some_converter< TO >( )( std::declval< variable >( ), std::declval< sentence< T > >( ) ) ),
+						void >::value
 				>
 		>
-		operator sentence< TO >( ) const
-		{
-			switch ( (*this)->type )
-			{
-				case sentence_type::logical_and:
-					return and_converter< TO >( )(
-						boost::get< sentence< T > >( (*this)->arguments[0] ),
-						boost::get< sentence< T > >( (*this)->arguments[1] ) );
-				case sentence_type::logical_not:
-					return not_converter< TO >( )( boost::get< sentence< T > >( (*this)->arguments[0] ) );
-				case sentence_type::logical_or:
-					return or_converter< TO >( )(
-						boost::get< sentence< T > >( (*this)->arguments[0] ),
-						boost::get< sentence< T > >( (*this)->arguments[1] ) );
-				case sentence_type::all:
-					return all_converter< TO >( )(
-						variable( (*this)->name ),
-						boost::get< sentence< T > >( (*this)->arguments[0] ) );
-				case sentence_type::some:
-					return some_converter< TO >( )(
-						variable( (*this)->name ),
-						boost::get< sentence< T > >( (*this)->arguments[0] ) );
-				case sentence_type::pass:
-					return sentence< TO >( boost::get< next >( (*this)->arguments[0] ) );
-			}
-			throw std::invalid_argument( "unknown enum sentence_type" );
-		}
+		operator sentence< TO >( ) const;
 	};
-	static_assert( std::is_convertible< sentence< vector< set_c< sentence_type, sentence_type::logical_not > > >, const free_sentence & >::value, "must be convertible to free sentence" );
-	static_assert( ! std::is_convertible< free_sentence, const sentence< vector< set_c< sentence_type, sentence_type::logical_not > > > & >::value, "must be convertible to free sentence" );
+	static_assert(
+			std::is_convertible<
+				sentence< vector< set_c< sentence_type, sentence_type::logical_not > > >,
+				const free_sentence & >::value,
+			"must be convertible to free sentence" );
+	static_assert(
+			! std::is_convertible<
+				free_sentence,
+				const sentence< vector< set_c< sentence_type, sentence_type::logical_not > > > & >::value,
+			"must be convertible to free sentence" );
 }
 #include "implementation/sentence.hpp"
 #endif // FIRST_ORDER_LOGIC_COMPLEX_SENTENCE_HPP

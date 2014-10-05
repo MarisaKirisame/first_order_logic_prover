@@ -29,7 +29,8 @@ HEADERS += \
     atomic_sentence.hpp \
     named_parameter.hpp \
     sentence_helper.hpp \
-    TMP.hpp
+    TMP.hpp \
+    converter.hpp
 OTHER_FILES += \
     theorem_prover.pro.user \
     LICENSE \

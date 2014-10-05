@@ -6,6 +6,10 @@ namespace first_order_logic
 {
 	template< typename T >
 	struct sentence;
+	template< typename T >
+	struct sen2vec;
+	template< typename T >
+	struct sen2vec< sentence< T > > { typedef T type; };
 	struct atomic_sentence;
 	enum class sentence_type { logical_and = 0, logical_or = 1, logical_not = 2, all = 3, some = 4, pass = 5 };
 	typedef
@@ -51,246 +55,70 @@ namespace first_order_logic
 			>::type
 		>::type type;
 	};
-	template< sentence_type st, typename T >
-	struct add_sentence;
-	template< sentence_type st >
-	struct add_sentence< st, atomic_sentence >
-	{ typedef sentence< vector< set_c< sentence_type, st > > > type; };
-	template< sentence_type st, typename T >
-	struct add_sentence< st, sentence< T > >
+	template< typename T, typename S >
+	struct add_sentence_front;
+	template< typename ... T >
+	struct add_sentence_front< atomic_sentence, set< T ... > >
+	{ typedef sentence< vector< set< T ... > > > type; };
+	template< typename ... ARG, typename T >
+	struct add_sentence_front< sentence< T >, set< ARG ... > >
 	{
 		typedef typename
 		std::conditional
 		<
-			front< T >::type::have( st ),
+			have< typename front< T >::type, set< ARG ... > >::value,
 			sentence< T >,
-			sentence< typename push_front< T, set_c< sentence_type, st > >::type >
+			sentence< typename push_front< T, set< ARG ... > >::type >
+		>::type type;
+	};	template< typename T, typename S >
+	struct add_sentence_back;
+	template< typename ... T >
+	struct add_sentence_back< atomic_sentence, set< T ... > >
+	{ typedef sentence< vector< set< T ... > > > type; };
+	template< typename ... ARG, typename T >
+	struct add_sentence_back< sentence< T >, set< ARG ... > >
+	{
+		typedef typename
+		std::conditional
+		<
+			have< typename back< T >::type, set< ARG ... > >::value,
+			sentence< T >,
+			sentence< typename push_back< T, set< ARG ... > >::type >
 		>::type type;
 	};
-	template< typename TO >
-	struct all_converter
+	template< typename T, typename S >
+	struct remove_operator;
+	template< typename S >
+	struct remove_operator< atomic_sentence, S > { typedef atomic_sentence type; };
+	template< typename F, typename S >
+	struct remove_operator< sentence< vector< F > >, S >
+	{ typedef sentence< typename remove< vector< F >, S >::type > type; };
+	template< typename F, typename ... T, typename S >
+	struct remove_operator< sentence< vector< F, T ... > >, S >
 	{
-		template
+		typedef typename remove_operator< sentence< vector< F > >, S >::type top;
+		typedef typename remove_operator< sentence< vector< T ... > >, S >::type down;
+		typedef
+		sentence
 		<
-			typename ARG,
-			typename = std::enable_if_t< std::is_convertible< ARG, typename sentence< TO >::next >::value >
-		>
-		sentence< TO > operator ( )( const variable & v, const ARG & t ) const
-		{ return sentence< TO >( sentence_type::all, v, typename sentence< TO >::next( t ) ); }
-		template
-		<
-			typename ARG,
-			typename = std::enable_if_t< ! std::is_convertible< ARG, typename sentence< TO >::next >::value, bool >,
-			typename = std::enable_if_t< std::is_same< decltype( make_all( std::declval< variable >( ), std::declval< ARG >( ) ) ), sentence< TO > >::value >
-		>
-		sentence< TO > operator ( )( const variable & v, const ARG & t ) const { return make_all( v, t ); }
-		template
-		<
-			typename ARG,
-			typename = std::enable_if_t< ! std::is_convertible< ARG, typename sentence< TO >::next >::value, bool >,
-			typename = std::enable_if_t< ! std::is_same< decltype( make_all( std::declval< variable >( ), std::declval< ARG >( ) ) ), sentence< TO > >::value >,
-			typename =
-				std::enable_if_t
-				<
-					std::is_same< decltype( make_all( std::declval< variable >( ), std::declval< sentence< TO > >( ) ) ), sentence< TO > >::value &&
-					std::is_same< ARG, ARG >::value
-				>
-		>
-		sentence< TO > operator ( )( const variable & v, const ARG & a ) const { return make_all( v, sentence< TO >( a ) ); }
-		template
-		<
-			typename ARG,
-			typename = std::enable_if_t< ! std::is_convertible< ARG, typename sentence< TO >::next >::value, bool >,
-			typename = std::enable_if_t< ! std::is_same< decltype( make_all( std::declval< variable >( ), std::declval< ARG >( ) ) ), sentence< TO > >::value >,
-			typename =
-				std::enable_if_t
-				<
-					! std::is_same< decltype( make_all( std::declval< variable >( ), std::declval< sentence< TO > >( ) ) ), sentence< TO > >::value
-					&& std::is_same< ARG, ARG >::value
-				>,
-			typename = std::enable_if_t< std::is_same< ARG, ARG >::value >
-		>
-		boost::mpl::false_ operator ( )( const variable &, const ARG & ) const { throw; }
+			typename push_front
+			<
+				typename back< typename sen2vec< top >::type >::type,
+				typename sen2vec< down >::type
+			>::type
+		> type;
 	};
-	template< typename TO >
-	struct some_converter
+	template< typename T, typename S >
+	struct move_operator_out
 	{
-		template
-		<
-			typename ARG,
-			typename = std::enable_if_t< std::is_convertible< ARG, typename sentence< TO >::next >::value >
-		>
-		sentence< TO > operator ( )( const variable & v, const ARG & t ) const
-		{ return sentence< TO >( sentence_type::some, v, typename sentence< TO >::next( t ) ); }
-		template
-		<
-			typename ARG,
-			typename = std::enable_if_t< ! std::is_convertible< ARG, typename sentence< TO >::next >::value, bool >,
-			typename = std::enable_if_t< std::is_same< decltype( make_some( std::declval< variable >( ), std::declval< ARG >( ) ) ), sentence< TO > >::value >
-		>
-		sentence< TO > operator ( )( const variable & v, const ARG & t ) const { return make_some( v, t ); }
-		template
-		<
-			typename ARG,
-			typename = std::enable_if_t< ! std::is_convertible< ARG, typename sentence< TO >::next >::value, bool >,
-			typename = std::enable_if_t< ! std::is_same< decltype( make_some( std::declval< variable >( ), std::declval< ARG >( ) ) ), sentence< TO > >::value >,
-			typename =
-				std::enable_if_t
-				<
-					std::is_same< decltype( make_some( std::declval< variable >( ), std::declval< sentence< TO > >( ) ) ), sentence< TO > >::value &&
-					std::is_same< ARG, ARG >::value
-				>
-		>
-		sentence< TO > operator ( )( const variable & v, const ARG & a ) const { return make_some( v, sentence< TO >( a ) ); }
-		template
-		<
-			typename ARG,
-			typename = std::enable_if_t< ! std::is_convertible< ARG, typename sentence< TO >::next >::value, bool >,
-			typename = std::enable_if_t< ! std::is_same< decltype( make_some( std::declval< variable >( ), std::declval< ARG >( ) ) ), sentence< TO > >::value >,
-			typename =
-				std::enable_if_t
-				<
-					! std::is_same< decltype( make_some( std::declval< variable >( ), std::declval< sentence< TO > >( ) ) ), sentence< TO > >::value &&
-					std::is_same< ARG, ARG >::value
-				>,
-			typename = std::enable_if_t< std::is_same< ARG, ARG >::value >
-		>
-		boost::mpl::false_ operator ( )( const variable &, const ARG & ) const { throw; }
+		typedef typename
+		add_sentence_front< typename remove_operator< T, S >::type, S >::type type;
 	};
-	template< typename TO >
-	struct and_converter
+	template< typename T, typename S >
+	struct move_operator_in
 	{
-		template
-		<
-			typename ARG,
-			typename = std::enable_if_t< std::is_convertible< ARG, typename sentence< TO >::next >::value >
-		>
-		sentence< TO > operator ( )( const ARG & l, const ARG & r ) const
-		{ return sentence< TO >( sentence_type::logical_and, { typename sentence< TO >::next( l ), typename sentence< TO >::next( r ) } ); }
-		template
-		<
-			typename ARG,
-			typename = std::enable_if_t< ! std::is_convertible< ARG, typename sentence< TO >::next >::value, bool >,
-			typename = std::enable_if_t< std::is_same< decltype( make_and( std::declval< ARG >( ), std::declval< ARG >( ) ) ), sentence< TO > >::value >
-		>
-		sentence< TO > operator ( )( const ARG & l, const ARG & r ) const { return make_and( l, r ); }
-		template
-		<
-			typename ARG,
-			typename = std::enable_if_t< ! std::is_convertible< ARG, typename sentence< TO >::next >::value, bool >,
-			typename = std::enable_if_t< ! std::is_same< decltype( make_and( std::declval< ARG >( ), std::declval< ARG >( ) ) ), sentence< TO > >::value >,
-			typename =
-				std::enable_if_t
-				<
-					std::is_same< decltype( make_and( std::declval< sentence< TO > >( ), std::declval< sentence< TO > >( ) ) ), sentence< TO > >::value &&
-					std::is_same< ARG, ARG >::value
-				>
-		>
-		sentence< TO > operator ( )( const ARG & l, const ARG & r ) const { return make_and( sentence< TO >( l ), sentence< TO >( r ) ); }
-		template
-		<
-			typename ARG,
-			typename = std::enable_if_t< ! std::is_convertible< ARG, typename sentence< TO >::next >::value, bool >,
-			typename = std::enable_if_t< ! std::is_same< decltype( make_and( std::declval< ARG >( ), std::declval< ARG >( ) ) ), sentence< TO > >::value >,
-			typename =
-				std::enable_if_t
-				<
-					! std::is_same< decltype( make_and( std::declval< sentence< TO > >( ), std::declval< sentence< TO > >( ) ) ), sentence< TO > >::value &&
-					std::is_same< ARG, ARG >::value
-				>,
-			typename = std::enable_if_t< std::is_same< ARG, ARG >::value >
-		>
-		boost::mpl::false_ operator ( )( const ARG &, const ARG & ) const { throw; }
-	};
-	template< typename TO >
-	struct or_converter
-	{
-		template
-		<
-			typename ARG,
-			typename = std::enable_if_t< std::is_convertible< ARG, typename sentence< TO >::next >::value >
-		>
-		sentence< TO > operator ( )( const ARG & l, const ARG & r ) const
-		{ return sentence< TO >( sentence_type::logical_or, { typename sentence< TO >::next( l ), typename sentence< TO >::next( r ) } ); }
-		template
-		<
-			typename ARG,
-			typename = std::enable_if_t< ! std::is_convertible< ARG, typename sentence< TO >::next >::value, bool >,
-			typename = std::enable_if_t< std::is_same< decltype( make_or( std::declval< ARG >( ), std::declval< ARG >( ) ) ), sentence< TO > >::value >
-		>
-		sentence< TO > operator ( )( const ARG & l, const ARG & r ) const { return make_or( l, r ); }
-		template
-		<
-			typename ARG,
-			typename = std::enable_if_t< ! std::is_convertible< ARG, typename sentence< TO >::next >::value, bool >,
-			typename = std::enable_if_t< ! std::is_same< decltype( make_or( std::declval< ARG >( ), std::declval< ARG >( ) ) ), sentence< TO > >::value >,
-			typename =
-				std::enable_if_t
-				<
-					std::is_same< decltype( make_or( std::declval< sentence< TO > >( ), std::declval< sentence< TO > >( ) ) ), sentence< TO > >::value &&
-					std::is_same< ARG, ARG >::value
-				>
-		>
-		sentence< TO > operator ( )( const ARG & l, const ARG & r ) const { return make_or( sentence< TO >( l ), sentence< TO >( r ) ); }
-		template
-		<
-			typename ARG,
-			typename = std::enable_if_t< ! std::is_convertible< ARG, typename sentence< TO >::next >::value, bool >,
-			typename = std::enable_if_t< ! std::is_same< decltype( make_or( std::declval< ARG >( ), std::declval< ARG >( ) ) ), sentence< TO > >::value >,
-			typename =
-				std::enable_if_t
-				<
-					! std::is_same< decltype( make_or( std::declval< sentence< TO > >( ), std::declval< sentence< TO > >( ) ) ), sentence< TO > >::value &&
-					std::is_same< ARG, ARG >::value
-				>,
-			typename = std::enable_if_t< std::is_same< ARG, ARG >::value >
-		>
-		boost::mpl::false_ operator ( )( const ARG &, const ARG & ) const { throw; }
-	};
-	template< typename TO >
-	struct not_converter
-	{
-		template
-		<
-			typename ARG,
-			typename = std::enable_if_t< std::is_convertible< ARG, typename sentence< TO >::next >::value >
-		>
-		sentence< TO > operator ( )( const ARG & l ) const
-		{ return sentence< TO >( sentence_type::logical_not, { typename sentence< TO >::next( l ) } ); }
-		template
-		<
-			typename ARG,
-			typename = std::enable_if_t< ! std::is_convertible< ARG, typename sentence< TO >::next >::value, bool >,
-			typename = std::enable_if_t< std::is_same< decltype( make_not( std::declval< ARG >( ), std::declval< ARG >( ) ) ), sentence< TO > >::value >
-		>
-		sentence< TO > operator ( )( const ARG & l ) const { return make_not( l ); }
-		template
-		<
-			typename ARG,
-			typename = std::enable_if_t< ! std::is_convertible< ARG, typename sentence< TO >::next >::value, bool >,
-			typename = std::enable_if_t< ! std::is_same< decltype( make_not( std::declval< ARG >( ) ) ), sentence< TO > >::value >,
-			typename =
-				std::enable_if_t
-				<
-					std::is_same< decltype( make_not( std::declval< sentence< TO > >( ) ) ), sentence< TO > >::value &&
-					std::is_same< ARG, ARG >::value
-				>
-		>
-		sentence< TO > operator ( )( const ARG & l ) const { return make_not( sentence< TO >( l ) ); }
-		template
-		<
-			typename ARG,
-			typename = std::enable_if_t< ! std::is_convertible< ARG, typename sentence< TO >::next >::value, bool >,
-			typename = std::enable_if_t< ! std::is_same< decltype( make_not( std::declval< ARG >( ) ) ), sentence< TO > >::value >,
-			typename =
-				std::enable_if_t
-				<
-					! std::is_same< decltype( make_not( std::declval< sentence< TO > >( ) ) ), sentence< TO > >::value &&
-					std::is_same< ARG, ARG >::value
-				>,
-			typename = std::enable_if_t< std::is_same< ARG, ARG >::value >
-		>
-		boost::mpl::false_ operator ( )( const ARG & ) const { throw; }
+		typedef typename
+		add_sentence_back< typename remove_operator< T, S >::type, S >::type type;
 	};
 }
 #endif // SENTENCE_HELPER_HPP

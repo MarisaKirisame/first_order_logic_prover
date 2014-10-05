@@ -2,6 +2,7 @@
 #define IMPLEMENTATION_SENTENCE_HPP
 #include "../sentence.hpp"
 #include "substitution.hpp"
+#include "../../misc/expansion.hpp"
 namespace first_order_logic
 {
 	template< typename T >
@@ -737,6 +738,35 @@ namespace first_order_logic
 					term_map.insert( t->name );
 				} ) );
 		return standardize_bound_variable( term_map );
+	}
+	template< typename T >
+	template< typename TO, typename >
+	sentence< T >::operator sentence< TO >( ) const
+	{
+		switch ( (*this)->type )
+		{
+			case sentence_type::logical_and:
+				return and_converter< TO >( )(
+					boost::get< sentence< T > >( (*this)->arguments[0] ),
+					boost::get< sentence< T > >( (*this)->arguments[1] ) );
+			case sentence_type::logical_not:
+				return not_converter< TO >( )( boost::get< sentence< T > >( (*this)->arguments[0] ) );
+			case sentence_type::logical_or:
+				return or_converter< TO >( )(
+					boost::get< sentence< T > >( (*this)->arguments[0] ),
+					boost::get< sentence< T > >( (*this)->arguments[1] ) );
+			case sentence_type::all:
+				return all_converter< TO >( )(
+					variable( (*this)->name ),
+					boost::get< sentence< T > >( (*this)->arguments[0] ) );
+			case sentence_type::some:
+				return some_converter< TO >( )(
+					variable( (*this)->name ),
+					boost::get< sentence< T > >( (*this)->arguments[0] ) );
+			case sentence_type::pass:
+				return sentence< TO >( boost::get< next >( (*this)->arguments[0] ) );
+		}
+		throw std::invalid_argument( "unknown enum sentence_type" );
 	}
 }
 #endif // IMPLEMENTATION_SENTENCE_HPP
