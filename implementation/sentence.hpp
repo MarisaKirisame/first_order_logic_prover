@@ -646,5 +646,97 @@ namespace first_order_logic
 		for ( const variable & v : var ) { ret = make_all( v, ret ); }
 		return ret;
 	}
+	template< typename T >
+	template< typename RET, typename T1, typename T2, typename T3, typename T4, typename T5, typename T6 >
+	RET sentence< T >::type_restore_inner(
+		const and_actor< T1 > & and_func,
+		const or_actor< T2 > & or_func,
+		const not_actor< T3 > & not_func,
+		const all_actor< T4 > & all_func,
+		const some_actor< T5 > & some_func,
+		const atomic_actor< T6 > & atomic_func ) const
+	{
+		switch ( (*this)->type )
+		{
+			case sentence_type::logical_and:
+				return and_func(
+					boost::get< sentence< T > >( (*this)->arguments[0] ),
+					boost::get< sentence< T > >( (*this)->arguments[1] ) );
+			case sentence_type::logical_not:
+				return not_func( boost::get< sentence< T > >( (*this)->arguments[0] ) );
+			case sentence_type::logical_or:
+				return or_func(
+					boost::get< sentence< T > >( (*this)->arguments[0] ),
+					boost::get< sentence< T > >( (*this)->arguments[1] ) );
+			case sentence_type::all:
+				return all_func(
+					variable( (*this)->name ),
+					boost::get< sentence< T > >( (*this)->arguments[0] ) );
+			case sentence_type::some:
+				return some_func(
+					variable( (*this)->name ),
+					boost::get< sentence< T > >( (*this)->arguments[0] ) );
+			case sentence_type::pass:
+				return misc::make_expansion(
+							[&]( const atomic_sentence & as ){ return atomic_func( as ); },
+							[&]( const next & n )
+							{
+								return n.template type_restore< RET >
+										(
+											and_func,
+											or_func,
+											not_func,
+											all_func,
+											some_func,
+											atomic_func,
+											error< RET >( )
+										);
+							} )
+						( boost::get< next >( (*this)->arguments[0] ) );
+		}
+		throw std::invalid_argument( "unknown enum sentence_type" );
+	}
+	template< typename T >
+	template< typename RET, typename ... ACTORS >
+	RET sentence< T >::type_restore( const ACTORS & ... t ) const
+	{
+		return type_restore_inner< RET >(
+			extract< and_actor_helper >(
+				t ...,
+				make_and_actor(
+					std::get< std::tuple_size< std::tuple< ACTORS ... > >::value - 1 >( std::tie( t ... ) ) ) ),
+			extract< or_actor_helper >(
+				t ...,
+				make_or_actor(
+					std::get< std::tuple_size< std::tuple< ACTORS ... > >::value - 1 >( std::tie( t ... ) ) ) ),
+			extract< not_actor_helper >(
+				t ...,
+				make_not_actor(
+					std::get< std::tuple_size< std::tuple< ACTORS ... > >::value - 1 >( std::tie( t ... ) ) ) ),
+			extract< all_actor_helper >(
+				t ...,
+				make_all_actor(
+					std::get< std::tuple_size< std::tuple< ACTORS ... > >::value - 1 >( std::tie( t ... ) ) ) ),
+			extract< some_actor_helper >(
+				t ...,
+				make_some_actor(
+					std::get< std::tuple_size< std::tuple< ACTORS ... > >::value - 1 >( std::tie( t ... ) ) ) ),
+			extract< atomic_actor_helper >(
+				t ...,
+				make_atomic_actor(
+					std::get< std::tuple_size< std::tuple< ACTORS ... > >::value - 1 >( std::tie( t ... ) ) ) ) );
+	}
+	template< typename T >
+	sentence< T > sentence< T >::standardize_bound_variable( ) const
+	{
+		std::set< std::string > term_map;
+		cv( make_function_output_iterator(
+				[&]( const term & t )
+				{
+					assert( t->term_type == term::type::constant || t->term_type == term::type::variable );
+					term_map.insert( t->name );
+				} ) );
+		return standardize_bound_variable( term_map );
+	}
 }
 #endif // IMPLEMENTATION_SENTENCE_HPP
