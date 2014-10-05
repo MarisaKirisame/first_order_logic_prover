@@ -26,6 +26,7 @@ namespace first_order_logic
 		std::shared_ptr< T > f;
 	};
 	template< typename T >
-	function_output_iterator< T > make_function_output_iterator( const T & f = T( ) ) { return function_output_iterator< T >( f ); }
+	function_output_iterator< T > make_function_output_iterator( const T & f = T( ) )
+	{ return function_output_iterator< T >( f ); }
 }
 #endif // FUNCTION_OUTPUT_ITERATOR_H

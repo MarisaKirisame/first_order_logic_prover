@@ -141,7 +141,6 @@ namespace first_order_logic
 			}
 			throw std::invalid_argument( "unknown enum sentence_type" );
 		}
-		bool is_atomic( ) const{throw;}// { return (*this)->type == sentence_type::atomic; }
 		explicit operator std::string( ) const;
 		sentence( sentence_type ty, const std::initializer_list< next > & il ) :
 			data( new internal( ty, il ) ) { }
@@ -218,7 +217,258 @@ namespace first_order_logic
 		friend OSTREAM & operator << ( OSTREAM & os, const sentence< T > & sen )
 		{ return os << static_cast< std::string >( sen ); }
 		template< typename TO >
-		operator sentence< TO >( ) const { throw; }
+		struct all_converter
+		{
+			template
+			<
+				typename ARG,
+				typename = std::enable_if_t< std::is_convertible< ARG, typename sentence< TO >::next >::value >
+			>
+			sentence< TO > operator ( )( const variable & v, const ARG & t ) const
+			{ return sentence< TO >( sentence_type::all, v, typename sentence< TO >::next( t ) ); }
+			template
+			<
+				typename ARG,
+				typename = std::enable_if_t< ! std::is_convertible< ARG, typename sentence< TO >::next >::value, bool >,
+				typename = std::enable_if_t< std::is_same< decltype( make_all( std::declval< variable >( ), std::declval< ARG >( ) ) ), sentence< TO > >::value >
+			>
+			sentence< TO > operator ( )( const variable & v, const ARG & t ) const { return make_all( v, t ); }
+			template
+			<
+				typename ARG,
+				typename = std::enable_if_t< ! std::is_convertible< ARG, typename sentence< TO >::next >::value, bool >,
+				typename = std::enable_if_t< ! std::is_same< decltype( make_all( std::declval< variable >( ), std::declval< ARG >( ) ) ), sentence< TO > >::value >,
+				typename =
+					std::enable_if_t
+					<
+						std::is_same< decltype( make_all( std::declval< variable >( ), std::declval< sentence< TO > >( ) ) ), sentence< TO > >::value &&
+						std::is_convertible< ARG, sentence< TO > >::value
+					>
+			>
+			sentence< TO > operator ( )( const variable & v, const ARG & a ) const { return make_all( v, sentence< TO >( a ) ); }
+			template
+			<
+				typename ARG,
+				typename = std::enable_if_t< ! std::is_convertible< ARG, typename sentence< TO >::next >::value, bool >,
+				typename = std::enable_if_t< ! std::is_same< decltype( make_all( std::declval< variable >( ), std::declval< ARG >( ) ) ), sentence< TO > >::value >,
+				typename =
+					std::enable_if_t
+					<
+						! std::is_same< decltype( make_all( std::declval< variable >( ), std::declval< sentence< TO > >( ) ) ), sentence< TO > >::value ||
+						! std::is_convertible< ARG, sentence< TO > >::value
+					>,
+				typename = std::enable_if_t< std::is_same< ARG, ARG >::value >
+			>
+			sentence< TO > operator ( )( const variable &, const ARG & ) const { throw; }
+		};
+		template< typename TO >
+		struct some_converter
+		{
+			template
+			<
+				typename ARG,
+				typename = std::enable_if_t< std::is_convertible< ARG, typename sentence< TO >::next >::value >
+			>
+			sentence< TO > operator ( )( const variable & v, const ARG & t ) const
+			{ return sentence< TO >( sentence_type::some, v, typename sentence< TO >::next( t ) ); }
+			template
+			<
+				typename ARG,
+				typename = std::enable_if_t< ! std::is_convertible< ARG, typename sentence< TO >::next >::value, bool >,
+				typename = std::enable_if_t< std::is_same< decltype( make_some( std::declval< variable >( ), std::declval< ARG >( ) ) ), sentence< TO > >::value >
+			>
+			sentence< TO > operator ( )( const variable & v, const ARG & t ) const { return make_some( v, t ); }
+			template
+			<
+				typename ARG,
+				typename = std::enable_if_t< ! std::is_convertible< ARG, typename sentence< TO >::next >::value, bool >,
+				typename = std::enable_if_t< ! std::is_same< decltype( make_some( std::declval< variable >( ), std::declval< ARG >( ) ) ), sentence< TO > >::value >,
+				typename =
+					std::enable_if_t
+					<
+						std::is_same< decltype( make_some( std::declval< variable >( ), std::declval< sentence< TO > >( ) ) ), sentence< TO > >::value &&
+						std::is_convertible< ARG, sentence< TO > >::value
+					>
+			>
+			sentence< TO > operator ( )( const variable & v, const ARG & a ) const { return make_some( v, sentence< TO >( a ) ); }
+			template
+			<
+				typename ARG,
+				typename = std::enable_if_t< ! std::is_convertible< ARG, typename sentence< TO >::next >::value, bool >,
+				typename = std::enable_if_t< ! std::is_same< decltype( make_some( std::declval< variable >( ), std::declval< ARG >( ) ) ), sentence< TO > >::value >,
+				typename =
+					std::enable_if_t
+					<
+						! std::is_same< decltype( make_some( std::declval< variable >( ), std::declval< sentence< TO > >( ) ) ), sentence< TO > >::value ||
+						! std::is_convertible< ARG, sentence< TO > >::value
+					>,
+				typename = std::enable_if_t< std::is_same< ARG, ARG >::value >
+			>
+			sentence< TO > operator ( )( const variable &, const ARG & ) const { throw; }
+		};
+		template< typename TO >
+		struct and_converter
+		{
+			template
+			<
+				typename ARG,
+				typename = std::enable_if_t< std::is_convertible< ARG, typename sentence< TO >::next >::value >
+			>
+			sentence< TO > operator ( )( const ARG & l, const ARG & r ) const
+			{ return sentence< TO >( sentence_type::logical_and, { typename sentence< TO >::next( l ), typename sentence< TO >::next( r ) } ); }
+			template
+			<
+				typename ARG,
+				typename = std::enable_if_t< ! std::is_convertible< ARG, typename sentence< TO >::next >::value, bool >,
+				typename = std::enable_if_t< std::is_same< decltype( make_and( std::declval< ARG >( ), std::declval< ARG >( ) ) ), sentence< TO > >::value >
+			>
+			sentence< TO > operator ( )( const ARG & l, const ARG & r ) const { return make_and( l, r ); }
+			template
+			<
+				typename ARG,
+				typename = std::enable_if_t< ! std::is_convertible< ARG, typename sentence< TO >::next >::value, bool >,
+				typename = std::enable_if_t< ! std::is_same< decltype( make_and( std::declval< ARG >( ), std::declval< ARG >( ) ) ), sentence< TO > >::value >,
+				typename =
+					std::enable_if_t
+					<
+						std::is_same< decltype( make_and( std::declval< sentence< TO > >( ), std::declval< sentence< TO > >( ) ) ), sentence< TO > >::value &&
+						std::is_convertible< ARG, sentence< TO > >::value
+					>
+			>
+			sentence< TO > operator ( )( const ARG & l, const ARG & r ) const { return make_and( sentence< TO >( l ), sentence< TO >( r ) ); }
+			template
+			<
+				typename ARG,
+				typename = std::enable_if_t< ! std::is_convertible< ARG, typename sentence< TO >::next >::value, bool >,
+				typename = std::enable_if_t< ! std::is_same< decltype( make_and( std::declval< ARG >( ), std::declval< ARG >( ) ) ), sentence< TO > >::value >,
+				typename =
+					std::enable_if_t
+					<
+						! std::is_same< decltype( make_and( std::declval< sentence< TO > >( ), std::declval< sentence< TO > >( ) ) ), sentence< TO > >::value ||
+						! std::is_convertible< ARG, sentence< TO > >::value
+					>,
+				typename = std::enable_if_t< std::is_same< ARG, ARG >::value >
+			>
+			sentence< TO > operator ( )( const ARG &, const ARG & ) const { throw; }
+		};
+		template< typename TO >
+		struct or_converter
+		{
+			template
+			<
+				typename ARG,
+				typename = std::enable_if_t< std::is_convertible< ARG, typename sentence< TO >::next >::value >
+			>
+			sentence< TO > operator ( )( const ARG & l, const ARG & r ) const
+			{ return sentence< TO >( sentence_type::logical_or, { typename sentence< TO >::next( l ), typename sentence< TO >::next( r ) } ); }
+			template
+			<
+				typename ARG,
+				typename = std::enable_if_t< ! std::is_convertible< ARG, typename sentence< TO >::next >::value, bool >,
+				typename = std::enable_if_t< std::is_same< decltype( make_or( std::declval< ARG >( ), std::declval< ARG >( ) ) ), sentence< TO > >::value >
+			>
+			sentence< TO > operator ( )( const ARG & l, const ARG & r ) const { return make_or( l, r ); }
+			template
+			<
+				typename ARG,
+				typename = std::enable_if_t< ! std::is_convertible< ARG, typename sentence< TO >::next >::value, bool >,
+				typename = std::enable_if_t< ! std::is_same< decltype( make_or( std::declval< ARG >( ), std::declval< ARG >( ) ) ), sentence< TO > >::value >,
+				typename =
+					std::enable_if_t
+					<
+						std::is_same< decltype( make_or( std::declval< sentence< TO > >( ), std::declval< sentence< TO > >( ) ) ), sentence< TO > >::value &&
+						std::is_convertible< ARG, sentence< TO > >::value
+					>
+			>
+			sentence< TO > operator ( )( const ARG & l, const ARG & r ) const { return make_or( sentence< TO >( l ), sentence< TO >( r ) ); }
+			template
+			<
+				typename ARG,
+				typename = std::enable_if_t< ! std::is_convertible< ARG, typename sentence< TO >::next >::value, bool >,
+				typename = std::enable_if_t< ! std::is_same< decltype( make_or( std::declval< ARG >( ), std::declval< ARG >( ) ) ), sentence< TO > >::value >,
+				typename =
+					std::enable_if_t
+					<
+						! std::is_same< decltype( make_or( std::declval< sentence< TO > >( ), std::declval< sentence< TO > >( ) ) ), sentence< TO > >::value ||
+						! std::is_convertible< ARG, sentence< TO > >::value
+					>,
+				typename = std::enable_if_t< std::is_same< ARG, ARG >::value >
+			>
+			sentence< TO > operator ( )( const ARG &, const ARG & ) const { throw; }
+		};
+		template< typename TO >
+		struct not_converter
+		{
+			template
+			<
+				typename ARG,
+				typename = std::enable_if_t< std::is_convertible< ARG, typename sentence< TO >::next >::value >
+			>
+			sentence< TO > operator ( )( const ARG & l ) const
+			{ return sentence< TO >( sentence_type::logical_not, { typename sentence< TO >::next( l ) } ); }
+			template
+			<
+				typename ARG,
+				typename = std::enable_if_t< ! std::is_convertible< ARG, typename sentence< TO >::next >::value, bool >,
+				typename = std::enable_if_t< std::is_same< decltype( make_not( std::declval< ARG >( ), std::declval< ARG >( ) ) ), sentence< TO > >::value >
+			>
+			sentence< TO > operator ( )( const ARG & l ) const { return make_not( l ); }
+			template
+			<
+				typename ARG,
+				typename = std::enable_if_t< ! std::is_convertible< ARG, typename sentence< TO >::next >::value, bool >,
+				typename = std::enable_if_t< ! std::is_same< decltype( make_not( std::declval< ARG >( ) ) ), sentence< TO > >::value >,
+				typename =
+					std::enable_if_t
+					<
+						std::is_same< decltype( make_not( std::declval< sentence< TO > >( ) ) ), sentence< TO > >::value &&
+						std::is_convertible< ARG, sentence< TO > >::value
+					>
+			>
+			sentence< TO > operator ( )( const ARG & l ) const { return make_not( sentence< TO >( l ) ); }
+			template
+			<
+				typename ARG,
+				typename = std::enable_if_t< ! std::is_convertible< ARG, typename sentence< TO >::next >::value, bool >,
+				typename = std::enable_if_t< ! std::is_same< decltype( make_not( std::declval< ARG >( ) ) ), sentence< TO > >::value >,
+				typename =
+					std::enable_if_t
+					<
+						! std::is_same< decltype( make_not( std::declval< sentence< TO > >( ) ) ), sentence< TO > >::value ||
+						! std::is_convertible< ARG, sentence< TO > >::value
+					>,
+				typename = std::enable_if_t< std::is_same< ARG, ARG >::value >
+			>
+			sentence< TO > operator ( )( const ARG & ) const { throw; }
+		};
+		template< typename TO >
+		operator sentence< TO >( ) const
+		{
+			switch ( (*this)->type )
+			{
+				case sentence_type::logical_and:
+					return and_converter< TO >( )(
+						boost::get< sentence< T > >( (*this)->arguments[0] ),
+						boost::get< sentence< T > >( (*this)->arguments[1] ) );
+				case sentence_type::logical_not:
+					return not_converter< TO >( )( boost::get< sentence< T > >( (*this)->arguments[0] ) );
+				case sentence_type::logical_or:
+					return or_converter< TO >( )(
+						boost::get< sentence< T > >( (*this)->arguments[0] ),
+						boost::get< sentence< T > >( (*this)->arguments[1] ) );
+				case sentence_type::all:
+					return all_converter< TO >( )(
+						variable( (*this)->name ),
+						boost::get< sentence< T > >( (*this)->arguments[0] ) );
+				case sentence_type::some:
+					return some_converter< TO >( )(
+						variable( (*this)->name ),
+						boost::get< sentence< T > >( (*this)->arguments[0] ) );
+				case sentence_type::pass:
+					return sentence< TO >( boost::get< next >( (*this)->arguments[0] ) );
+			}
+			throw std::invalid_argument( "unknown enum sentence_type" );
+		}
 	};
 }
 #include "implementation/sentence.hpp"

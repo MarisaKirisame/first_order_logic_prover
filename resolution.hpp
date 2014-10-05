@@ -103,7 +103,7 @@ namespace first_order_logic
 	}
 	free_sentence move_or_in( const free_sentence & prop )
 	{
-		free_sentence se;
+		/*free_sentence se;
 		prop.type_restore< void >
 		(
 			make_not_actor( [&]( const free_sentence & sen ) { se = make_not( move_or_in( sen ) ); } ),
@@ -131,7 +131,8 @@ namespace first_order_logic
 				} ),
 			ignore< >( )
 		);
-		return se ? se : prop;
+		return se ? se : prop;*/
+		throw prop;
 	}
 	clause get_clause( const free_sentence & prop )
 	{

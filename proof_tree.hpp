@@ -21,7 +21,8 @@ namespace first_order_logic
 				const std::string & str,
 				const std::vector< proof_tree > & child
 			) : parent( parent ), str( str ), child( child ) { }
-			bool operator ==( const internal & comp ) const { return parent == comp.parent && str == comp.str && child == comp.child; }
+			bool operator ==( const internal & comp ) const
+			{ return parent == comp.parent && str == comp.str && child == comp.child; }
 			bool has_parent( ) const { return parent != nullptr; }
 		};
 		std::shared_ptr< internal > data;

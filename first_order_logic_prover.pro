@@ -2,7 +2,7 @@ TEMPLATE = app
 CONFIG += console
 CONFIG -= app_bundle
 CONFIG -= qt
-QMAKE_CXXFLAGS += -std=c++1y
+QMAKE_CXXFLAGS += -std=c++1y -ftemplate-backtrace-limit=0
 SOURCES += main.cpp
 LIBS += -lboost_unit_test_framework
 HEADERS += \
@@ -30,7 +30,6 @@ HEADERS += \
     named_parameter.hpp \
     sentence_helper.hpp \
     TMP.hpp
-
 OTHER_FILES += \
     theorem_prover.pro.user \
     LICENSE \
