@@ -87,6 +87,7 @@ namespace first_order_logic
 				not_actor< error< > >,
 				atomic_actor< error< > >
 			>::value, "type missing" );
+	typedef
 	sentence
 	<
 		vector
@@ -99,29 +100,15 @@ namespace first_order_logic
 			>,
 			set_c< sentence_type, sentence_type::logical_not >
 		>
-	>
-	move_negation_in( const free_propositional_sentence & prop )
+	> negation_in_type;
+	negation_in_type move_negation_in( const free_propositional_sentence & prop )
 	{
-		typedef
-		sentence
-		<
-			vector
-			<
-				set_c
-				<
-					sentence_type,
-					sentence_type::logical_and,
-					sentence_type::logical_or
-				>,
-				set_c< sentence_type, sentence_type::logical_not >
-			>
-		> ret_type;
-		return prop.type_restore_full< ret_type >
+		return prop.type_restore_full< negation_in_type >
 		(
 			make_not_actor(
 				[&]( const free_propositional_sentence & sen )
 				{
-					return sen.type_restore_full< ret_type >(
+					return sen.type_restore_full< negation_in_type >(
 						make_not_actor( [&]( const free_propositional_sentence & sen ){ return move_negation_in( sen ); } ),
 						make_and_actor(
 							[&]( const free_propositional_sentence & l, const free_propositional_sentence & r )
@@ -147,38 +134,86 @@ namespace first_order_logic
 				{ return make_or( move_negation_in( l ), move_negation_in( r ) ); } ),
 			make_atomic_actor( []( const atomic_sentence & as ) { return as; } ) );
 	}
-	free_sentence move_or_in( const free_sentence & prop )
+	typedef
+	sentence
+	<
+		vector
+		<
+			set_c< sentence_type, sentence_type::logical_and >,
+			set_c< sentence_type, sentence_type::logical_or >,
+			set_c< sentence_type, sentence_type::logical_not >
+		>
+	> and_or_not_type;
+	typedef
+	sentence
+	<
+		vector
+		<
+			set_c< sentence_type, sentence_type::logical_or >,
+			set_c< sentence_type, sentence_type::logical_and >,
+			set_c< sentence_type, sentence_type::logical_or >,
+			set_c< sentence_type, sentence_type::logical_not >
+		>
+	> or_and_or_not_type;
+	static_assert( std::is_convertible< or_and_or_not_type, negation_in_type >::value, "should be convertible" );
+	typedef
+	sentence
+	<
+		vector
+		<
+			set_c< sentence_type, sentence_type::logical_or >,
+			set_c< sentence_type, sentence_type::logical_not >
+		>
+	> or_not_type;
+	typedef sentence< vector < set_c< sentence_type, sentence_type::logical_not > > > not_type;
+	and_or_not_type move_or_in( const negation_in_type & prop )
 	{
-		/*free_sentence se;
-		prop.type_restore< void >
-		(
-			make_not_actor( [&]( const free_sentence & sen ) { se = make_not( move_or_in( sen ) ); } ),
-			make_and_actor(
-				[&]( const free_sentence & l, const free_sentence & r ) { se = make_and( move_or_in( l ), move_or_in( r ) ); } ),
-			make_or_actor(
-				[&]( free_sentence l, free_sentence r )
-				{
-					if ( l.is_atomic( ) || r.is_atomic( ) )
-					{
-						se = make_or( l, r );
-						return;
-					}
-					else if ( r->type == sentence_type::logical_and ) { l.swap( r ); }
-					l.type_restore< void >(
-						make_and_actor(
-							[&]( const free_sentence & ll, const free_sentence & rr )
-							{
-								se = make_and(
-											move_or_in( make_or( r, ll ) ),
-											move_or_in( make_or( r, rr ) ) );
-							} ),
-							ignore< >( ) );
-					if ( ! se ) { se = make_or( l, r ); }
-				} ),
-			ignore< >( )
-		);
-		return se ? se : prop;*/
-		throw prop;
+		return prop.type_restore_full< and_or_not_type >(
+					make_not_actor( []( const not_type & sen ) { return sen; } ),
+					make_and_actor(
+						[]( const negation_in_type & l, const negation_in_type & r )
+						{ return make_and( move_or_in( l ), move_or_in( r ) ); } ),
+					make_or_actor(
+						[]( const negation_in_type & l, const negation_in_type & r )
+						{
+							auto switch_process =
+									[&]( const or_not_type & as )
+									{
+										return move_or_in( r ).type_restore_full< and_or_not_type >(
+											make_and_actor(
+												[&]( const and_or_not_type & ll, const and_or_not_type & rr )
+												{
+													return make_and(
+														move_or_in( make_or( as, ll ) ),
+														move_or_in( make_or( as, rr ) ) );
+												} ),
+											make_or_actor(
+												[&]( const or_not_type & ll, const or_not_type & rr )
+												{ return make_or( as, make_or( ll, rr ) ); } ),
+											make_not_actor(
+												[&]( const not_type & s )
+												{ return make_or( as, make_not( s ) ); } ),
+											make_atomic_actor(
+												[&]( const atomic_sentence & s )
+												{ return make_or( as, s ); } ) );
+									};
+							return move_or_in( l ).template type_restore_full< and_or_not_type >(
+										make_and_actor(
+											[&]( const and_or_not_type & ll, const and_or_not_type & rr )
+											{
+												return make_and(
+															move_or_in( make_or( r, ll ) ),
+															move_or_in( make_or( r, rr ) ) );
+											} ),
+										make_or_actor(
+											[&]( const or_not_type & ll, const or_not_type & rr )
+											{ return switch_process( make_or( ll, rr ) ); } ),
+										make_not_actor(
+											[&]( const not_type & s ) { return switch_process( make_not( s ) ); } ),
+										make_atomic_actor(
+											[&]( const atomic_sentence & as ) { return switch_process( as ); } ) );
+						} ),
+					make_atomic_actor( []( const atomic_sentence & as ) { return as; } ) );
 	}
 	clause get_clause( const free_sentence & prop )
 	{
