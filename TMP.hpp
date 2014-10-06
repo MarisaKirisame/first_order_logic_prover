@@ -16,10 +16,21 @@ namespace first_order_logic
 	struct have< set< ELEMENT, REST ... >, set< ELEMENT > > : std::true_type { };
 	template< typename ELEMENT >
 	struct have< set< >, ELEMENT > : std::false_type { };
+	template< typename F, typename ... R >
+	struct have< set< >, set< F, R ... > > : std::false_type { };
+	template< typename F, typename ... R, typename S >
+	struct have< S, set< F, R ... > > :
+			std::integral_constant< bool, have< S, set< F > >::value && have< S, set< R ... > >::value > { };
+	template< typename S >
+	struct have< S, set< > > : std::true_type { };
 	template< typename T, T ... rest >
 	using set_c = set< std::integral_constant< T, rest > ... >;
 	template< typename ... T >
 	struct vector;
+	template< typename T >
+	struct is_vector : std::false_type { };
+	template< typename ... T >
+	struct is_vector< vector< T ... > > : std::true_type { };
 	template< typename T > struct pop_front;
 	template< typename F, typename ... R >
 	struct pop_front< vector< F, R ... > > { typedef vector< R ... > type; };
@@ -58,7 +69,7 @@ namespace first_order_logic
 		template< typename ... A >
 		struct inner< REM, A ... > { typedef typename inner< A ... >::type type; };
 		template< typename F, typename ... A >
-		struct inner< F, A ... > { typedef typename insert< typename inner< A ... >::type, F >::type type; };
+		struct inner< F, A ... > { typedef typename insert< typename inner< A ... >::type, set< F > >::type type; };
 		typedef typename inner< ARG ..., void >::type type;
 	};
 	template< typename ... ARG, typename F, typename ... REM >

@@ -59,7 +59,11 @@ namespace first_order_logic
 								[this]( const function & f )
 					{
 						assert( f.arity != 0 );
-						return std::make_pair( f, std::make_pair( generate_term_generator( f.arity - 1 ), generate_term_generator( 1 ) ) );
+						return std::make_pair(
+									f,
+									std::make_pair(
+										generate_term_generator( f.arity - 1 ),
+										generate_term_generator( 1 ) ) );
 					} );
 				}
 				if ( i == functions.end( ) ) { i = functions.begin( ); }

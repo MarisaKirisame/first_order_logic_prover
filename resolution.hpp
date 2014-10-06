@@ -2,6 +2,7 @@
 #define RESOLUTION_HPP
 #include "sentence.hpp"
 #include "term.hpp"
+#include "TMP.hpp"
 namespace first_order_logic
 {
 	template< typename t >
@@ -65,41 +66,86 @@ namespace first_order_logic
 	};
 	typedef disjunction< literal > clause;
 	typedef conjunction< clause > CNF;
-	free_sentence move_negation_in( const free_sentence & prop )
+	typedef sentence
+	<
+		vector
+		<
+			set_c
+			<
+				sentence_type,
+				sentence_type::logical_and,
+				sentence_type::logical_or,
+				sentence_type::logical_not
+			>
+		>
+	> free_propositional_sentence;
+	static_assert(
+			free_propositional_sentence::full_type_restore
+			<
+				and_actor< error< > >,
+				or_actor< error< > >,
+				not_actor< error< > >,
+				atomic_actor< error< > >
+			>::value, "type missing" );
+	sentence
+	<
+		vector
+		<
+			set_c
+			<
+				sentence_type,
+				sentence_type::logical_and,
+				sentence_type::logical_or
+			>,
+			set_c< sentence_type, sentence_type::logical_not >
+		>
+	>
+	move_negation_in( const free_propositional_sentence & prop )
 	{
-		boost::optional< free_sentence > se;
-		prop.type_restore< void >
+		typedef
+		sentence
+		<
+			vector
+			<
+				set_c
+				<
+					sentence_type,
+					sentence_type::logical_and,
+					sentence_type::logical_or
+				>,
+				set_c< sentence_type, sentence_type::logical_not >
+			>
+		> ret_type;
+		return prop.type_restore_full< ret_type >
 		(
 			make_not_actor(
-				[&]( const free_sentence & sen )
+				[&]( const free_propositional_sentence & sen )
 				{
-					sen.type_restore< void >(
-						make_not_actor( [&]( const free_sentence & sen ){ se = move_negation_in( sen ); } ),
+					return sen.type_restore_full< ret_type >(
+						make_not_actor( [&]( const free_propositional_sentence & sen ){ return move_negation_in( sen ); } ),
 						make_and_actor(
-							[&]( const free_sentence & l, const free_sentence & r )
+							[&]( const free_propositional_sentence & l, const free_propositional_sentence & r )
 							{
-								se = make_or(
+								return make_or(
 										move_negation_in( make_not( l ) ),
 										move_negation_in( make_not( r ) ) );
 							} ),
 						make_or_actor(
-							[&]( const free_sentence & l, const free_sentence & r )
+							[&]( const free_propositional_sentence & l, const free_propositional_sentence & r )
 							{
-								se = make_and(
+								return make_and(
 										move_negation_in( make_not( l ) ),
 										move_negation_in( make_not( r ) ) );
 							} ),
-						ignore< >( ) );
+						make_atomic_actor( []( const atomic_sentence & as ) { return as; } ) );
 				} ),
 			make_and_actor(
-				[&]( const free_sentence & l, const free_sentence & r )
-				{ se = make_and( move_negation_in( l ), move_negation_in( r ) ); } ),
+				[&]( const free_propositional_sentence & l, const free_propositional_sentence & r )
+				{ return make_and( move_negation_in( l ), move_negation_in( r ) ); } ),
 			make_or_actor(
-				[&]( const free_sentence & l, const free_sentence & r )
-				{ se = make_or( move_negation_in( l ), move_negation_in( r ) ); } ),
-			ignore< >( )
-		);
-		return se ? * se : prop;
+				[&]( const free_propositional_sentence & l, const free_propositional_sentence & r )
+				{ return make_or( move_negation_in( l ), move_negation_in( r ) ); } ),
+			make_atomic_actor( []( const atomic_sentence & as ) { return as; } ) );
 	}
 	free_sentence move_or_in( const free_sentence & prop )
 	{
@@ -182,7 +228,7 @@ namespace first_order_logic
 		throw prop;
 	}
 
-	free_sentence pre_CNF( const free_sentence & prop ) { return move_or_in( move_negation_in( prop ) ); }
+	free_sentence pre_CNF( const free_propositional_sentence & prop ) { return move_or_in( move_negation_in( prop ) ); }
 
 	CNF to_CNF( const free_sentence & prop )
 	{
@@ -192,7 +238,9 @@ namespace first_order_logic
 	}
 	bool resolution( const free_sentence & sen, const free_sentence & goal )
 	{
-		CNF cnf(
+		throw sen;
+		throw goal;
+		/*CNF cnf(
 				to_CNF(
 					make_and( sen, make_not( goal ).restore_quantifier_existential( ) ).
 						rectify( ).
@@ -243,7 +291,7 @@ namespace first_order_logic
 			}
 			to_be_added.clear( );
 		}
-		return false;
+		return false;*/
 	}
 }
 #endif // RESOLUTION_HPP

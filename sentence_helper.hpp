@@ -70,7 +70,8 @@ namespace first_order_logic
 			sentence< T >,
 			sentence< typename push_front< T, set< ARG ... > >::type >
 		>::type type;
-	};	template< typename T, typename S >
+	};
+	template< typename T, typename S >
 	struct add_sentence_back;
 	template< typename ... T >
 	struct add_sentence_back< atomic_sentence, set< T ... > >
@@ -92,7 +93,7 @@ namespace first_order_logic
 	struct remove_operator< atomic_sentence, S > { typedef atomic_sentence type; };
 	template< typename F, typename S >
 	struct remove_operator< sentence< vector< F > >, S >
-	{ typedef sentence< typename remove< vector< F >, S >::type > type; };
+	{ typedef sentence< vector< typename remove< F, S >::type > > type; };
 	template< typename F, typename ... T, typename S >
 	struct remove_operator< sentence< vector< F, T ... > >, S >
 	{
@@ -103,8 +104,8 @@ namespace first_order_logic
 		<
 			typename push_front
 			<
-				typename back< typename sen2vec< top >::type >::type,
-				typename sen2vec< down >::type
+				typename sen2vec< down >::type,
+				typename back< typename sen2vec< top >::type >::type
 			>::type
 		> type;
 	};
@@ -120,5 +121,7 @@ namespace first_order_logic
 		typedef typename
 		add_sentence_back< typename remove_operator< T, S >::type, S >::type type;
 	};
+	template< typename >
+	struct error_typename;
 }
 #endif // SENTENCE_HELPER_HPP

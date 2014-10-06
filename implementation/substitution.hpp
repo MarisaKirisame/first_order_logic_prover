@@ -46,9 +46,11 @@ namespace first_order_logic
 						return ( it != data.end( ) ) ? make_some( var, sen ) : make_some( var, (*this)(sen) );
 					} ),
 				make_and_actor(
-						[&]( const sentence< T > & l, const sentence< T > & r ){ return make_and( (*this)(l), (*this)(r) ); } ),
+						[&]( const sentence< T > & l, const sentence< T > & r )
+						{ return make_and( (*this)(l), (*this)(r) ); } ),
 				make_or_actor(
-						[&]( const sentence< T > & l, const sentence< T > & r ){ return make_or( (*this)(l), (*this)(r) ); } ),
+						[&]( const sentence< T > & l, const sentence< T > & r )
+						{ return make_or( (*this)(l), (*this)(r) ); } ),
 				make_not_actor(
 						[&]( const sentence< T > & sen ){ return make_not( (*this)(sen) ); } ),
 				make_atomic_actor(
