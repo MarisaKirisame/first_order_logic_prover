@@ -1,7 +1,7 @@
 
 First order logic prover
 ==============
-This is a library which contain:
+This is a library which contains:
 
  - Backward chaining algorithm
  - Dependent type First order logic tree( unimplement yet )

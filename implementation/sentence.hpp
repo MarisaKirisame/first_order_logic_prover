@@ -46,6 +46,7 @@ namespace first_order_logic
 						( [&]( const sentence< T > & s ){ return make_not( s.standardize_bound_variable( term_map ) ); } )
 				);
 	}
+
 	template< typename T >
 	sentence< T >::operator std::string( ) const
 	{
@@ -94,6 +95,7 @@ namespace first_order_logic
 				")";
 		return (*this)->cache;
 	}
+
 	template< typename T >
 	size_t sentence< T >::length( ) const
 	{
@@ -111,6 +113,7 @@ namespace first_order_logic
 						[]( const sentence< T > & sen ){ return sen.length( ); } )
 			);
 	}
+
 	template< typename T >
 	template< typename OUTITER >
 	OUTITER sentence< T >::functions( OUTITER result ) const
@@ -128,6 +131,7 @@ namespace first_order_logic
 		);
 		return result;
 	}
+
 	template< typename T >
 	template< typename OUTITER >
 	OUTITER sentence< T >::predicates( OUTITER result ) const
@@ -147,6 +151,7 @@ namespace first_order_logic
 		);
 		return result;
 	}
+
 	template< typename T >
 	template< typename OUTITER >
 	OUTITER sentence< T >::variables( OUTITER result ) const
@@ -183,6 +188,7 @@ namespace first_order_logic
 			);
 		return result;
 	}
+
 	template< typename T >
 	template< typename OUTITER >
 	OUTITER sentence< T >::bounded_variables( OUTITER result ) const
@@ -218,6 +224,7 @@ namespace first_order_logic
 		);
 		return result;
 	}
+
 	template< typename T >
 	template< typename OUTITER >
 	OUTITER sentence< T >::free_variables( OUTITER result ) const
@@ -236,6 +243,7 @@ namespace first_order_logic
 			make_not_actor( [&]( const sentence< T > & sen ){ return sen.free_variables( result ); } )
 		);
 	}
+
 	template< typename T >
 	bool sentence< T >::have_equal( ) const
 	{
@@ -257,6 +265,7 @@ namespace first_order_logic
 						[&]( const sentence< T > & sen ){ return sen.have_equal( ); } )
 			);
 	}
+
 	template< typename T >
 	template< typename OUTITER >
 	OUTITER sentence< T >::constants( OUTITER result ) const
@@ -276,6 +285,7 @@ namespace first_order_logic
 				make_not_actor( [&]( const sentence< T > & sen ){ return sen.constants( result ); } )
 			);
 	}
+
 	template< typename T >
 	bool sentence< T >::have_quantifier( ) const
 	{
@@ -292,6 +302,7 @@ namespace first_order_logic
 					make_atomic_actor( []( const atomic_sentence & ){ return false; } )
 				);
 	}
+
 	template< typename T >
 	bool sentence< T >::is_in_prenex_form( ) const
 	{
@@ -308,6 +319,7 @@ namespace first_order_logic
 					make_atomic_actor( []( const atomic_sentence & ){ return true; } )
 				);
 	}
+
 	template< typename T >
 	typename
 	move_operator_out
@@ -317,7 +329,8 @@ namespace first_order_logic
 	>::type
 	sentence< T >::move_quantifier_out( ) const
 	{
-		typedef typename
+		throw;
+		/*typedef typename
 		move_operator_out
 		<
 			sentence< T >,
@@ -419,16 +432,18 @@ namespace first_order_logic
 								}
 								return make_not( sen );
 							} )
-				);
+				);*/
 	}
+
 	template< typename T >
 	typename remove_operator< sentence< T >, set_c< sentence_type, sentence_type::some > >::type
 	sentence< T >::skolemization_remove_existential( ) const
 	{
-		if ( ! is_in_prenex_form( ) ) { return move_quantifier_out( ).skolemization_remove_universal( ); }
+		if ( ! is_in_prenex_form( ) ) { return move_quantifier_out( ).skolemization_remove_existential( ); }
 		std::set< variable > s;
-		return skolemization_remove_universal( s );
+		return skolemization_remove_existential( s );
 	}
+
 	template< typename T >
 	typename remove_operator< sentence< T >, set_c< sentence_type, sentence_type::all > >::type
 	sentence< T >::skolemization_remove_universal( ) const
@@ -437,29 +452,44 @@ namespace first_order_logic
 		std::set< variable > s;
 		return skolemization_remove_universal( s );
 	}
+
 	template< typename T >
 	typename remove_operator< sentence< T >, set_c< sentence_type, sentence_type::some > >::type
 	sentence< T >::skolemization_remove_existential( std::set< variable > & previous_quantifier ) const
 	{
-		boost::optional< sentence< T > > ret;
-		type_restore< void >
+		typedef
+		typename remove_operator
+		<
+			sentence< T >,
+			set_c< sentence_type, sentence_type::some >
+		>::type ret_type;
+		return rectify( ).move_quantifier_out( ).template type_restore_full
+				<
+					typename remove_operator
+					<
+						sentence< T >,
+						set_c< sentence_type, sentence_type::some >
+					>::type
+				>
 		(
 			make_all_actor(
-				[&]( const variable & v, const sentence< T > & s )
+				[&]( const variable & v, const auto & s )->ret_type
 				{
-					previous_quantifier.insert( v );
-					ret = make_all( v, s.skolemization_remove_existential( ) );
+					throw;
+					//previous_quantifier.insert( v );
+					//return make_all( v, s.skolemization_remove_existential( ) );
 				} ),
 			make_some_actor(
-				[&]( const variable & v, const sentence< T > & s )
+				[&]( const variable & v, const auto & s )->ret_type
 				{
-					if ( previous_quantifier.empty( ) )
+					throw;
+					/*if ( previous_quantifier.empty( ) )
 					{
 						std::set< std::string > used;
 						cv( make_function_output_iterator( [&]( const term & t ){ used.insert( t->name ); } ) );
 						std::string unused = "_";
 						while ( used.count( unused ) != 0 ) { unused += "_"; }
-						ret = substitution( { std::make_pair( v, make_variable( unused ) ) } )
+						return substitution( { std::make_pair( v, make_variable( unused ) ) } )
 								( s ).
 								skolemization_remove_existential( );
 					}
@@ -469,18 +499,20 @@ namespace first_order_logic
 						functions( make_function_output_iterator( [&]( const function & f ){ fun.insert( f.name ); } ) );
 						std::string unused = "_";
 						while ( fun.count( unused ) != 0 ) { unused += "_"; }
-						ret = substitution(
+						return substitution(
 								{
 									std::make_pair(
 										v,
 										make_function( unused, std::vector< term >( previous_quantifier.begin( ),
 									previous_quantifier.end( ) ) ) )
 								} )( s ).skolemization_remove_existential( );
-					}
+					}*/
 				} ),
-			ignore< >( )
+			make_and_actor( []( const auto & l, const auto & r ) { return make_and( l, r ); } ),
+			make_or_actor( []( const auto & l, const auto & r ) { return make_or( l, r ); } ),
+			make_not_actor( [this]( const auto & l )->ret_type { throw;/*return make_not( l );*/ } ),
+			make_atomic_actor( []( const atomic_sentence & a ) { return a; } )
 		);
-		return ret ? * ret : * this;
 	}
 	template< typename T >
 	typename remove_operator< sentence< T >, set_c< sentence_type, sentence_type::all > >::type
@@ -549,9 +581,10 @@ namespace first_order_logic
 		return type_restore_full< sentence< T > >
 				(
 					make_all_actor(
-						[&]( const variable & v, const sentence< T > & sen )
+						[&]( const variable & v, const auto & sen )
 						{
-							if ( used_quantifier.count( v ) != 0 || free_variable.count( v ) != 0 )
+							return * this;
+							/*if ( used_quantifier.count( v ) != 0 || free_variable.count( v ) != 0 )
 							{
 								std::string gen_str = v.name;
 								while ( used_quantifier.count( variable( gen_str ) ) != 0 ||
@@ -563,12 +596,13 @@ namespace first_order_logic
 											variable( gen_str ),
 											substitution( { std::make_pair( v, make_variable( gen_str ) ) } )( sen ) );
 							}
-							return make_all( v, sen );
+							return make_all( v, sen );*/
 						} ),
 					make_some_actor(
-						[&]( const variable & v, const sentence< T > & sen )
+						[&]( const variable & v, const auto & sen )
 						{
-							if ( used_quantifier.count( v ) != 0 || free_variable.count( v ) != 0 )
+							return * this;
+							/*if ( used_quantifier.count( v ) != 0 || free_variable.count( v ) != 0 )
 							{
 								std::string gen_str = v.name;
 								while ( used_quantifier.count( variable( gen_str ) ) != 0 ||
@@ -580,25 +614,25 @@ namespace first_order_logic
 											variable( gen_str ),
 											substitution( { { v, make_variable( gen_str ) } } )( sen ) );
 							}
-							return make_some( v, sen );
+							return make_some( v, sen );*/
 						} ),
 					make_atomic_actor( [&]( const atomic_sentence & as ){ return sentence( as ); } ),
 					make_or_actor(
-						[&]( const sentence< T > & l, const sentence< T > & r )
+						[&]( const auto & l, const auto & r )
 						{
 							return make_or(
 									l.rectify( used_quantifier, free_variable, used_name ),
 									r.rectify( used_quantifier, free_variable, used_name ) );
 						} ),
 					make_and_actor(
-						[&]( const sentence< T > & l, const sentence< T > & r )
+						[&]( const auto & l, const auto & r )
 						{
 							return make_and(
 									l.rectify( used_quantifier, free_variable, used_name ),
 									r.rectify( used_quantifier, free_variable, used_name ) );
 						} ),
 					make_not_actor(
-						[&]( const sentence< T > & sen )
+						[&]( const auto & sen )
 						{ return make_not( sen.rectify( used_quantifier, free_variable, used_name ) ); } )
 				);
 	}
@@ -665,7 +699,7 @@ namespace first_order_logic
 				{ return make_and( l.drop_universal( ), r.drop_universal( ) ); } ),
 			make_or_actor(
 				[]( const auto & l, const auto & r ) { return make_or( l.drop_universal( ), r.drop_universal( ) ); } ),
-			make_not_actor( []( const auto & s ) { return make_not_actor( s.drop_universal( ) ); } ) );
+			make_not_actor( []( const auto & s ) { return make_not( s.drop_universal( ) ); } ) );
 	}
 	template< typename T >
 	typename add_sentence_front< sentence< T >, set_c< sentence_type, sentence_type::some > >::type

@@ -28,33 +28,6 @@ namespace first_order_logic
 			>
 		>
 	> free_sentence;
-	/*template< typename T1, typename T2 >
-	struct sentence_common;
-	template< typename T >
-	struct sentence_common< T, T > { typedef T type; };
-	template< typename T >
-	struct sentence_common< sentence< T >, sentence< T > > { typedef sentence< T > type; };
-	template< typename T >
-	struct sentence_common< sentence< T >, atomic_sentence > { typedef sentence< T > type; };
-	template< typename T >
-	struct sentence_common< atomic_sentence, sentence< T > > { typedef sentence< T > type; };
-	template< typename T1, typename T2 >
-	struct sentence_common< sentence< T1 >, sentence< T2 > >
-	{
-		typedef typename
-		std::conditional
-		<
-			std::is_convertible< sentence< T1 >, sentence< T2 > >::value,
-			sentence< T2 >,
-			typename
-			std::conditional
-			<
-				std::is_convertible< sentence< T2 >, sentence< T1 > >::value,
-				sentence< T1 >,
-				free_sentence
-			>::type
-		>::type type;
-	};*/
 	template< typename T, typename S >
 	struct add_sentence_front;
 	template< typename ... T >
@@ -97,15 +70,27 @@ namespace first_order_logic
 	template< typename F, typename ... T, typename S >
 	struct remove_operator< sentence< vector< F, T ... > >, S >
 	{
-		typedef typename remove_operator< sentence< vector< F > >, S >::type top;
-		typedef typename remove_operator< sentence< vector< T ... > >, S >::type down;
+		typedef typename
+		back
+		<
+			typename sen2vec
+			<
+				typename remove_operator
+				<
+					sentence< vector< F > >,
+					S
+				>::type
+			>::type
+		>::type top;
+		typedef typename sen2vec< typename remove_operator< sentence< vector< T ... > >, S >::type >::type down;
 		typedef
 		sentence
 		<
-			typename push_front
+			typename std::conditional
 			<
-				typename sen2vec< down >::type,
-				typename back< typename sen2vec< top >::type >::type
+				empty< top >::value,
+				down,
+				typename push_front< down, top >::type
 			>::type
 		> type;
 	};

@@ -39,6 +39,10 @@ namespace first_order_logic
 	struct empty< vector< F, R ... > > : std::false_type { };
 	template< >
 	struct empty< vector< > > : std::true_type { };
+	template< typename F, typename ... R >
+	struct empty< set< F, R ... > > : std::false_type { };
+	template< >
+	struct empty< set< > > : std::true_type { };
 	template< typename T > struct front;
 	template< typename F, typename ... R >
 	struct front< vector< F, R ... > > { typedef F type; };

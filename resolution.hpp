@@ -222,67 +222,82 @@ namespace first_order_logic
 						} ),
 					make_atomic_actor( []( const atomic_sentence & as ) { return as; } ) );
 	}
-	clause get_clause( const free_sentence & prop )
+
+	literal get_literal( const not_type & nt )
 	{
-		/*clause ret;
-		prop.type_restore
+		return nt.type_restore_full< literal >(
+					make_not_actor(
+						[]( const not_type & n )
+						{
+							literal ret = get_literal( n );
+							ret.b = ! ret.b;
+							return ret;
+						} ),
+					make_atomic_actor( []( const atomic_sentence & as ) { return literal( as, true ); } ) );
+	}
+
+	template< typename OUTITER >
+	OUTITER get_clause( const or_not_type & prop, OUTITER result )
+	{
+		return
+		prop.type_restore_full< OUTITER >
 				(
 					make_or_actor(
-						[&]( const free_sentence & l, const free_sentence & r )
-						{
-							auto cf = get_clause( l );
-							auto cs = get_clause( r );
-							std::copy( cf.data.begin( ), cf.data.end( ), std::inserter( cs.data, cs.data.end( ) ) );
-							ret = cs;
-						} ),
+						[&]( const or_not_type & l, const or_not_type & r )
+						{ return get_clause( l, get_clause( r, result ) ); } ),
 					make_not_actor(
-						[&]( const free_sentence & sen )
-						{ ret = { literal( sen, false ) }; } ),
-					ignore< >( )
+						[&]( const not_type & sen )
+						{
+							* result = get_literal( sen );
+							++result;
+							return result;
+						} ),
+					make_atomic_actor(
+						[&]( const atomic_sentence & as )
+						{
+							* result = literal( as, false );
+							++result;
+							return result;
+						} )
 				);
-		if ( ret.data.empty( ) )
-		{
-			assert( prop.is_atom( ) );
-			ret = { literal( prop, true ) };
-		}
-		return ret;*/
-		throw prop;
-	}
-	std::set< clause > flatten( const free_sentence & prop )
-	{
-		/*if ( prop.is_atom( ) ) { return { clause( { literal( prop, true ) } ) }; }
-		else
-		{
-			std::set< clause > ret;
-			prop.type_restore(
-				make_and_actor(
-					[&]( const free_sentence & l, const free_sentence & r )
-					{
-						auto cf = flatten( l );
-						auto cs = flatten( r );
-						std::copy( cf.begin( ), cf.end( ), std::inserter( cs, cs.end( ) ) );
-						ret = cs;
-					} ),
-					ignore< >( ) );
-			if ( ! ret.empty( ) ) { return ret; }
-			else { return { get_clause( prop ) }; }
-		}*/
-		throw prop;
 	}
 
-	free_sentence pre_CNF( const free_propositional_sentence & prop );// { return move_or_in( move_negation_in( prop ) ); }
-
-	CNF to_CNF( const free_sentence & prop )
+	template< typename OUTITER >
+	OUTITER flatten( const and_or_not_type & prop, OUTITER result )
 	{
-		throw prop;
-		//if ( prop.is_atom( ) ) { return CNF ( { clause ( { literal( prop, true ) } ) } ); }
-		//else { return CNF( flatten( pre_CNF( prop ) ) ); }
+		auto extract_clause =
+				[&]( const or_not_type & t )
+				{
+					clause cl;
+					get_clause( t, std::inserter( cl.data, cl.data.begin( ) ) );
+					* result = cl;
+					++result;
+					return result;
+				};
+		return prop.type_restore_full< OUTITER >(
+					make_and_actor(
+						[&]( const and_or_not_type & l, const and_or_not_type & r )
+						{ return flatten( l, flatten( r, result ) ); } ),
+					make_not_actor( [&]( const not_type & l ) { return extract_clause( make_not( l ) ); } ),
+					make_or_actor(
+						[&]( const or_not_type & l, const or_not_type & r )
+						{ return extract_clause( make_or( l, r ) ); } ),
+					make_atomic_actor( [&]( const atomic_sentence & as ) { return extract_clause( as ); } ) );
 	}
+
+	and_or_not_type pre_CNF( const free_propositional_sentence & prop )
+	{ return move_or_in( move_negation_in( prop ) ); }
+
+	CNF to_CNF( const free_propositional_sentence & prop )
+	{
+		CNF ret;
+		flatten( pre_CNF( prop ), std::inserter( ret.data, ret.data.begin( ) ) );
+		return ret;
+	}
+
 	bool resolution( const free_sentence & sen, const free_sentence & goal )
 	{
-		throw sen;
-		throw goal;
-		/*CNF cnf(
+		CNF cnf(
 				to_CNF(
 					make_and( sen, make_not( goal ).restore_quantifier_existential( ) ).
 						rectify( ).
@@ -333,7 +348,7 @@ namespace first_order_logic
 			}
 			to_be_added.clear( );
 		}
-		return false;*/
+		return false;
 	}
 }
 #endif // RESOLUTION_HPP
