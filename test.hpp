@@ -14,7 +14,7 @@ namespace first_order_logic
 {
 	BOOST_AUTO_TEST_CASE( gentzen_system_test )
 	{
-		free_sentence fol =
+		/*free_sentence fol =
 				make_imply(
 					make_all( variable( "x" ), make_predicate( "F", { make_variable( "x" ) } ) ),
 					make_all(
@@ -73,7 +73,7 @@ namespace first_order_logic
 		BOOST_CHECK( gentzen_system::is_valid( fol ).second );
 		BOOST_CHECK( gentzen_system::is_valid( fol2 ).second );
 		BOOST_CHECK( gentzen_system::is_valid( fol3 ).second );
-		BOOST_CHECK( gentzen_system::is_valid( fol4 ).second );
+		BOOST_CHECK( gentzen_system::is_valid( fol4 ).second );*/
 	}
 	BOOST_AUTO_TEST_CASE( forward_chaning_algorithm )
 	{
@@ -140,7 +140,7 @@ namespace first_order_logic
 	BOOST_AUTO_TEST_CASE( praser ) { BOOST_CHECK( prase( "∀x F(x)" ) ); }
 	BOOST_AUTO_TEST_CASE( resolution_test )
 	{
-		std::cout << std::boolalpha;
+		/*std::cout << std::boolalpha;
 		free_sentence axiom1 = make_all(
 					variable( "x" ),
 					make_imply(
@@ -215,7 +215,7 @@ namespace first_order_logic
 							axiom5 ),
 						axiom6 ),
 					axiom7 ),
-				make_predicate( "Criminal", { make_variable( "x" ) } ) ) );
+				make_predicate( "Criminal", { make_variable( "x" ) } ) ) );*/
 	}
 }
 #endif //THEOREM_PROVER_EXAMPLE

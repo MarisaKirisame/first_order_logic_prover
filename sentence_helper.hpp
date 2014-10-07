@@ -28,7 +28,7 @@ namespace first_order_logic
 			>
 		>
 	> free_sentence;
-	template< typename T1, typename T2 >
+	/*template< typename T1, typename T2 >
 	struct sentence_common;
 	template< typename T >
 	struct sentence_common< T, T > { typedef T type; };
@@ -54,7 +54,7 @@ namespace first_order_logic
 				free_sentence
 			>::type
 		>::type type;
-	};
+	};*/
 	template< typename T, typename S >
 	struct add_sentence_front;
 	template< typename ... T >
@@ -123,5 +123,6 @@ namespace first_order_logic
 	};
 	template< typename >
 	struct error_typename;
+	struct no_such_sentence;
 }
 #endif // SENTENCE_HELPER_HPP

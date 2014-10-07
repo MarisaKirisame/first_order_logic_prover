@@ -203,39 +203,102 @@ namespace first_order_logic
 		{ return os << static_cast< std::string >( sen ); }
 		template
 		<
+			sentence_type st,
+			bool = have< current_set, set_c< sentence_type, st > >::value,
+			bool = std::is_same< next, atomic_sentence >::value
+		>
+		struct get_sentence_type;
+		template< sentence_type st, bool b >
+		struct get_sentence_type< st, true, b > { typedef sentence< T > type; };
+		template< sentence_type st >
+		struct get_sentence_type< st, false, true > { typedef no_such_sentence type; };
+		template< sentence_type st >
+		struct get_sentence_type< st, false, false >
+		{ typedef typename next::template get_sentence_type< st >::type type; };
+		typedef typename get_sentence_type< sentence_type::logical_and >::type and_sentence_type;
+		typedef typename get_sentence_type< sentence_type::logical_or >::type or_sentence_type;
+		typedef typename get_sentence_type< sentence_type::logical_not >::type not_sentence_type;
+		typedef typename get_sentence_type< sentence_type::all >::type all_sentence_type;
+		typedef typename get_sentence_type< sentence_type::some >::type some_sentence_type;
+		template< sentence_type st, typename TO >
+		struct can_convert_to;
+		template< typename TO >
+		struct can_convert_to< sentence_type::logical_not, sentence< TO > >
+		{
+			constexpr static bool value =
+					! std::is_same
+					<
+						decltype( not_converter< TO >( )( std::declval< not_sentence_type >( ) ) ),
+						void
+					>::value;
+		};
+		template< typename TO >
+		struct can_convert_to< sentence_type::logical_and, sentence< TO > >
+		{
+			constexpr static bool value =
+					! std::is_same
+					<
+						decltype( and_converter< TO >( )(
+							std::declval< and_sentence_type >( ),
+							std::declval< and_sentence_type >( ) ) ),
+						void
+					>::value;
+		};
+		template< typename TO >
+		struct can_convert_to< sentence_type::logical_or, sentence< TO > >
+		{
+			constexpr static bool value =
+					! std::is_same
+					<
+						decltype( or_converter< TO >( )(
+							std::declval< or_sentence_type >( ),
+							std::declval< or_sentence_type >( ) ) ),
+						void
+					>::value;
+		};
+		template< typename TO >
+		struct can_convert_to< sentence_type::all, sentence< TO > >
+		{
+			constexpr static bool value =
+					! std::is_same
+					<
+						decltype( all_converter< TO >( )(
+							std::declval< variable >( ),
+							std::declval< all_sentence_type >( ) ) ),
+						void
+					>::value;
+		};
+		template< typename TO >
+		struct can_convert_to< sentence_type::some, sentence< TO > >
+		{
+			constexpr static bool value =
+					! std::is_same
+					<
+						decltype( some_converter< TO >( )(
+							std::declval< variable >( ),
+							std::declval< some_sentence_type >( ) ) ),
+						void
+					>::value;
+		};
+		template
+		<
 			typename TO,
 			typename =
 				std::enable_if_t
 				<
-					! std::is_same<
-						decltype( and_converter< TO >( )( std::declval< sentence< T > >( ),
-						std::declval< sentence< T > >( ) ) ), void >::value &&
-					! std::is_same<
-						decltype( or_converter< TO >( )( std::declval< sentence< T > >( ),
-						std::declval< sentence< T > >( ) ) ), void >::value &&
-					! std::is_same<
-						decltype( not_converter< TO >( )( std::declval< sentence< T > >( ) ) ),
-						void >::value &&
-					! std::is_same<
-						decltype( all_converter< TO >( )( std::declval< variable >( ), std::declval< sentence< T > >( ) ) ),
-						void >::value &&
-					! std::is_same<
-						decltype( some_converter< TO >( )( std::declval< variable >( ), std::declval< sentence< T > >( ) ) ),
-						void >::value
+					can_convert_to< sentence_type::logical_and, sentence< TO > >::value &&
+					can_convert_to< sentence_type::logical_or, sentence< TO > >::value &&
+					can_convert_to< sentence_type::logical_not, sentence< TO > >::value &&
+					can_convert_to< sentence_type::all, sentence< TO > >::value &&
+					can_convert_to< sentence_type::some, sentence< TO > >::value
 				>
 		>
 		operator sentence< TO >( ) const;
 	};
-	static_assert(
-			std::is_convertible<
-				sentence< vector< set_c< sentence_type, sentence_type::logical_not > > >,
-				const free_sentence & >::value,
-			"must be convertible to free sentence" );
-	static_assert(
-			! std::is_convertible<
-				free_sentence,
-				const sentence< vector< set_c< sentence_type, sentence_type::logical_not > > > & >::value,
-			"must be convertible to free sentence" );
+	typedef sentence< vector< set_c< sentence_type, sentence_type::logical_not > > > not_sen_type;
+	static_assert( std::is_convertible< not_sen_type, free_sentence >::value, "must be convertible to free sentence" );
+	static_assert( not_sen_type::can_convert_to< sentence_type::logical_and, free_sentence >::value, "" );
+	static_assert( ! std::is_convertible< free_sentence, not_sen_type >::value, "must be convertible to free sentence" );
 }
 #include "implementation/sentence.hpp"
 #endif // FIRST_ORDER_LOGIC_COMPLEX_SENTENCE_HPP

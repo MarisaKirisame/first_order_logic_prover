@@ -3,6 +3,7 @@
 #include "sentence_helper.hpp"
 namespace first_order_logic
 {
+	struct variable;
 	template< typename TO >
 	struct all_converter
 	{
@@ -59,9 +60,10 @@ namespace first_order_logic
 						sentence< TO > >::value &&
 					std::is_same< ARG, ARG >::value
 				>,
-			typename = std::enable_if_t< std::is_same< ARG, ARG >::value >
+			typename = std::enable_if_t< ! std::is_same< ARG, no_such_sentence >::value >
 		>
 		void operator ( )( const variable &, const ARG & ) const { throw; }
+		sentence< TO > operator ( )( const variable &, const no_such_sentence & ) const { throw; }
 	};
 	template< typename TO >
 	struct some_converter
@@ -120,9 +122,10 @@ namespace first_order_logic
 						sentence< TO > >::value &&
 					std::is_same< ARG, ARG >::value
 				>,
-			typename = std::enable_if_t< std::is_same< ARG, ARG >::value >
+			typename = std::enable_if_t< ! std::is_same< ARG, no_such_sentence >::value >
 		>
 		void operator ( )( const variable &, const ARG & ) const { throw; }
+		sentence< TO > operator ( )( const variable &, const no_such_sentence & ) const { throw; }
 	};
 	template< typename TO >
 	struct and_converter
@@ -136,7 +139,8 @@ namespace first_order_logic
 		{
 			return sentence< TO >(
 						sentence_type::logical_and,
-						{ typename sentence< TO >::next( l ), typename sentence< TO >::next( r ) } ); }
+						{ typename sentence< TO >::next( l ), typename sentence< TO >::next( r ) } );
+		}
 		template
 		<
 			typename ARG,
@@ -185,9 +189,10 @@ namespace first_order_logic
 						sentence< TO > >::value &&
 					std::is_same< ARG, ARG >::value
 				>,
-			typename = std::enable_if_t< std::is_same< ARG, ARG >::value >
+			typename = std::enable_if_t< ! std::is_same< ARG, no_such_sentence >::value >
 		>
 		void operator ( )( const ARG &, const ARG & ) const { throw; }
+		sentence< TO > operator ( )( const no_such_sentence &, const no_such_sentence & ) const { throw; }
 	};
 	template< typename TO >
 	struct or_converter
@@ -251,9 +256,10 @@ namespace first_order_logic
 						sentence< TO > >::value &&
 					std::is_same< ARG, ARG >::value
 				>,
-			typename = std::enable_if_t< std::is_same< ARG, ARG >::value >
+			typename = std::enable_if_t< ! std::is_same< ARG, no_such_sentence >::value >
 		>
 		void operator ( )( const ARG &, const ARG & ) const { throw; }
+		sentence< TO > operator ( )( const no_such_sentence &, const no_such_sentence & ) const { throw; }
 	};
 	template< typename TO >
 	struct not_converter
@@ -272,7 +278,7 @@ namespace first_order_logic
 			typename =
 				std::enable_if_t<
 					std::is_same<
-						decltype( make_not( std::declval< ARG >( ), std::declval< ARG >( ) ) ),
+						decltype( make_not( std::declval< ARG >( ) ) ),
 						sentence< TO > >::value >
 		>
 		sentence< TO > operator ( )( const ARG & l ) const { return make_not( l ); }
@@ -307,9 +313,10 @@ namespace first_order_logic
 					! std::is_same< decltype( make_not( std::declval< sentence< TO > >( ) ) ), sentence< TO > >::value &&
 					std::is_same< ARG, ARG >::value
 				>,
-			typename = std::enable_if_t< std::is_same< ARG, ARG >::value >
+			typename = std::enable_if_t< ! std::is_same< ARG, no_such_sentence >::value >
 		>
 		void operator ( )( const ARG & ) const { throw; }
+		sentence< TO > operator ( )( const no_such_sentence & ) const { throw; }
 	};
 }
 #endif // CONVERTER_HPP

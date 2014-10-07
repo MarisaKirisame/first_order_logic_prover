@@ -155,7 +155,6 @@ namespace first_order_logic
 			set_c< sentence_type, sentence_type::logical_not >
 		>
 	> or_and_or_not_type;
-	static_assert( std::is_convertible< or_and_or_not_type, negation_in_type >::value, "should be convertible" );
 	typedef
 	sentence
 	<
@@ -166,10 +165,18 @@ namespace first_order_logic
 		>
 	> or_not_type;
 	typedef sentence< vector < set_c< sentence_type, sentence_type::logical_not > > > not_type;
+	static_assert( std::is_convertible< or_and_or_not_type, negation_in_type >::value, "should be convertible" );
+	static_assert( std::is_convertible< not_type, free_propositional_sentence >::value, "should be convertible" );
+	static_assert( std::is_convertible< or_not_type, and_or_not_type >::value, "should be convertible" );
+	static_assert( std::is_same< and_or_not_type::not_sentence_type, not_type >::value, "should be same" );
+	static_assert(
+		! have< negation_in_type::current_set, set_c< sentence_type, sentence_type::logical_not > >::value,
+		"should not have or" );
 	and_or_not_type move_or_in( const negation_in_type & prop )
 	{
+
 		return prop.type_restore_full< and_or_not_type >(
-					make_not_actor( []( const not_type & sen ) { return sen; } ),
+					make_not_actor( []( const not_type & sen )->and_or_not_type { return sen; } ),
 					make_and_actor(
 						[]( const negation_in_type & l, const negation_in_type & r )
 						{ return make_and( move_or_in( l ), move_or_in( r ) ); } ),
@@ -177,7 +184,7 @@ namespace first_order_logic
 						[]( const negation_in_type & l, const negation_in_type & r )
 						{
 							auto switch_process =
-									[&]( const or_not_type & as )
+									[&]( const or_not_type & as )->and_or_not_type
 									{
 										return move_or_in( r ).type_restore_full< and_or_not_type >(
 											make_and_actor(
@@ -263,7 +270,7 @@ namespace first_order_logic
 		throw prop;
 	}
 
-	free_sentence pre_CNF( const free_propositional_sentence & prop ) { return move_or_in( move_negation_in( prop ) ); }
+	free_sentence pre_CNF( const free_propositional_sentence & prop );// { return move_or_in( move_negation_in( prop ) ); }
 
 	CNF to_CNF( const free_sentence & prop )
 	{

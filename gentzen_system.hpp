@@ -61,7 +61,8 @@ namespace first_order_logic
 			}
 			void add_equal_generator( const function & f )
 			{
-				assert( f.arity >= 1 );
+				throw f;
+				/*assert( f.arity >= 1 );
 				if ( f.arity == 1 )
 				{
 					try_insert
@@ -110,11 +111,12 @@ namespace first_order_logic
 					for ( size_t i = 0; i < f.arity; ++i )
 					{ add = make_all( args[i]->name, make_all( argt[i]->name, add ) ); }
 					try_insert( sequent, add, true );
-				}
+				}*/
 			}
 			void add_equal_generator( const predicate & f )
 			{
-				assert( f.arity >= 1 );
+				throw f;
+				/*assert( f.arity >= 1 );
 				if ( f.arity == 1 )
 				{
 					try_insert
@@ -161,11 +163,14 @@ namespace first_order_logic
 							make_and( and_stack, make_predicate( f.name, args ) ),
 							make_predicate( f.name, argt ) ),
 						true );
-				}
+				}*/
 			}
 			void add_equal_generator( )
 			{
-				try_insert( sequent, make_all( variable( "t" ), make_equal( make_variable( "t" ), make_variable( "t" ) ) ), true );
+				/*try_insert(
+					sequent,
+					make_all( variable( "t" ), make_equal( make_variable( "t" ), make_variable( "t" ) ) ),
+					true );
 				try_insert( sequent,
 							make_all
 							(
@@ -211,8 +216,14 @@ namespace first_order_logic
 								)
 							),
 							true );
-				std::for_each( functions.begin( ), functions.end( ), [this]( const function & f ){ add_equal_generator( f ); } );
-				std::for_each( predicates.begin( ), predicates.end( ), [this]( const predicate & f ){ add_equal_generator( f ); } );
+				std::for_each(
+					functions.begin( ),
+					functions.end( ),
+					[this]( const function & f ) { add_equal_generator( f ); } );
+				std::for_each(
+					predicates.begin( ),
+					predicates.end( ),
+					[this]( const predicate & f ) { add_equal_generator( f ); } );*/
 			}
 			explicit operator std::string( ) const
 			{
@@ -245,10 +256,17 @@ namespace first_order_logic
 									branch.end( ),
 									[&]( const auto & t ) { return std::get< 2 >( t ) == true; } ) )
 									{
-										std::for_each( branch.begin( ), branch.end( ), [&]( const auto & t ){ leaf.join( std::get< 1 >( t ) ); } );
+										std::for_each(
+											branch.begin( ),
+											branch.end( ),
+											[&]( const auto & t ){ leaf.join( std::get< 1 >( t ) ); } );
 										return true;
 									}
-									auto it = std::find_if( branch.begin( ), branch.end( ), [&]( const auto & t ){ return std::get< 2 >( t ) == false; } );
+									auto it =
+										std::find_if(
+											branch.begin( ),
+											branch.end( ),
+											[&]( const auto & t ){ return std::get< 2 >( t ) == false; } );
 									if ( it != branch.end( ) )
 									{
 										leaf.join( std::get< 1 >( * it ) );
@@ -318,7 +336,12 @@ namespace first_order_logic
 							make_some_actor(
 								[&]( const variable & var, const free_sentence & sen )
 								{
-									if ( t.second ) { try_insert( sequent, substitution( { { var, term( new_variable( ) ) } } )( sen ), true ); }
+									if ( t.second )
+									{
+										try_insert(
+											sequent,
+											substitution( { { var, term( new_variable( ) ) } } )( sen ), true );
+									}
 									else
 									{
 										std::for_each
@@ -359,13 +382,15 @@ namespace first_order_logic
 										try
 										{
 											ldt.try_insert( ldt.sequent, l, false );
-											branch.push_back( std::make_tuple( ldt, proof_tree( ), boost::optional< bool >( ) ) );
+											branch.push_back(
+												std::make_tuple( ldt, proof_tree( ), boost::optional< bool >( ) ) );
 										}
 										catch ( contradiction & con ) { pt.join( con.pt ); }
 										try
 										{
 											rdt.try_insert( rdt.sequent, r, false );
-											branch.push_back( std::make_tuple( rdt, proof_tree( ), boost::optional< bool >( ) ) );
+											branch.push_back(
+												std::make_tuple( rdt, proof_tree( ), boost::optional< bool >( ) ) );
 										}
 										catch ( contradiction & con ) { pt.join( con.pt ); }
 										have_branch = true;
@@ -383,13 +408,14 @@ namespace first_order_logic
 										{
 											ldt.try_insert( ldt.sequent, l, true );
 											branch.push_back(
-														std::make_tuple( ldt, proof_tree( ), boost::optional< bool >( ) ) );
+												std::make_tuple( ldt, proof_tree( ), boost::optional< bool >( ) ) );
 										}
 										catch ( contradiction & con ) { pt.join( con.pt ); }
 										try
 										{
 											rdt.try_insert( rdt.sequent, r, true );
-											branch.push_back( std::make_tuple( rdt, proof_tree( ), boost::optional< bool >( ) ) );
+											branch.push_back(
+												std::make_tuple( rdt, proof_tree( ), boost::optional< bool >( ) ) );
 										}
 										catch ( contradiction & con ) { pt.join( con.pt ); }
 										have_branch = true;

@@ -38,7 +38,7 @@ namespace first_order_logic
 	template< typename T1, typename T2 >
 	typename add_sentence_front
 	<
-		typename sentence_common< T1, T2 >::type,
+		typename std::common_type< T1, T2 >::type,
 		set_c< sentence_type, sentence_type::logical_and >
 	>::type
 	make_and( const T1 & l, const T2 & r )
@@ -46,22 +46,20 @@ namespace first_order_logic
 		return
 				typename add_sentence_front
 				<
-					typename sentence_common< T1, T2 >::type,
+					typename std::common_type< T1, T2 >::type,
 					set_c< sentence_type, sentence_type::logical_and >
 				>::type
-				(
-					sentence_type::logical_and,
+				( sentence_type::logical_and,
 					{
-						static_cast< typename sentence_common< T1, T2 >::type >( l ),
-						static_cast< typename sentence_common< T1, T2 >::type >( r )
-					}
-				);
+						static_cast< typename std::common_type< T1, T2 >::type >( l ),
+						static_cast< typename std::common_type< T1, T2 >::type >( r )
+					} );
 	}
 
 	template< typename T1, typename T2 >
 	typename add_sentence_front
 	<
-		typename sentence_common< T1, T2 >::type,
+		typename std::common_type< T1, T2 >::type,
 		set_c< sentence_type, sentence_type::logical_or >
 	>::type
 	make_or( const T1 & l, const T2 & r )
@@ -69,16 +67,14 @@ namespace first_order_logic
 		return
 				typename add_sentence_front
 				<
-					typename sentence_common< T1, T2 >::type,
+					typename std::common_type< T1, T2 >::type,
 					set_c< sentence_type, sentence_type::logical_or >
 				>::type
-				(
-					sentence_type::logical_or,
+				( sentence_type::logical_or,
 					{
-						static_cast< typename sentence_common< T1, T2 >::type >( l ),
-						static_cast< typename sentence_common< T1, T2 >::type >( r )
-					}
-				);
+						static_cast< typename std::common_type< T1, T2 >::type >( l ),
+						static_cast< typename std::common_type< T1, T2 >::type >( r )
+					} );
 	}
 
 	template< typename T >

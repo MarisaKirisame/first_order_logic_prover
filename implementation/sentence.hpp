@@ -222,20 +222,19 @@ namespace first_order_logic
 	template< typename OUTITER >
 	OUTITER sentence< T >::free_variables( OUTITER result ) const
 	{
-		type_restore_full< void >
+		return type_restore_full< OUTITER >
 		(
-			make_all_actor( [&]( const variable &, const sentence< T > & s ) { result = s.free_variables( result ); } ),
-			make_some_actor( [&]( const variable &, const sentence< T > & s ) { result = s.free_variables( result ); } ),
-			make_atomic_actor( [&]( const atomic_sentence & as ){ result = as.free_variables( result ); } ),
+			make_all_actor( [&]( const variable &, const sentence< T > & s ) { return s.free_variables( result ); } ),
+			make_some_actor( [&]( const variable &, const sentence< T > & s ) { return s.free_variables( result ); } ),
+			make_atomic_actor( [&]( const atomic_sentence & as ){ return as.free_variables( result ); } ),
 			make_and_actor(
 				[&]( const sentence< T > & l, const sentence< T > & r )
-				{ result = l.free_variables( r.free_variables( result ) ); } ),
+				{ return l.free_variables( r.free_variables( result ) ); } ),
 			make_or_actor(
 				[&]( const sentence< T > & l, const sentence< T > & r )
-				{ result = l.free_variables( r.free_variables( result ) ); } ),
-			make_not_actor( [&]( const sentence< T > & sen ){ result = sen.free_variables( result ); } )
+				{ return l.free_variables( r.free_variables( result ) ); } ),
+			make_not_actor( [&]( const sentence< T > & sen ){ return sen.free_variables( result ); } )
 		);
-		return result;
 	}
 	template< typename T >
 	bool sentence< T >::have_equal( ) const
@@ -719,7 +718,6 @@ namespace first_order_logic
 							have< current_set, set_c< sentence_type, sentence_type::logical_not > >( ),
 							boost::get< sentence< T > >( (*this)->arguments[0] )
 						);
-						not_func( boost::get< sentence< T > >( (*this)->arguments[0] ) );
 			case sentence_type::logical_or:
 				return misc::make_expansion(
 							[]( const std::false_type &, const auto &, const auto & ) { return error< RET >( )( ); },
@@ -815,7 +813,8 @@ namespace first_order_logic
 	template< typename TO, typename >
 	sentence< T >::operator sentence< TO >( ) const
 	{
-		switch ( (*this)->type )
+		throw;
+		/*switch ( (*this)->type )
 		{
 			case sentence_type::logical_and:
 				return and_converter< TO >( )(
@@ -838,7 +837,7 @@ namespace first_order_logic
 			case sentence_type::pass:
 				return sentence< TO >( boost::get< next >( (*this)->arguments[0] ) );
 		}
-		throw std::invalid_argument( "unknown enum sentence_type" );
+		throw std::invalid_argument( "unknown enum sentence_type" );*/
 	}
 }
 #endif // IMPLEMENTATION_SENTENCE_HPP
