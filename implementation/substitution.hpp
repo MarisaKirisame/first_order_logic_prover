@@ -34,27 +34,27 @@ namespace first_order_logic
 			s.template type_restore_full< sentence< T > >
 			(
 				make_all_actor(
-					[&]( const variable & var, const sentence< T > & sen )
+					[&]( const variable & var, const auto & sen )
 					{
 						auto it = data.find( var );
 						return ( it != data.end( ) ) ? make_all( var, sen ) : make_all( var, (*this)(sen) );
 					} ),
 				make_some_actor(
-					[&]( const variable & var, const sentence< T > & sen )
+					[&]( const variable & var, const auto & sen )
 					{
 						auto it = data.find( var );
 						return ( it != data.end( ) ) ? make_some( var, sen ) : make_some( var, (*this)(sen) );
 					} ),
 				make_and_actor(
-						[&]( const sentence< T > & l, const sentence< T > & r )
+						[&]( const auto & l, const auto & r )
 						{ return make_and( (*this)(l), (*this)(r) ); } ),
 				make_or_actor(
-						[&]( const sentence< T > & l, const sentence< T > & r )
+						[&]( const auto & l, const auto & r )
 						{ return make_or( (*this)(l), (*this)(r) ); } ),
 				make_not_actor(
-						[&]( const sentence< T > & sen ){ return make_not( (*this)(sen) ); } ),
+						[&]( const auto & sen ) { return make_not( (*this)(sen) ); } ),
 				make_atomic_actor(
-						[&]( const atomic_sentence & sen ){ return sentence< T >( (*this)( sen ) ); } )
+						[&]( const atomic_sentence & sen ) { return sentence< T >( (*this)( sen ) ); } )
 			);
 		assert( ret.data );
 		return ret;

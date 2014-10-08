@@ -10,14 +10,16 @@ namespace first_order_logic
 		template
 		<
 			typename ARG,
-			typename = std::enable_if_t< std::is_convertible< ARG, typename next_sentence_type< sentence< TO > >::type >::value >
+			typename =
+				std::enable_if_t< std::is_convertible< ARG, typename next_sentence_type< sentence< TO > >::type >::value >
 		>
 		sentence< TO > operator ( )( const variable & v, const ARG & t ) const
-		{ return sentence< TO >( sentence_type::all, v, typename sentence< TO >::next( t ) ); }
+		{ return sentence< TO >( sentence_type::all, v, typename next_sentence_type< sentence< TO > >::type( t ) ); }
 		template
 		<
 			typename ARG,
-			typename = std::enable_if_t< ! std::is_convertible< ARG, typename next_sentence_type< sentence< TO > >::type >::value, bool >,
+			typename =
+				std::enable_if_t< ! std::is_convertible< ARG, typename next_sentence_type< sentence< TO > >::type >::value >,
 			typename =
 				std::enable_if_t<
 					std::is_same<
@@ -28,7 +30,15 @@ namespace first_order_logic
 		template
 		<
 			typename ARG,
-			typename = std::enable_if_t< ! std::is_convertible< ARG, typename next_sentence_type< sentence< TO > >::type >::value, bool >,
+			typename =
+				std::enable_if_t
+				<
+					! std::is_convertible
+					<
+						ARG,
+						typename next_sentence_type< sentence< TO > >::type
+					>::value
+				>,
 			typename =
 				std::enable_if_t<
 					! std::is_same<
@@ -47,7 +57,8 @@ namespace first_order_logic
 		template
 		<
 			typename ARG,
-			typename = std::enable_if_t< ! std::is_convertible< ARG, typename next_sentence_type< sentence< TO > >::type >::value, bool >,
+			typename =
+				std::enable_if_t< ! std::is_convertible< ARG, typename next_sentence_type< sentence< TO > >::type>::value >,
 			typename = std::enable_if_t<
 					! std::is_same<
 						decltype( make_all( std::declval< variable >( ), std::declval< ARG >( ) ) ),
@@ -71,14 +82,16 @@ namespace first_order_logic
 		template
 		<
 			typename ARG,
-			typename = std::enable_if_t< std::is_convertible< ARG, typename next_sentence_type< sentence< TO > >::type >::value >
+			typename =
+				std::enable_if_t< std::is_convertible< ARG, typename next_sentence_type< sentence< TO > >::type >::value >
 		>
 		sentence< TO > operator ( )( const variable & v, const ARG & t ) const
-		{ return sentence< TO >( sentence_type::some, v, typename sentence< TO >::next( t ) ); }
+		{ return sentence< TO >( sentence_type::some, v, typename next_sentence_type< sentence< TO > >::type( t ) ); }
 		template
 		<
 			typename ARG,
-			typename = std::enable_if_t< ! std::is_convertible< ARG, typename next_sentence_type< sentence< TO > >::type >::value, bool >,
+			typename =
+				std::enable_if_t< ! std::is_convertible< ARG, typename next_sentence_type< sentence< TO > >::type >::value >,
 			typename =
 				std::enable_if_t<
 					std::is_same<
@@ -89,7 +102,8 @@ namespace first_order_logic
 		template
 		<
 			typename ARG,
-			typename = std::enable_if_t< ! std::is_convertible< ARG, typename next_sentence_type< sentence< TO > >::type >::value, bool >,
+			typename =
+				std::enable_if_t< ! std::is_convertible< ARG, typename next_sentence_type< sentence< TO > >::type >::value >,
 			typename =
 				std::enable_if_t<
 					! std::is_same<
@@ -108,7 +122,8 @@ namespace first_order_logic
 		template
 		<
 			typename ARG,
-			typename = std::enable_if_t< ! std::is_convertible< ARG, typename next_sentence_type< sentence< TO > >::type >::value, bool >,
+			typename =
+				std::enable_if_t< ! std::is_convertible< ARG, typename next_sentence_type< sentence< TO > >::type >::value >,
 			typename =
 				std::enable_if_t<
 					! std::is_same<
@@ -147,12 +162,16 @@ namespace first_order_logic
 		{
 			return sentence< TO >(
 						sentence_type::logical_and,
-						{ typename sentence< TO >::next( l ), typename sentence< TO >::next( r ) } );
+						{
+							typename next_sentence_type< sentence< TO > >::type( l ),
+							typename next_sentence_type< sentence< TO > >::type( r )
+						} );
 		}
 		template
 		<
 			typename ARG,
-			typename = std::enable_if_t< ! std::is_convertible< ARG, typename next_sentence_type< sentence< TO > >::type >::value, bool >,
+			typename =
+				std::enable_if_t< ! std::is_convertible< ARG, typename next_sentence_type< sentence< TO > >::type >::value >,
 			typename =
 				std::enable_if_t<
 					std::is_same<
@@ -163,7 +182,8 @@ namespace first_order_logic
 		template
 		<
 			typename ARG,
-			typename = std::enable_if_t< ! std::is_convertible< ARG, typename next_sentence_type< sentence< TO > >::type >::value, bool >,
+			typename =
+				std::enable_if_t< ! std::is_convertible< ARG, typename next_sentence_type< sentence< TO > >::type >::value >,
 			typename =
 				std::enable_if_t<
 					! std::is_same<
@@ -183,7 +203,8 @@ namespace first_order_logic
 		template
 		<
 			typename ARG,
-			typename = std::enable_if_t< ! std::is_convertible< ARG, typename next_sentence_type< sentence< TO > >::type >::value, bool >,
+			typename =
+				std::enable_if_t< ! std::is_convertible< ARG, typename next_sentence_type< sentence< TO > >::type >::value >,
 			typename =
 				std::enable_if_t<
 					! std::is_same<
@@ -208,18 +229,23 @@ namespace first_order_logic
 		template
 		<
 			typename ARG,
-			typename = std::enable_if_t< std::is_convertible< ARG, typename next_sentence_type< sentence< TO > >::type >::value >
+			typename =
+				std::enable_if_t< std::is_convertible< ARG, typename next_sentence_type< sentence< TO > >::type >::value >
 		>
 		sentence< TO > operator ( )( const ARG & l, const ARG & r ) const
 		{
 			return sentence< TO >(
 						sentence_type::logical_or,
-						{ typename sentence< TO >::next( l ), typename sentence< TO >::next( r ) } );
+						{
+							typename next_sentence_type< sentence< TO > >::type( l ),
+							typename next_sentence_type< sentence< TO > >::type( r )
+						} );
 		}
 		template
 		<
 			typename ARG,
-			typename = std::enable_if_t< ! std::is_convertible< ARG, typename next_sentence_type< sentence< TO > >::type >::value, bool >,
+			typename =
+				std::enable_if_t< ! std::is_convertible< ARG, typename next_sentence_type< sentence< TO > >::type >::value >,
 			typename =
 				std::enable_if_t<
 					std::is_same<
@@ -230,7 +256,8 @@ namespace first_order_logic
 		template
 		<
 			typename ARG,
-			typename = std::enable_if_t< ! std::is_convertible< ARG, typename next_sentence_type< sentence< TO > >::type >::value, bool >,
+			typename =
+				std::enable_if_t< ! std::is_convertible< ARG, typename next_sentence_type< sentence< TO > >::type >::value >,
 			typename =
 				std::enable_if_t<
 					! std::is_same<
@@ -250,7 +277,8 @@ namespace first_order_logic
 		template
 		<
 			typename ARG,
-			typename = std::enable_if_t< ! std::is_convertible< ARG, typename next_sentence_type< sentence< TO > >::type >::value, bool >,
+			typename =
+				std::enable_if_t< ! std::is_convertible< ARG, typename next_sentence_type< sentence< TO > >::type >::value >,
 			typename =
 				std::enable_if_t<
 					! std::is_same<
@@ -275,14 +303,16 @@ namespace first_order_logic
 		template
 		<
 			typename ARG,
-			typename = std::enable_if_t< std::is_convertible< ARG, typename next_sentence_type< sentence< TO > >::type >::value >
+			typename =
+				std::enable_if_t< std::is_convertible< ARG, typename next_sentence_type< sentence< TO > >::type >::value >
 		>
 		sentence< TO > operator ( )( const ARG & l ) const
-		{ return sentence< TO >( sentence_type::logical_not, { typename sentence< TO >::next( l ) } ); }
+		{ return sentence< TO >( sentence_type::logical_not, { typename next_sentence_type< sentence< TO > >::type( l ) } ); }
 		template
 		<
 			typename ARG,
-			typename = std::enable_if_t< ! std::is_convertible< ARG, typename next_sentence_type< sentence< TO > >::type >::value, bool >,
+			typename =
+				std::enable_if_t< ! std::is_convertible< ARG, typename next_sentence_type< sentence< TO > >::type >::value >,
 			typename =
 				std::enable_if_t<
 					std::is_same<
@@ -293,7 +323,8 @@ namespace first_order_logic
 		template
 		<
 			typename ARG,
-			typename = std::enable_if_t< ! std::is_convertible< ARG, typename next_sentence_type< sentence< TO > >::type >::value, bool >,
+			typename =
+				std::enable_if_t< ! std::is_convertible< ARG, typename next_sentence_type< sentence< TO > >::type >::value >,
 			typename =
 				std::enable_if_t<
 					! std::is_same<
@@ -310,7 +341,8 @@ namespace first_order_logic
 		template
 		<
 			typename ARG,
-			typename = std::enable_if_t< ! std::is_convertible< ARG, typename next_sentence_type< sentence< TO > >::type >::value, bool >,
+			typename =
+				std::enable_if_t< ! std::is_convertible< ARG, typename next_sentence_type< sentence< TO > >::type >::value >,
 			typename = std::enable_if_t<
 					! std::is_same<
 						decltype( make_not( std::declval< ARG >( ) ) ),

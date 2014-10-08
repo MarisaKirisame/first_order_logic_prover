@@ -61,8 +61,7 @@ namespace first_order_logic
 			}
 			void add_equal_generator( const function & f )
 			{
-				throw f;
-				/*assert( f.arity >= 1 );
+				assert( f.arity >= 1 );
 				if ( f.arity == 1 )
 				{
 					try_insert
@@ -111,12 +110,11 @@ namespace first_order_logic
 					for ( size_t i = 0; i < f.arity; ++i )
 					{ add = make_all( args[i]->name, make_all( argt[i]->name, add ) ); }
 					try_insert( sequent, add, true );
-				}*/
+				}
 			}
 			void add_equal_generator( const predicate & f )
 			{
-				throw f;
-				/*assert( f.arity >= 1 );
+				assert( f.arity >= 1 );
 				if ( f.arity == 1 )
 				{
 					try_insert
@@ -163,11 +161,11 @@ namespace first_order_logic
 							make_and( and_stack, make_predicate( f.name, args ) ),
 							make_predicate( f.name, argt ) ),
 						true );
-				}*/
+				}
 			}
 			void add_equal_generator( )
 			{
-				/*try_insert(
+				try_insert(
 					sequent,
 					make_all( variable( "t" ), make_equal( make_variable( "t" ), make_variable( "t" ) ) ),
 					true );
@@ -223,7 +221,7 @@ namespace first_order_logic
 				std::for_each(
 					predicates.begin( ),
 					predicates.end( ),
-					[this]( const predicate & f ) { add_equal_generator( f ); } );*/
+					[this]( const predicate & f ) { add_equal_generator( f ); } );
 			}
 			explicit operator std::string( ) const
 			{
