@@ -27,26 +27,26 @@ namespace first_order_logic
 	struct sentence
 	{
 		static_assert( is_vector< T >::value, "T should be vector" );
-		typedef typename front< T >::type current_set;
-		typedef typename pop_front< T >::type next_vec;
-		typedef typename
-		std::conditional
-		<
-			empty< next_vec >::value,
-			atomic_sentence,
-			sentence< next_vec >
-		>::type next;
 		struct internal
 		{
 			sentence_type type;
 			std::string name;
 			mutable std::string cache;
-			std::vector< boost::variant< boost::recursive_wrapper< sentence< T > >, next > > arguments;
+			std::vector
+			<
+				boost::variant
+				<
+					boost::recursive_wrapper< sentence< T > >,
+					typename next_sentence_type< sentence< T > >::type
+				>
+			> arguments;
 			internal( sentence_type st, const sentence< T > & r ) :
 				type( st ), arguments( { r } ) { }
-			internal( sentence_type st, const next & r ) :
+			internal( sentence_type st, const typename next_sentence_type< sentence< T > >::type & r ) :
 				type( st ), arguments( { r } ) { }
-			internal( sentence_type st, const std::initializer_list< next > & r ) :
+			internal(
+					sentence_type st,
+					const std::initializer_list< typename next_sentence_type< sentence< T > >::type > & r ) :
 				type( st ), arguments( r.begin( ), r.end( ) ) { }
 			internal( sentence_type st, const std::initializer_list< sentence< T > > & r ) :
 				type( st ), arguments( r.begin( ), r.end( ) ) { }
@@ -103,9 +103,9 @@ namespace first_order_logic
 			struct recurse_predicate< sentence< SEN >, ACTOR ... > :
 					sentence< SEN >::template full_type_restore< ACTOR ... > { };
 			constexpr static bool value =
-					have_operator_actor< vector< ACTORS ... >, current_set, void >::value &&
+					have_operator_actor< vector< ACTORS ... >, typename current_set< sentence  >::type, void >::value &&
 					have_atomic_actor< ACTORS ..., void >::value &&
-					recurse_predicate< next, ACTORS ... >::value;
+					recurse_predicate< typename next_sentence_type< sentence< T > >::type, ACTORS ... >::value;
 		};
 		template< typename RET, typename ... ACTORS >
 		RET type_restore_full( const ACTORS & ... t ) const
@@ -124,16 +124,17 @@ namespace first_order_logic
 			const some_actor< T5 > & some_func,
 			const atomic_actor< T6 > & atomic_func ) const;
 		explicit operator std::string( ) const;
-		sentence( sentence_type ty, const std::initializer_list< next > & il ) :
+		sentence( sentence_type ty, const std::initializer_list< typename next_sentence_type< sentence< T > >::type > & il ) :
 			data( new internal( ty, il ) ) { }
 		sentence( sentence_type ty, const std::initializer_list< sentence< T > > & il ) :
 			data( new internal( ty, il ) ) { }
-		sentence( sentence_type ty, const next & il ) :
+		sentence( sentence_type ty, const typename next_sentence_type< sentence< T > >::type & il ) :
 			data( new internal( ty, il ) ) { }
 		sentence( sentence_type ty, const variable & l, const sentence< T > & r ) :
 			data( new internal( ty, l, r ) ) { }
 		sentence( ) { }
-		sentence( const atomic_sentence & as ) : sentence( sentence_type::pass, next( as ) ) { }
+		sentence( const atomic_sentence & as ) :
+			sentence( sentence_type::pass, typename next_sentence_type< sentence< T > >::type( as ) ) { }
 		bool operator == ( const sentence< T > & comp ) const { return !( (*this) < comp || comp < (*this) ); }
 		bool operator != ( const sentence< T > & comp ) const { return ! ( (*this) == comp ); }
 		size_t length( ) const;
@@ -204,8 +205,8 @@ namespace first_order_logic
 		template
 		<
 			sentence_type st,
-			bool = have< current_set, set_c< sentence_type, st > >::value,
-			bool = std::is_same< next, atomic_sentence >::value
+			bool = have< typename current_set< sentence  >::type, set_c< sentence_type, st > >::value,
+			bool = std::is_same< typename next_sentence_type< sentence< T > >::type, atomic_sentence >::value
 		>
 		struct get_sentence_type;
 		template< sentence_type st, bool b >
@@ -214,7 +215,7 @@ namespace first_order_logic
 		struct get_sentence_type< st, false, true > { typedef no_such_sentence type; };
 		template< sentence_type st >
 		struct get_sentence_type< st, false, false >
-		{ typedef typename next::template get_sentence_type< st >::type type; };
+		{ typedef typename next_sentence_type< sentence< T >  >::type::template get_sentence_type< st >::type type; };
 		typedef typename get_sentence_type< sentence_type::logical_and >::type and_sentence_type;
 		typedef typename get_sentence_type< sentence_type::logical_or >::type or_sentence_type;
 		typedef typename get_sentence_type< sentence_type::logical_not >::type not_sentence_type;

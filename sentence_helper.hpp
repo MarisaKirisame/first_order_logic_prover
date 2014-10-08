@@ -6,6 +6,25 @@ namespace first_order_logic
 {
 	template< typename T >
 	struct sentence;
+	struct atomic_sentence;
+	template< typename T >
+	struct current_set;
+	template< typename T >
+	struct current_set< sentence< T > > { typedef typename front< T >::type type; };
+	template< typename T >
+	struct next_sentence_type;
+	template< typename T >
+	struct next_sentence_type< sentence< T > >
+	{
+		typedef typename pop_front< T >::type next_vec;
+		typedef typename
+		std::conditional
+		<
+			empty< next_vec >::value,
+			atomic_sentence,
+			sentence< next_vec >
+		>::type type;
+	};
 	template< typename T >
 	struct sen2vec;
 	template< typename T >
@@ -60,6 +79,20 @@ namespace first_order_logic
 			sentence< typename push_back< T, set< ARG ... > >::type >
 		>::type type;
 	};
+	template< typename S >
+	struct all_sentence_operator;
+	template< >
+	struct all_sentence_operator< atomic_sentence > { typedef set< > type; };
+	template< typename S >
+	struct all_sentence_operator< sentence< S > >
+	{
+		typedef typename
+		join
+		<
+			typename current_set< sentence< S > >::type,
+			typename all_sentence_operator< typename next_sentence_type< sentence< S > >::type >::type
+		>::type type;
+	};
 	template< typename T, typename S >
 	struct remove_operator;
 	template< typename S >
@@ -98,16 +131,116 @@ namespace first_order_logic
 	struct move_operator_out
 	{
 		typedef typename
-		add_sentence_front< typename remove_operator< T, S >::type, S >::type type;
+		add_sentence_front
+		<
+			typename remove_operator< T, S >::type,
+			typename subset< S, typename all_sentence_operator< T >::type >::type
+		>::type type;
 	};
 	template< typename T, typename S >
 	struct move_operator_in
 	{
 		typedef typename
-		add_sentence_back< typename remove_operator< T, S >::type, S >::type type;
+		add_sentence_back
+		<
+			typename remove_operator< T, S >::type,
+			typename subset< S, typename all_sentence_operator< T >::type >::type
+		>::type type;
 	};
 	template< typename >
 	struct error_typename;
 	struct no_such_sentence;
 }
+namespace std
+{
+	template< typename L, typename R >
+	struct std::common_type< first_order_logic::sentence< L >, first_order_logic::sentence< R > >
+	{
+		template
+		<
+			bool = std::is_convertible< first_order_logic::sentence< L >, first_order_logic::sentence< R > >::value,
+			bool = std::is_convertible< first_order_logic::sentence< R >, first_order_logic::sentence< L > >::value,
+			typename PLACEHOLDER = void
+		>
+		struct inner;
+		template< typename PLACEHOLDER >
+		struct inner< true, false, PLACEHOLDER > { typedef first_order_logic::sentence< R > type; };
+		template< typename PLACEHOLDER >
+		struct inner< false, true, PLACEHOLDER > { typedef first_order_logic::sentence< L > type; };
+		template< typename PLACEHOLDER >
+		struct inner< false, false, PLACEHOLDER >
+		{
+			template< typename LL, typename RR >
+			struct HELPER;
+			template< typename LL, typename RR >
+			struct HELPER
+					<
+						first_order_logic::sentence< first_order_logic::vector< LL > >,
+						first_order_logic::sentence< first_order_logic::vector< RR > >
+					>
+			{
+				typedef first_order_logic::sentence
+				< first_order_logic::vector< typename first_order_logic::join< LL, RR >::type > >
+				type;
+			};
+			template< typename ... LLL, typename LL, typename RR >
+			struct HELPER
+					<
+						first_order_logic::sentence< first_order_logic::vector< LL, LLL ... > >,
+						first_order_logic::sentence< first_order_logic::vector< RR > >
+					>
+			{
+				typedef typename
+				first_order_logic::add_sentence_back
+				<
+					first_order_logic::sentence
+					< typename first_order_logic::pop_back< first_order_logic::vector< LL, LLL ... > >::type >,
+					typename first_order_logic::join
+					< typename first_order_logic::back< first_order_logic::vector< LL, LLL ... > >::type, RR >::type
+				>::type type;
+			};
+			template< typename ... RRR, typename LL, typename RR >
+			struct HELPER
+			<
+				first_order_logic::sentence< first_order_logic::vector< LL > >,
+				first_order_logic::sentence< first_order_logic::vector< RR, RRR ... > >
+			> :
+				HELPER
+				<
+					first_order_logic::sentence< first_order_logic::vector< RR, RRR ... > >,
+					first_order_logic::sentence< first_order_logic::vector< LL > >
+				> { };
+			template< typename ... LLL, typename ... RRR >
+			struct HELPER
+			<
+				first_order_logic::sentence< first_order_logic::vector< LLL ... > >,
+				first_order_logic::sentence< first_order_logic::vector< RRR ... > >
+			>
+			{
+				typedef typename
+				first_order_logic::add_sentence_back
+				<
+					typename common_type
+					<
+						first_order_logic::sentence
+						< typename first_order_logic::pop_back< first_order_logic::vector< LLL ... > >::type >,
+						first_order_logic::sentence
+						< typename first_order_logic::pop_back< first_order_logic::vector< RRR ... > >::type >
+					>::type,
+					typename first_order_logic::join
+					<
+						typename first_order_logic::back< first_order_logic::vector< LLL ... > >::type,
+						typename first_order_logic::back< first_order_logic::vector< RRR ... > >::type
+					>::type
+				>::type type;
+			};
+			typedef typename HELPER< first_order_logic::sentence< L >, first_order_logic::sentence< R > >::type type;
+		};
+		template< typename PLACEHOLDER >
+		struct inner< true, true, PLACEHOLDER >
+		{ typedef first_order_logic::sentence< L > type; };
+		typedef typename inner< >::type type;
+	};
+}
+
 #endif // SENTENCE_HELPER_HPP

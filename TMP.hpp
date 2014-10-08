@@ -23,6 +23,53 @@ namespace first_order_logic
 			std::integral_constant< bool, have< S, set< F > >::value && have< S, set< R ... > >::value > { };
 	template< typename S >
 	struct have< S, set< > > : std::true_type { };
+	template< typename L, typename R >
+	struct subset;
+	template< typename R >
+	struct subset< set< >, R > { typedef set< > type; };
+	template< typename L >
+	struct subset< L, set< > > { typedef set< > type; };
+	template< typename L, typename R >
+	struct join;
+	template< typename FIRST, typename ... REST, typename R >
+	struct subset< set< FIRST, REST ... >, R >
+	{
+		typedef typename
+		join
+		<	typename
+			std::conditional
+			<
+				have< R, set< FIRST > >::value,
+				set< FIRST >,
+				set< >
+			>::type,
+			typename subset< set< REST ... >, R >::type
+		>::type type;
+	};
+	template< typename ... L, typename R >
+	struct join< set< L ... >, set< R > >
+	{
+		typedef typename
+		std::conditional
+		<
+			have< set< L ... >, set< R > >::value,
+			set< L ... >,
+			set< L ..., R >
+		>::type type;
+	};
+	template< typename ... L, typename M, typename ... R >
+	struct join< set< L ... >, set< M, R ... > >
+	{ typedef typename join< typename join< set< L ... >, set< M > >::type, set< R ... > >::type type; };
+	template< typename T >
+	struct join< set< >, T > { typedef T type; };
+	template< typename T >
+	struct join< T, set< > > { typedef T type; };
+	template< >
+	struct join< set< >, set< > > { typedef set< > type; };
+	template< typename T >
+	struct join< set< >, set< T > > { typedef set< T > type; };
+	template< typename T >
+	struct join< set< T >, set< > > { typedef set< T > type; };
 	template< typename T, T ... rest >
 	using set_c = set< std::integral_constant< T, rest > ... >;
 	template< typename ... T >
@@ -57,6 +104,13 @@ namespace first_order_logic
 	template< typename T, typename ADD > struct push_back;
 	template< typename ADD, typename ... R >
 	struct push_back< vector< R ... >, ADD > { typedef vector< R ..., ADD > type; };
+	template< typename VECTOR >
+	struct pop_back;
+	template< typename T >
+	struct pop_back< vector< T > > { typedef vector< > type; };
+	template< typename F, typename ... REST >
+	struct pop_back< vector< F, REST ... > >
+	{ typedef typename push_front< typename pop_back< vector< REST ... > >::type, F >::type type; };
 	template< typename SET, typename INS >
 	struct insert;
 	template< typename ... ARG, typename ... INS >

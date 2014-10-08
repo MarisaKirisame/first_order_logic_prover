@@ -739,7 +739,11 @@ namespace first_order_logic
 							[]( const std::false_type &, const auto &, const auto & ) { return error< RET >( )( ); },
 							[&]( const std::true_type &, const auto & l, const auto & r ) { return and_func( l, r ); } )
 						(
-							have< current_set, set_c< sentence_type, sentence_type::logical_and > >( ),
+							have
+							<
+								typename current_set< sentence< T >  >::type,
+								set_c< sentence_type, sentence_type::logical_and >
+							>( ),
 							boost::get< sentence< T > >( (*this)->arguments[0] ),
 							boost::get< sentence< T > >( (*this)->arguments[1] )
 						);
@@ -749,7 +753,11 @@ namespace first_order_logic
 							[]( const std::false_type &, const auto & ) { return error< RET >( )( ); },
 							[&]( const std::true_type &, const auto & s ) { return not_func( s ); } )
 						(
-							have< current_set, set_c< sentence_type, sentence_type::logical_not > >( ),
+							have
+							<
+								typename current_set< sentence< T >  >::type,
+								set_c< sentence_type, sentence_type::logical_not >
+							>( ),
 							boost::get< sentence< T > >( (*this)->arguments[0] )
 						);
 			case sentence_type::logical_or:
@@ -757,7 +765,11 @@ namespace first_order_logic
 							[]( const std::false_type &, const auto &, const auto & ) { return error< RET >( )( ); },
 							[&]( const std::true_type &, const auto & l, const auto & r ) { return or_func( l, r ); } )
 						(
-							have< current_set, set_c< sentence_type, sentence_type::logical_or > >( ),
+							have
+							<
+								typename current_set< sentence< T >  >::type,
+								set_c< sentence_type, sentence_type::logical_or >
+							>( ),
 							boost::get< sentence< T > >( (*this)->arguments[0] ),
 							boost::get< sentence< T > >( (*this)->arguments[1] )
 						);
@@ -768,7 +780,11 @@ namespace first_order_logic
 							[&]( const std::true_type &, const auto & s )
 							{ return all_func( variable( (*this)->name ), s ); } )
 						(
-							have< current_set, set_c< sentence_type, sentence_type::all > >( ),
+							have
+							<
+								typename current_set< sentence< T >  >::type,
+								set_c< sentence_type, sentence_type::all >
+							>( ),
 							boost::get< sentence< T > >( (*this)->arguments[0] )
 						);
 			case sentence_type::some:
@@ -778,13 +794,17 @@ namespace first_order_logic
 							[&]( const std::true_type &, const auto & s )
 							{ return some_func( variable( (*this)->name ), s ); } )
 						(
-							have< current_set, set_c< sentence_type, sentence_type::some > >( ),
+							have
+							<
+								typename current_set< sentence< T >  >::type,
+								set_c< sentence_type, sentence_type::some >
+							>( ),
 							boost::get< sentence< T > >( (*this)->arguments[0] )
 						);
 			case sentence_type::pass:
 				return misc::make_expansion(
 							[&]( const atomic_sentence & as ){ return atomic_func( as ); },
-							[&]( const next & n )
+							[&]( const typename next_sentence_type< sentence< T > >::type & n )
 							{
 								return n.template type_restore< RET >
 										(
@@ -797,7 +817,7 @@ namespace first_order_logic
 											error< RET >( )
 										);
 							} )
-						( boost::get< next >( (*this)->arguments[0] ) );
+						( boost::get< typename next_sentence_type< sentence< T > >::type >( (*this)->arguments[0] ) );
 		}
 		throw std::invalid_argument( "unknown enum sentence_type" );
 	}
