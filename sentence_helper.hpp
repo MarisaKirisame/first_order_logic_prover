@@ -31,6 +31,17 @@ namespace first_order_logic
 	struct sen2vec< sentence< T > > { typedef T type; };
 	struct atomic_sentence;
 	enum class sentence_type { logical_and = 0, logical_or = 1, logical_not = 2, all = 3, some = 4, pass = 5 };
+	template< typename OS >
+	OS & operator << ( OS & os, const sentence_type & st )
+	{
+		return os <<
+					( st == sentence_type::logical_and ? "and" :
+					st == sentence_type::logical_or ? "or" :
+					st == sentence_type::logical_not ? "not" :
+					st == sentence_type::some ? "some" :
+					st == sentence_type::all ? "all" :
+					st == sentence_type::pass ? "pass" : std::to_string( static_cast< long >( st ) ) );
+	}
 	typedef
 	sentence
 	<

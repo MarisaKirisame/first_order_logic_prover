@@ -11,6 +11,8 @@ namespace first_order_logic
 	struct atomic_sentence
 	{
 		enum class type { equal, predicate, propositional_letter };
+		template< typename OS >
+		OS friend operator << ( const OS &, const type & );
 		struct internal
 		{
 			type atomic_sentence_type;
@@ -62,6 +64,7 @@ namespace first_order_logic
 				const predicate_actor< T2 > & predicate_func,
 				const propositional_letter_actor< T3 > & propositional_letter_func ) const
 		{
+			std::cout << "Entering atomic sentence type restore, type is " << (*this)->atomic_sentence_type << std::endl;
 			switch ( (*this)->atomic_sentence_type )
 			{
 			case type::equal:
@@ -190,5 +193,14 @@ namespace first_order_logic
 			return result;
 		}
 	};
+	template< typename OS >
+	OS & operator << ( OS & os, const atomic_sentence::type & st )
+	{
+		return os <<
+					( st == atomic_sentence::type::equal ? "equal" :
+					st == atomic_sentence::type::predicate ? "predicate" :
+					st == atomic_sentence::type::propositional_letter ? "propositional_letter" :
+																		std::to_string( static_cast< long >( st ) ) );
+	}
 }
 #endif // ATOMIC_SENTENCE_HPP

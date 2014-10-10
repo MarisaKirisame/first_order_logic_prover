@@ -26,7 +26,7 @@ namespace first_order_logic
 	struct error
 	{
 		template< typename ... T >
-		RET operator( )( const T & ... ) const { throw std::logic_error( "unknown enum type" ); }
+		RET operator( )( const T & ... ) const { throw std::logic_error( "ERROR IS CALLED" ); }
 	};
 	template< template< typename > class T, bool is_current >
 	struct extractor;

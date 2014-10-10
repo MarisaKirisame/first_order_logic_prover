@@ -38,7 +38,7 @@ namespace first_order_logic
 	make_or( const T1 & l, const T2 & r );
 
 	template< typename T1, typename T2 >
-	auto make_imply( const T1 & l, const T2 & r ) { return make_or( make_not( l ), make_not( r ) ); }
+	auto make_imply( const T1 & l, const T2 & r ) { return make_or( make_not( l ), r ); }
 
 	template< typename T1, typename T2 >
 	auto make_iff( const T1 & l, const T2 & r )

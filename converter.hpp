@@ -1,6 +1,7 @@
 #ifndef CONVERTER_HPP
 #define CONVERTER_HPP
 #include "sentence_helper.hpp"
+#include "first_order_logic.hpp"
 namespace first_order_logic
 {
 	struct variable;
@@ -14,7 +15,7 @@ namespace first_order_logic
 				std::enable_if_t< std::is_convertible< ARG, typename next_sentence_type< sentence< TO > >::type >::value >
 		>
 		sentence< TO > operator ( )( const variable & v, const ARG & t ) const
-		{ return sentence< TO >( sentence_type::all, v, typename next_sentence_type< sentence< TO > >::type( t ) ); }
+		{ return sentence< TO >( sentence_type::all, v, sentence< TO >( t ) ); }
 		template
 		<
 			typename ARG,
@@ -86,7 +87,7 @@ namespace first_order_logic
 				std::enable_if_t< std::is_convertible< ARG, typename next_sentence_type< sentence< TO > >::type >::value >
 		>
 		sentence< TO > operator ( )( const variable & v, const ARG & t ) const
-		{ return sentence< TO >( sentence_type::some, v, typename next_sentence_type< sentence< TO > >::type( t ) ); }
+		{ return sentence< TO >( sentence_type::some, v, sentence< TO >( t ) ); }
 		template
 		<
 			typename ARG,
@@ -159,14 +160,7 @@ namespace first_order_logic
 				>
 		>
 		sentence< TO > operator ( )( const ARG & l, const ARG & r ) const
-		{
-			return sentence< TO >(
-						sentence_type::logical_and,
-						{
-							typename next_sentence_type< sentence< TO > >::type( l ),
-							typename next_sentence_type< sentence< TO > >::type( r )
-						} );
-		}
+		{ return sentence< TO >( sentence_type::logical_and, { sentence< TO >( l ), sentence< TO >( r ) } ); }
 		template
 		<
 			typename ARG,
@@ -233,14 +227,7 @@ namespace first_order_logic
 				std::enable_if_t< std::is_convertible< ARG, typename next_sentence_type< sentence< TO > >::type >::value >
 		>
 		sentence< TO > operator ( )( const ARG & l, const ARG & r ) const
-		{
-			return sentence< TO >(
-						sentence_type::logical_or,
-						{
-							typename next_sentence_type< sentence< TO > >::type( l ),
-							typename next_sentence_type< sentence< TO > >::type( r )
-						} );
-		}
+		{ return sentence< TO >( sentence_type::logical_or, { sentence< TO >( l ), sentence< TO >( r ) } ); }
 		template
 		<
 			typename ARG,
@@ -307,7 +294,7 @@ namespace first_order_logic
 				std::enable_if_t< std::is_convertible< ARG, typename next_sentence_type< sentence< TO > >::type >::value >
 		>
 		sentence< TO > operator ( )( const ARG & l ) const
-		{ return sentence< TO >( sentence_type::logical_not, { typename next_sentence_type< sentence< TO > >::type( l ) } ); }
+		{ return sentence< TO >( sentence_type::logical_not, { sentence< TO >( l ) } ); }
 		template
 		<
 			typename ARG,

@@ -27,12 +27,8 @@ namespace first_order_logic
 	typename add_sentence_front< T, set_c< sentence_type, sentence_type::logical_not > >::type
 	make_not( const T & s )
 	{
-		return typename
-				add_sentence_front
-				<
-					T,
-					set_c< sentence_type, sentence_type::logical_not >
-				>::type( sentence_type::logical_not, { s } );
+		typedef typename add_sentence_front< T, set_c< sentence_type, sentence_type::logical_not > >::type ret_type;
+		return ret_type( sentence_type::logical_not, { static_cast< ret_type >( s ) } );
 	}
 
 	template< typename T1, typename T2 >
@@ -43,16 +39,17 @@ namespace first_order_logic
 	>::type
 	make_and( const T1 & l, const T2 & r )
 	{
+		typedef
+		typename add_sentence_front
+		<
+			typename std::common_type< T1, T2 >::type,
+			set_c< sentence_type, sentence_type::logical_and >
+		>::type ret_type;
 		return
-				typename add_sentence_front
-				<
-					typename std::common_type< T1, T2 >::type,
-					set_c< sentence_type, sentence_type::logical_and >
-				>::type
-				( sentence_type::logical_and,
+				ret_type( sentence_type::logical_and,
 					{
-						static_cast< typename std::common_type< T1, T2 >::type >( l ),
-						static_cast< typename std::common_type< T1, T2 >::type >( r )
+						static_cast< ret_type >( l ),
+						static_cast< ret_type >( r )
 					} );
 	}
 
@@ -64,33 +61,34 @@ namespace first_order_logic
 	>::type
 	make_or( const T1 & l, const T2 & r )
 	{
+		typedef
+		typename add_sentence_front
+		<
+			typename std::common_type< T1, T2 >::type,
+			set_c< sentence_type, sentence_type::logical_or >
+		>::type ret_type;
 		return
-				typename add_sentence_front
-				<
-					typename std::common_type< T1, T2 >::type,
-					set_c< sentence_type, sentence_type::logical_or >
-				>::type
-				( sentence_type::logical_or,
-					{
-						static_cast< typename std::common_type< T1, T2 >::type >( l ),
-						static_cast< typename std::common_type< T1, T2 >::type >( r )
-					} );
+				ret_type( sentence_type::logical_or,
+				{
+						static_cast< ret_type >( l ),
+						static_cast< ret_type >( r )
+				} );
 	}
 
 	template< typename T >
 	typename add_sentence_front< T, set_c< sentence_type, sentence_type::all > >::type
 	make_all( const variable & l, const T & s )
 	{
-		return typename add_sentence_front< T, set_c< sentence_type, sentence_type::all > >::type(
-					sentence_type::all, l, s );
+		typedef typename add_sentence_front< T, set_c< sentence_type, sentence_type::all > >::type ret_type;
+		return ret_type( sentence_type::all, l, static_cast< ret_type >( s ) );
 	}
 
 	template< typename T >
 	typename add_sentence_front< T, set_c< sentence_type, sentence_type::some > >::type
 	make_some( const variable & l, const T & s )
 	{
-		return typename add_sentence_front< T, set_c< sentence_type, sentence_type::some > >::type(
-					sentence_type::some, l, s );
+		typedef typename add_sentence_front< T, set_c< sentence_type, sentence_type::some > >::type ret_type;
+		return ret_type( sentence_type::some, l, static_cast< ret_type >( s ) );
 	}
 
 	atomic_sentence make_equal( const term & l, const term & r )
