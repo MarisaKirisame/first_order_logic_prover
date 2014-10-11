@@ -16,11 +16,10 @@ template< typename T >\
 NAME ## _actor< T > make_ ## NAME ## _actor( const T & t ) { return NAME ## _actor< T >( t ); }
 namespace first_order_logic
 {
-	template< typename RET = void >
 	struct ignore
 	{
 		template< typename ... T >
-		RET operator( )( const T & ... ) const { }
+		void operator( )( const T & ... ) const { }
 	};
 	template< typename RET = void >
 	struct error
