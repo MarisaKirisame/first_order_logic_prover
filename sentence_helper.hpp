@@ -8,6 +8,10 @@ namespace first_order_logic
 	struct sentence;
 	struct atomic_sentence;
 	template< typename T >
+	struct is_atomic_sentence : std::false_type { };
+	template< >
+	struct is_atomic_sentence< atomic_sentence > : std::true_type { };
+	template< typename T >
 	struct current_set;
 	template< typename T >
 	struct current_set< sentence< T > > { typedef typename front< T >::type type; };
