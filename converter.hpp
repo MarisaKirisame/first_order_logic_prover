@@ -17,12 +17,16 @@ namespace first_order_logic
 				<
 					std::is_same
 					<
-						decltype( make_all( std::declval< variable >( ), std::declval< ARG >( ) ) ),
+						decltype(
+							make_all(
+								std::declval< variable >( ),
+								std::declval< ARG >( ) ) ),
 						sentence< TO >
 					>::value
 				>
 		>
-		sentence< TO > operator ( )( const variable & v, const ARG & t ) const { return make_all( v, t ); }
+		sentence< TO > operator ( )( const variable & v, const ARG & t ) const
+		{ return make_all( v, t ); }
 		template
 		<
 			typename ARG,
@@ -31,7 +35,10 @@ namespace first_order_logic
 				<
 					! std::is_same
 					<
-						decltype( make_all( std::declval< variable >( ), std::declval< ARG >( ) ) ),
+						decltype(
+							make_all(
+								std::declval< variable >( ),
+								std::declval< ARG >( ) ) ),
 						sentence< TO >
 					>::value
 				>,
@@ -40,12 +47,16 @@ namespace first_order_logic
 				<
 					std::is_same
 					<
-						decltype( make_all( std::declval< variable >( ), std::declval< sentence< TO > >( ) ) ),
+						decltype(
+							make_all(
+								std::declval< variable >( ),
+								std::declval< sentence< TO > >( ) ) ),
 						sentence< TO >
 					>::value && std::is_same< ARG, ARG >::value
 				>
 		>
-		sentence< TO > operator ( )( const variable & v, const ARG & t ) const { return make_all( v, sentence< TO >( t ) ); }
+		sentence< TO > operator ( )( const variable & v, const ARG & t ) const
+		{ return make_all( v, sentence< TO >( t ) ); }
 		template
 		<
 			typename ARG,
@@ -54,7 +65,10 @@ namespace first_order_logic
 				<
 					! std::is_same
 					<
-						decltype( make_all( std::declval< variable >( ), std::declval< ARG >( ) ) ),
+						decltype(
+							make_all(
+								std::declval< variable >( ),
+								std::declval< ARG >( ) ) ),
 						sentence< TO >
 					>::value
 				>,
@@ -63,7 +77,10 @@ namespace first_order_logic
 				<
 					! std::is_same
 					<
-						decltype( make_all( std::declval< variable >( ), std::declval< sentence< TO > >( ) ) ),
+						decltype(
+							make_all(
+								std::declval< variable >( ),
+								std::declval< sentence< TO > >( ) ) ),
 						sentence< TO >
 					>::value && std::is_same< ARG, ARG >::value
 				>,
@@ -78,7 +95,11 @@ namespace first_order_logic
 				>
 		>
 		sentence< TO > operator ( )( const variable & v, const ARG & a )
-		{ return make_pass< sentence< TO > >( typename next_sentence_type< sentence< TO > >::type( make_all( v, a ) ) ); }
+		{
+			return make_pass< sentence< TO > >(
+						typename next_sentence_type< sentence< TO > >::type(
+							make_all( v, a ) ) );
+		}
 		template
 		<
 			typename ARG,
@@ -87,7 +108,10 @@ namespace first_order_logic
 				<
 					! std::is_same
 					<
-						decltype( make_all( std::declval< variable >( ), std::declval< ARG >( ) ) ),
+						decltype(
+							make_all(
+								std::declval< variable >( ),
+								std::declval< ARG >( ) ) ),
 						sentence< TO >
 					>::value
 				>,
@@ -96,7 +120,10 @@ namespace first_order_logic
 				<
 					! std::is_same
 					<
-						decltype( make_all( std::declval< variable >( ), std::declval< sentence< TO > >( ) ) ),
+						decltype(
+							make_all(
+								std::declval< variable >( ),
+								std::declval< sentence< TO > >( ) ) ),
 						sentence< TO >
 					>::value && std::is_same< ARG, ARG >::value
 				>,
@@ -110,7 +137,8 @@ namespace first_order_logic
 				>
 		>
 		void operator ( )( const variable &, const ARG & ) const { throw; }
-		sentence< TO > operator ( )( const variable &, const no_such_sentence & ) const { throw; }
+		sentence< TO > operator ( )( const variable &, const no_such_sentence & ) const
+		{ throw; }
 	};
 
 	template< typename TO >
@@ -124,12 +152,16 @@ namespace first_order_logic
 				<
 					std::is_same
 					<
-						decltype( make_some( std::declval< variable >( ), std::declval< ARG >( ) ) ),
+						decltype(
+							make_some(
+								std::declval< variable >( ),
+								std::declval< ARG >( ) ) ),
 						sentence< TO >
 					>::value
 				>
 		>
-		sentence< TO > operator ( )( const variable & v, const ARG & t ) const { return make_some( v, t ); }
+		sentence< TO > operator ( )( const variable & v, const ARG & t ) const
+		{ return make_some( v, t ); }
 		template
 		<
 			typename ARG,
@@ -138,7 +170,10 @@ namespace first_order_logic
 				<
 					( ! std::is_same
 					<
-						decltype( make_some( std::declval< variable >( ), std::declval< ARG >( ) ) ),
+						decltype(
+							make_some(
+								std::declval< variable >( ),
+								std::declval< ARG >( ) ) ),
 						sentence< TO >
 					>::value )
 				>,
@@ -147,12 +182,16 @@ namespace first_order_logic
 				<
 					std::is_same
 					<
-						decltype( make_some( std::declval< variable >( ), std::declval< sentence< TO > >( ) ) ),
+						decltype(
+							make_some(
+								std::declval< variable >( ),
+								std::declval< sentence< TO > >( ) ) ),
 						sentence< TO >
 					>::value && std::is_same< ARG, ARG >::value
 				>
 		>
-		sentence< TO > operator ( )( const variable & v, const ARG & t ) const { return make_some( v, sentence< TO >( t ) ); }
+		sentence< TO > operator ( )( const variable & v, const ARG & t ) const
+		{ return make_some( v, sentence< TO >( t ) ); }
 		template
 		<
 			typename ARG,
@@ -161,7 +200,10 @@ namespace first_order_logic
 				<
 					! std::is_same
 					<
-						decltype( make_some( std::declval< variable >( ), std::declval< ARG >( ) ) ),
+						decltype(
+							make_some(
+								std::declval< variable >( ),
+								std::declval< ARG >( ) ) ),
 						sentence< TO >
 					>::value
 				>,
@@ -170,7 +212,10 @@ namespace first_order_logic
 				<
 					! std::is_same
 					<
-						decltype( make_some( std::declval< variable >( ), std::declval< sentence< TO > >( ) ) ),
+						decltype(
+							make_some(
+								std::declval< variable >( ),
+								std::declval< sentence< TO > >( ) ) ),
 						sentence< TO >
 					>::value && std::is_same< ARG, ARG >::value
 				>,
@@ -185,7 +230,10 @@ namespace first_order_logic
 				>
 		>
 		sentence< TO > operator ( )( const variable & v, const ARG & a )
-		{ return make_pass< sentence< TO > >( typename next_sentence_type< sentence< TO > >::type( make_some( v, a ) ) ); }
+		{
+			return make_pass< sentence< TO > >(
+						typename next_sentence_type< sentence< TO > >::type( make_some( v, a ) ) );
+		}
 		template
 		<
 			typename ARG,
@@ -194,7 +242,10 @@ namespace first_order_logic
 				<
 					! std::is_same
 					<
-						decltype( make_some( std::declval< variable >( ), std::declval< ARG >( ) ) ),
+						decltype(
+							make_some(
+								std::declval< variable >( ),
+								std::declval< ARG >( ) ) ),
 						sentence< TO >
 					>::value
 				>,
@@ -203,7 +254,10 @@ namespace first_order_logic
 				<
 					! std::is_same
 					<
-						decltype( make_some( std::declval< variable >( ), std::declval< sentence< TO > >( ) ) ),
+						decltype(
+							make_some(
+								std::declval< variable >( ),
+								std::declval< sentence< TO > >( ) ) ),
 						sentence< TO >
 					>::value && std::is_same< ARG, ARG >::value
 				>,
@@ -218,7 +272,8 @@ namespace first_order_logic
 				>
 		>
 		void operator ( )( const variable &, const ARG & ) const { throw; }
-		sentence< TO > operator ( )( const variable &, const no_such_sentence & ) const { throw; }
+		sentence< TO > operator ( )( const variable &, const no_such_sentence & ) const
+		{ throw; }
 	};
 
 	template< typename TO >
@@ -232,12 +287,16 @@ namespace first_order_logic
 				<
 					std::is_same
 					<
-						decltype( make_and( std::declval< ARG >( ), std::declval< ARG >( ) ) ),
+						decltype(
+							make_and(
+								std::declval< ARG >( ),
+								std::declval< ARG >( ) ) ),
 						sentence< TO >
 					>::value
 				>
 		>
-		sentence< TO > operator ( )( const ARG & l, const ARG & r ) const { return make_and( l, r ); }
+		sentence< TO > operator ( )( const ARG & l, const ARG & r ) const
+		{ return make_and( l, r ); }
 		template
 		<
 			typename ARG,
@@ -246,7 +305,10 @@ namespace first_order_logic
 				<
 					! std::is_same
 					<
-						decltype( make_and( std::declval< ARG >( ), std::declval< ARG >( ) ) ),
+						decltype(
+							make_and(
+								std::declval< ARG >( ),
+								std::declval< ARG >( ) ) ),
 						sentence< TO >
 					>::value
 				>,
@@ -255,7 +317,10 @@ namespace first_order_logic
 				<
 					std::is_same
 					<
-						decltype( make_and( std::declval< sentence< TO > >( ), std::declval< sentence< TO > >( ) ) ),
+						decltype(
+							make_and(
+								std::declval< sentence< TO > >( ),
+								std::declval< sentence< TO > >( ) ) ),
 						sentence< TO >
 					>::value && std::is_same< ARG, ARG >::value
 				>
@@ -271,7 +336,10 @@ namespace first_order_logic
 				<
 					! std::is_same
 					<
-						decltype( make_and( std::declval< ARG >( ), std::declval< ARG >( ) ) ),
+						decltype(
+							make_and(
+								std::declval< ARG >( ),
+								std::declval< ARG >( ) ) ),
 						sentence< TO >
 					>::value
 				>,
@@ -280,7 +348,10 @@ namespace first_order_logic
 				<
 					! std::is_same
 					<
-						decltype( make_and( std::declval< sentence< TO > >( ), std::declval< sentence< TO > >( ) ) ),
+						decltype(
+							make_and(
+								std::declval< sentence< TO > >( ),
+								std::declval< sentence< TO > >( ) ) ),
 						sentence< TO >
 					>::value && std::is_same< ARG, ARG >::value
 				>,
@@ -295,7 +366,10 @@ namespace first_order_logic
 				>
 		>
 		sentence< TO > operator ( )( const ARG & l, const ARG & r )
-		{ return make_pass< sentence< TO > >( typename next_sentence_type< sentence< TO > >::type( make_and( l, r ) ) ); }
+		{
+			return make_pass< sentence< TO > >(
+						typename next_sentence_type< sentence< TO > >::type( make_and( l, r ) ) );
+		}
 
 		template
 		<
@@ -314,7 +388,10 @@ namespace first_order_logic
 				<
 					! std::is_same
 					<
-						decltype( make_and( std::declval< sentence< TO > >( ), std::declval< sentence< TO > >( ) ) ),
+						decltype(
+							make_and(
+								std::declval< sentence< TO > >( ),
+								std::declval< sentence< TO > >( ) ) ),
 						sentence< TO >
 					>::value && std::is_same< ARG, ARG >::value
 				>,
@@ -329,7 +406,8 @@ namespace first_order_logic
 				>
 		>
 		void operator ( )( const ARG &, const ARG & ) const { throw; }
-		sentence< TO > operator ( )( const no_such_sentence &, const no_such_sentence & ) const { throw; }
+		sentence< TO > operator ( )( const no_such_sentence &, const no_such_sentence & ) const
+		{ throw; }
 	};
 	template< typename TO >
 	struct or_converter
@@ -343,7 +421,10 @@ namespace first_order_logic
 				<
 					std::is_same
 					<
-						decltype( make_or( std::declval< ARG >( ), std::declval< ARG >( ) ) ),
+						decltype(
+							make_or(
+								std::declval< ARG >( ),
+								std::declval< ARG >( ) ) ),
 						sentence< TO >
 					>::value
 				>
@@ -357,7 +438,10 @@ namespace first_order_logic
 				<
 					! std::is_same
 					<
-						decltype( make_or( std::declval< ARG >( ), std::declval< ARG >( ) ) ),
+						decltype(
+							make_or(
+								std::declval< ARG >( ),
+								std::declval< ARG >( ) ) ),
 						sentence< TO >
 					>::value
 				>,
@@ -366,7 +450,10 @@ namespace first_order_logic
 				<
 					std::is_same
 					<
-						decltype( make_or( std::declval< sentence< TO > >( ), std::declval< sentence< TO > >( ) ) ),
+						decltype(
+							make_or(
+								std::declval< sentence< TO > >( ),
+								std::declval< sentence< TO > >( ) ) ),
 						sentence< TO >
 					>::value && std::is_same< ARG, ARG >::value
 				>
@@ -382,7 +469,10 @@ namespace first_order_logic
 				<
 					! std::is_same
 					<
-						decltype( make_or( std::declval< ARG >( ), std::declval< ARG >( ) ) ),
+						decltype(
+							make_or(
+								std::declval< ARG >( ),
+								std::declval< ARG >( ) ) ),
 						sentence< TO >
 					>::value
 				>,
@@ -391,7 +481,10 @@ namespace first_order_logic
 				<
 					! std::is_same
 					<
-						decltype( make_or( std::declval< sentence< TO > >( ), std::declval< sentence< TO > >( ) ) ),
+						decltype(
+							make_or(
+								std::declval< sentence< TO > >( ),
+								std::declval< sentence< TO > >( ) ) ),
 						sentence< TO >
 					>::value && std::is_same< ARG, ARG >::value
 				>,
@@ -406,7 +499,10 @@ namespace first_order_logic
 				>
 		>
 		sentence< TO > operator ( )( const ARG & l, const ARG & r )
-		{ return make_pass< sentence< TO > >( typename next_sentence_type< sentence< TO > >::type( make_or( l, r ) ) ); }
+		{
+			return make_pass< sentence< TO > >(
+						typename next_sentence_type< sentence< TO > >::type( make_or( l, r ) ) );
+		}
 
 		template
 		<
@@ -416,7 +512,10 @@ namespace first_order_logic
 				<
 					! std::is_same
 					<
-						decltype( make_or( std::declval< ARG >( ), std::declval< ARG >( ) ) ),
+						decltype(
+							make_or(
+								std::declval< ARG >( ),
+								std::declval< ARG >( ) ) ),
 						sentence< TO >
 					>::value
 				>,
@@ -425,7 +524,10 @@ namespace first_order_logic
 				<
 					! std::is_same
 					<
-						decltype( make_or( std::declval< sentence< TO > >( ), std::declval< sentence< TO > >( ) ) ),
+						decltype(
+							make_or(
+								std::declval< sentence< TO > >( ),
+								std::declval< sentence< TO > >( ) ) ),
 						sentence< TO >
 					>::value && std::is_same< ARG, ARG >::value
 				>,
@@ -440,7 +542,8 @@ namespace first_order_logic
 				>
 		>
 		void operator ( )( const ARG &, const ARG & ) const { throw; }
-		sentence< TO > operator ( )( const no_such_sentence &, const no_such_sentence & ) const { throw; }
+		sentence< TO > operator ( )( const no_such_sentence &, const no_such_sentence & ) const
+		{ throw; }
 	};
 	template< typename TO >
 	struct not_converter
@@ -516,7 +619,10 @@ namespace first_order_logic
 			>
 		>
 		sentence< TO > operator ( )( const ARG & l )
-		{ return make_pass< sentence< TO > >( typename next_sentence_type< sentence< TO > >::type( make_not( l ) ) ); }
+		{
+			return make_pass< sentence< TO > >(
+						typename next_sentence_type< sentence< TO > >::type( make_not( l ) ) );
+		}
 
 		template
 		<
