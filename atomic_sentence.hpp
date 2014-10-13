@@ -165,7 +165,8 @@ namespace first_order_logic
 						make_predicate_actor(
 							[&]( const std::string &, const std::vector< term > & vec )
 							{
-								for ( const term & t : vec ) { result = t.constants( result ); }
+								for ( const term & t : vec )
+								{ result = t.constants( result ); }
 								return result;
 							} ),
 						make_propositional_letter_actor(
@@ -193,7 +194,8 @@ namespace first_order_logic
 					{ result = l.functions( r.functions( result ) ); } ),
 				make_predicate_actor(
 					[&]( const std::string &, const std::vector< term > & vec )
-					{ for ( const term & t : vec ) { result = t.functions( result ); } } ),
+					{ for ( const term & t : vec )
+					{ result = t.functions( result ); } } ),
 				make_propositional_letter_actor( []( const std::string & ){ } ) );
 			return result;
 		}
@@ -209,7 +211,8 @@ namespace first_order_logic
 				{
 					* result = str;
 					++result;
-					for ( const term & t : vec ) { result = t.used_name( result ); }
+					for ( const term & t : vec )
+					{ result = t.used_name( result ); }
 					return result;
 				} ),
 			make_propositional_letter_actor(
@@ -237,8 +240,10 @@ namespace first_order_logic
 		template< typename OUTITER >
 		OUTITER cv( OUTITER result ) const
 		{
-			free_variables( constants( make_function_output_iterator(
-										[&]( const auto & v ) { *result = term( v ); ++result; } ) ) );
+			free_variables(
+				constants(
+					make_function_output_iterator(
+						[&]( const auto & v ) { *result = term( v ); ++result; } ) ) );
 			return result;
 		}
 	};
