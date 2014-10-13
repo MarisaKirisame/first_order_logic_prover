@@ -60,9 +60,8 @@ namespace first_order_logic
 								make_function_output_iterator(
 									[&]( const auto & p )
 									{
-										if (
-												( new_known_facts.empty( ) ) ||
-												( ! unify( new_known_facts.back( ), query ) ) )
+										if ( ( new_known_facts.empty( ) ) ||
+											 ( ! unify( new_known_facts.back( ), query ) ) )
 										{
 											gp.push_back( p.first );
 											self( self, p.second );
@@ -141,8 +140,8 @@ namespace first_order_logic
 										rename_variable(
 											dc.premise.begin( ),
 											dc.premise.end( ),
-											[&]( const std::string & v )
-												{ return var_name.count( v ) == 0; },
+											[&]( const std::string & v ){
+											return var_name.count( v ) == 0; },
 											[]( const std::string & n )
 												{ return n + "_"; } );
 								auto ret = unify( rename( dc.conclusion ), s );
