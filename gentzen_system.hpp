@@ -357,7 +357,15 @@ namespace first_order_logic
 							{
 								try_insert(
 									sequent,
-									substitution( { { var, term( new_variable( ) ) } } )
+									substitution
+									(
+										{
+											{
+												var,
+												term( new_variable( ) )
+											}
+										}
+									)
 										( sen ),
 									b );
 							};
@@ -409,21 +417,24 @@ namespace first_order_logic
 													ldt,
 													proof_tree( ),
 													boost::optional
-														< bool >( )
+													< bool >( )
 												) );
 										}
 										catch ( contradiction & con )
 										{ pt.join( con.pt ); }
 										try
 										{
-											rdt.try_insert( rdt.sequent, r, false );
+											rdt.try_insert(
+												rdt.sequent,
+												r,
+												false );
 											branch.push_back(
 												std::make_tuple
 												(
 													rdt,
 													proof_tree( ),
 													boost::optional
-														< bool >( )
+													< bool >( )
 												) );
 										}
 										catch ( contradiction & con )
@@ -451,7 +462,7 @@ namespace first_order_logic
 													ldt,
 													proof_tree( ),
 													boost::optional
-														< bool >( )
+													< bool >( )
 												) );
 										}
 										catch ( contradiction & con )
@@ -465,7 +476,7 @@ namespace first_order_logic
 													rdt,
 													proof_tree( ),
 													boost::optional
-														< bool >( )
+													< bool >( )
 												) );
 										}
 										catch ( contradiction & con )
