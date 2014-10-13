@@ -39,12 +39,13 @@ namespace first_order_logic
 	OS & operator << ( OS & os, const sentence_type & st )
 	{
 		return os <<
-					( st == sentence_type::logical_and ? "and" :
-					st == sentence_type::logical_or ? "or" :
-					st == sentence_type::logical_not ? "not" :
-					st == sentence_type::some ? "some" :
-					st == sentence_type::all ? "all" :
-					st == sentence_type::pass ? "pass" : std::to_string( static_cast< long >( st ) ) );
+                    st == sentence_type::logical_and ? "and" :
+                    st == sentence_type::logical_or ? "or" :
+                    st == sentence_type::logical_not ? "not" :
+                    st == sentence_type::some ? "some" :
+                    st == sentence_type::all ? "all" :
+                    st == sentence_type::pass ? "pass" :
+                    std::to_string( static_cast< long >( st ) );
 	}
 	typedef
 	sentence
@@ -173,8 +174,18 @@ namespace std
 	{
 		template
 		<
-			bool = std::is_convertible< first_order_logic::sentence< L >, first_order_logic::sentence< R > >::value,
-			bool = std::is_convertible< first_order_logic::sentence< R >, first_order_logic::sentence< L > >::value,
+            bool =
+                std::is_convertible
+                <
+                    first_order_logic::sentence< L >,
+                    first_order_logic::sentence< R >
+                >::value,
+            bool =
+                std::is_convertible
+                <
+                    first_order_logic::sentence< R >,
+                    first_order_logic::sentence< L >
+                >::value,
 			typename PLACEHOLDER = void
 		>
 		struct inner;
@@ -190,8 +201,10 @@ namespace std
 			template< typename LL, typename RR >
 			struct HELPER
 					<
-						first_order_logic::sentence< first_order_logic::vector< LL > >,
-						first_order_logic::sentence< first_order_logic::vector< RR > >
+                        first_order_logic::sentence
+                        < first_order_logic::vector< LL > >,
+                        first_order_logic::sentence
+                        < first_order_logic::vector< RR > >
 					>
 			{
 				typedef first_order_logic::sentence
@@ -200,20 +213,20 @@ namespace std
 			};
 			template< typename ... LLL, typename LL, typename RR >
 			struct HELPER
-					<
-						first_order_logic::sentence< first_order_logic::vector< LL, LLL ... > >,
-						first_order_logic::sentence< first_order_logic::vector< RR > >
-					>
-			{
-				typedef typename
-				first_order_logic::add_sentence_back
-				<
-					first_order_logic::sentence
-					< typename first_order_logic::pop_back< first_order_logic::vector< LL, LLL ... > >::type >,
-					typename first_order_logic::join
-					< typename first_order_logic::back< first_order_logic::vector< LL, LLL ... > >::type, RR >::type
-				>::type type;
-			};
+                    <
+                        first_order_logic::sentence< first_order_logic::vector< LL, LLL ... > >,
+                        first_order_logic::sentence< first_order_logic::vector< RR > >
+                    >
+            {
+                typedef typename
+                first_order_logic::add_sentence_back
+                <
+                    first_order_logic::sentence
+                    < typename first_order_logic::pop_back< first_order_logic::vector< LL, LLL ... > >::type >,
+                    typename first_order_logic::join
+                    < typename first_order_logic::back< first_order_logic::vector< LL, LLL ... > >::type, RR >::type
+                >::type type;
+            };
 			template< typename ... RRR, typename LL, typename RR >
 			struct HELPER
 			<
@@ -238,18 +251,39 @@ namespace std
 					typename common_type
 					<
 						first_order_logic::sentence
-						< typename first_order_logic::pop_back< first_order_logic::vector< LLL ... > >::type >,
+                        <
+                            typename first_order_logic::pop_back
+                            <
+                                first_order_logic::vector< LLL ... >
+                            >::type
+                        >,
 						first_order_logic::sentence
-						< typename first_order_logic::pop_back< first_order_logic::vector< RRR ... > >::type >
+                        <
+                            typename first_order_logic::pop_back
+                            <
+                                first_order_logic::vector< RRR ... >
+                            >::type
+                        >
 					>::type,
 					typename first_order_logic::join
 					<
-						typename first_order_logic::back< first_order_logic::vector< LLL ... > >::type,
-						typename first_order_logic::back< first_order_logic::vector< RRR ... > >::type
+                        typename first_order_logic::back
+                        <
+                            first_order_logic::vector< LLL ... >
+                        >::type,
+                        typename first_order_logic::back
+                        <
+                            first_order_logic::vector< RRR ... >
+                        >::type
 					>::type
 				>::type type;
 			};
-			typedef typename HELPER< first_order_logic::sentence< L >, first_order_logic::sentence< R > >::type type;
+            typedef typename
+            HELPER
+            <
+                first_order_logic::sentence< L >,
+                first_order_logic::sentence< R >
+            >::type type;
 		};
 		template< typename PLACEHOLDER >
 		struct inner< true, true, PLACEHOLDER >
