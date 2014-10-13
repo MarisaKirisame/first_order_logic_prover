@@ -237,13 +237,18 @@ namespace first_order_logic
 		struct can_convert_to< sentence_type::logical_and, sentence< TO > >
 		{
 			constexpr static bool value =
-					! std::is_same
+					( ! std::is_same
 					<
 						decltype( and_converter< TO >( )(
 							std::declval< and_sentence_type >( ),
 							std::declval< and_sentence_type >( ) ) ),
 						void
-					>::value;
+					>::value ) ||
+					( ! have
+					<
+						typename current_set< sentence< T > >::type,
+						set_c< sentence_type, sentence_type::logical_and >
+					>::value );
 		};
 		template< typename TO >
 		struct can_convert_to< sentence_type::logical_or, sentence< TO > >
@@ -261,13 +266,18 @@ namespace first_order_logic
 		struct can_convert_to< sentence_type::all, sentence< TO > >
 		{
 			constexpr static bool value =
-					! std::is_same
+					( ! std::is_same
 					<
 						decltype( all_converter< TO >( )(
 							std::declval< variable >( ),
 							std::declval< all_sentence_type >( ) ) ),
 						void
-					>::value;
+					>::value ) ||
+					( ! have
+					<
+						typename current_set< sentence< T > >::type,
+						set_c< sentence_type, sentence_type::all >
+					>::value );
 		};
 		template< typename TO >
 		struct can_convert_to< sentence_type::some, sentence< TO > >

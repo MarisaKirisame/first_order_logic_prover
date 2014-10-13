@@ -23,6 +23,37 @@ namespace first_order_logic
 	inline atomic_sentence make_propositional_letter( const std::string & s )
 	{ return atomic_sentence( atomic_sentence::type::propositional_letter, s ); }
 
+	static_assert(
+			std::is_convertible
+			<
+				sentence< vector< set_c< sentence_type, sentence_type::all > > >,
+				sentence
+				<
+					vector
+					<
+						set_c< sentence_type, sentence_type::logical_not >,
+						set_c< sentence_type, sentence_type::all >
+					>
+				>
+			>::value,
+			"should be convertible" );
+
+	static_assert(
+			sentence< vector< set_c< sentence_type, sentence_type::all > > >::
+				can_convert_to
+				<
+					sentence_type::all,
+					sentence
+					<
+						vector
+						<
+							set_c< sentence_type, sentence_type::logical_not >,
+							set_c< sentence_type, sentence_type::all >
+						>
+					>
+				>::value,
+			"should be convertible" );
+
 	template< typename T >
 	typename add_sentence_front< T, set_c< sentence_type, sentence_type::logical_not > >::type
 	make_not( const T & s )
@@ -94,5 +125,8 @@ namespace first_order_logic
 	atomic_sentence make_equal( const term & l, const term & r )
 	{ return atomic_sentence( atomic_sentence::type::equal, { l, r } ); }
 
+	template< typename T >
+	T make_pass( const typename next_sentence_type< T >::type & t )
+	{ return T( sentence_type::pass, { t } ); }
 }
 #endif //FIRST_ORDER_LOGIC_FIRST_ORDER_LOGIC

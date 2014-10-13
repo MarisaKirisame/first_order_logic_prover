@@ -53,6 +53,9 @@ namespace first_order_logic
 	make_some( const variable & l, const T & s );
 
 	atomic_sentence make_equal( const term & l, const term & r );
+
+	template< typename T >
+	T make_pass( const typename next_sentence_type< T >::type & t );
 }
 #include "../first_order_logic.hpp"
 #endif // FORWARD_FIRST_ORDER_LOGIC_H

@@ -124,7 +124,7 @@ namespace first_order_logic
 										move_negation_in( make_not( l ) ),
 										move_negation_in( make_not( r ) ) );
 							} ),
-						make_atomic_actor( []( const atomic_sentence & as ) { return as; } ) );
+						make_atomic_actor( []( const atomic_sentence & as ) { return make_not( as ); } ) );
 				} ),
 			make_and_actor(
 				[&]( const free_propositional_sentence & l, const free_propositional_sentence & r )
@@ -174,9 +174,8 @@ namespace first_order_logic
 		"should not have or" );
 	and_or_not_type move_or_in( const negation_in_type & prop )
 	{
-
 		return prop.type_restore_full< and_or_not_type >(
-					make_not_actor( []( const not_type & sen )->and_or_not_type { return sen; } ),
+					make_not_actor( []( const not_type & sen )->and_or_not_type { return make_not( sen ); } ),
 					make_and_actor(
 						[]( const negation_in_type & l, const negation_in_type & r )
 						{ return make_and( move_or_in( l ), move_or_in( r ) ); } ),
@@ -248,14 +247,16 @@ namespace first_order_logic
 					make_not_actor(
 						[&]( const not_type & sen )
 						{
-							* result = get_literal( sen );
+							literal l = get_literal( sen );
+							l.b = ! l.b;
+							* result = l;
 							++result;
 							return result;
 						} ),
 					make_atomic_actor(
 						[&]( const atomic_sentence & as )
 						{
-							* result = literal( as, false );
+							* result = literal( as, true );
 							++result;
 							return result;
 						} )
@@ -299,7 +300,7 @@ namespace first_order_logic
 	{
 		CNF cnf(
 				to_CNF(
-					make_and( sen, make_not( goal ).restore_quantifier_existential( ) ).
+					make_and( sen, make_not( goal ).restore_quantifier_universal( ) ).
 						rectify( ).
 						move_quantifier_out( ).
 						skolemization_remove_existential( ).

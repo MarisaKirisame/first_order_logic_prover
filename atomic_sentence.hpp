@@ -64,7 +64,6 @@ namespace first_order_logic
 				const predicate_actor< T2 > & predicate_func,
 				const propositional_letter_actor< T3 > & propositional_letter_func ) const
 		{
-			std::cout << "Entering atomic sentence type restore, type is " << (*this)->atomic_sentence_type << std::endl;
 			switch ( (*this)->atomic_sentence_type )
 			{
 			case type::equal:
@@ -193,6 +192,9 @@ namespace first_order_logic
 			return result;
 		}
 	};
+	template< typename OS >
+	OS & operator << ( OS & os, const atomic_sentence & st ) { return os << static_cast< std::string >( st ); }
+
 	template< typename OS >
 	OS & operator << ( OS & os, const atomic_sentence::type & st )
 	{

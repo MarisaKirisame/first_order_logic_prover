@@ -754,7 +754,6 @@ namespace first_order_logic
 		const some_actor< T5 > & some_func,
 		const atomic_actor< T6 > & atomic_func ) const
 	{
-		std::cout << "Entering sentence type restore, type is " << (*this)->type << std::endl;
 		switch ( (*this)->type )
 		{
 			case sentence_type::logical_and:
