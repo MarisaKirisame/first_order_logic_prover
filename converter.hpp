@@ -232,7 +232,8 @@ namespace first_order_logic
 		sentence< TO > operator ( )( const variable & v, const ARG & a )
 		{
 			return make_pass< sentence< TO > >(
-						typename next_sentence_type< sentence< TO > >::type( make_some( v, a ) ) );
+						typename next_sentence_type< sentence< TO > >::type(
+							make_some( v, a ) ) );
 		}
 		template
 		<
@@ -368,7 +369,8 @@ namespace first_order_logic
 		sentence< TO > operator ( )( const ARG & l, const ARG & r )
 		{
 			return make_pass< sentence< TO > >(
-						typename next_sentence_type< sentence< TO > >::type( make_and( l, r ) ) );
+						typename next_sentence_type< sentence< TO > >::type(
+							make_and( l, r ) ) );
 		}
 
 		template
@@ -501,7 +503,8 @@ namespace first_order_logic
 		sentence< TO > operator ( )( const ARG & l, const ARG & r )
 		{
 			return make_pass< sentence< TO > >(
-						typename next_sentence_type< sentence< TO > >::type( make_or( l, r ) ) );
+						typename next_sentence_type< sentence< TO > >::type(
+							make_or( l, r ) ) );
 		}
 
 		template
