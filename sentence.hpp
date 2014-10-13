@@ -124,7 +124,8 @@ namespace first_order_logic
                 const some_actor< T5 > & some_func,
                 const atomic_actor< T6 > & atomic_func ) const;
         explicit operator std::string( ) const;
-        sentence( sentence_type ty, const std::initializer_list< typename next_sentence_type< sentence< T > >::type > & il ) :
+        sentence( sentence_type ty,
+                  const std::initializer_list< typename next_sentence_type< sentence< T > >::type > & il ) :
             data( new internal( ty, il ) ) { }
         sentence( sentence_type ty, const std::initializer_list< sentence< T > > & il ) :
             data( new internal( ty, il ) ) { }
