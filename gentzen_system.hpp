@@ -199,55 +199,46 @@ namespace first_order_logic
 							make_all
 							(
 								variable( "x" ),
-								make_all
+								variable( "y" ),
+								make_imply
 								(
-									variable( "y" ),
-									make_imply
-									(
-										make_equal(
-											make_variable( "x" ),
-											make_variable( "y" ) ),
-										make_equal(
-											make_variable( "y" ),
-											make_variable( "x" ) )
-									)
+									make_equal(
+										make_variable( "x" ),
+										make_variable( "y" ) ),
+									make_equal(
+										make_variable( "y" ),
+										make_variable( "x" ) )
 								)
 							), true );
 				try_insert( sequent,
 							make_all
 							(
 								variable( "s1" ),
+								variable( "t1" ),
+								variable( "s2" ),
 								make_all
 								(
-									variable( "t1" ),
-									make_all
+									variable( "t2" ),
+									make_imply
 									(
-										variable( "s2" ),
-										make_all
+										make_and
 										(
-											variable( "t2" ),
-											make_imply
+											make_and
 											(
-												make_and
-												(
-													make_and
-													(
-														make_equal(
-															make_variable( "s1" ),
-															make_variable( "t1" ) ),
-														make_equal(
-															make_variable( "s2" ),
-															make_variable( "t2" ) )
-													),
-													make_equal(
-														make_variable( "s1" ),
-														make_variable( "s2" ) )
-												),
 												make_equal(
-													make_variable( "t1" ),
+													make_variable( "s1" ),
+													make_variable( "t1" ) ),
+												make_equal(
+													make_variable( "s2" ),
 													make_variable( "t2" ) )
-											)
-										)
+											),
+											make_equal(
+												make_variable( "s1" ),
+												make_variable( "s2" ) )
+										),
+										make_equal(
+											make_variable( "t1" ),
+											make_variable( "t2" ) )
 									)
 								)
 							),
