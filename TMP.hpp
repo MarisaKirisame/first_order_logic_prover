@@ -127,7 +127,8 @@ namespace first_order_logic
 		template< typename ... A >
 		struct inner< REM, A ... > { typedef typename inner< A ... >::type type; };
 		template< typename F, typename ... A >
-		struct inner< F, A ... > { typedef typename insert< typename inner< A ... >::type, set< F > >::type type; };
+		struct inner< F, A ... >
+		{ typedef typename insert< typename inner< A ... >::type, set< F > >::type type; };
 		typedef typename inner< ARG ..., void >::type type;
 	};
 	template< typename ... ARG, typename F, typename ... REM >
