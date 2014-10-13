@@ -165,8 +165,7 @@ namespace first_order_logic
 				auto ret = unify( known_facts.back( ), sen );
 				if ( ret ) { return ret; }
 				std::vector< atomic_sentence > add;
-				for ( const std::pair< atomic_sentence, std::vector< std::vector< atomic_sentence > > > & p :
-					  requiring_fact )
+				for ( const auto & p : requiring_fact )
 				{
 					for ( const auto & vec : p.second )
 					{
@@ -174,8 +173,10 @@ namespace first_order_logic
 								rename_variable(
 									vec.begin( ),
 									vec.end( ),
-									[&]( const std::string & v ){ return var_name.count( v ) == 0; },
-									[]( const std::string & n ){ return n + "_"; } );
+									[&]( const std::string & v )
+										{ return var_name.count( v ) == 0; },
+									[]( const std::string & n )
+										{ return n + "_"; } );
 						progress = try_infer_forward( vec, p.first, rename, sen ) || progress;
 						auto ret = unify( known_facts.back( ), sen );
 						if ( ret ) { return ret; }
