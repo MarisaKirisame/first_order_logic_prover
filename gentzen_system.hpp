@@ -322,6 +322,36 @@ namespace first_order_logic
 				{
 					std::pair< free_sentence, bool > t = * sequent.begin( );
 					sequent.erase( sequent.begin( ) );
+					auto try_subsitute_term =
+							[&,this]( bool b, const variable & var, const free_sentence & sen )
+							{
+								std::for_each
+								(
+									term_map.begin( ),
+									term_map.end( ),
+									[&,this]( auto & s )
+									{
+										if ( s.second.count( t.first ) == 0 )
+										{
+											s.second.insert( t.first );
+											this->try_insert
+											(
+												sequent,
+												substitution( { { var, s.first } } )( sen ),
+												b
+											);
+										}
+									}
+								);
+								try_insert( temp_sequent, t.first, b );
+							};
+					auto try_subsitute_skolem =
+							[&,this]( bool b, const variable & var, const free_sentence & sen )
+							{
+								try_insert(
+									sequent,
+									substitution( { { var, term( new_variable( ) ) } } )( sen ), b );
+							};
 					try
 					{
 						t.first.type_restore_full< void >
@@ -330,68 +360,17 @@ namespace first_order_logic
 								[&]( const variable & var, const free_sentence & sen )
 								{
 									if ( t.second )
-									{
-										std::for_each
-										(
-											term_map.begin( ),
-											term_map.end( ),
-											[&,this]( auto & s )
-											{
-												if ( s.second.count( t.first ) == 0 )
-												{
-													s.second.insert( t.first );
-													this->try_insert
-													(
-														sequent,
-														substitution( { { var, s.first } } )( sen ),
-														true
-													);
-												}
-											}
-										);
-										try_insert( temp_sequent, t.first, true );
-									}
+									{ try_subsitute_term( true, var, sen ); }
 									else
-									{
-										try_insert(
-											sequent,
-											substitution( { { var, term( new_variable( ) ) } } )(
-												sen ),
-											false );
-									}
+									{ try_subsitute_skolem( false, var, sen ); }
 								} ),
 							make_some_actor(
 								[&]( const variable & var, const free_sentence & sen )
 								{
 									if ( t.second )
-									{
-										try_insert(
-											sequent,
-											substitution( { { var, term( new_variable( ) ) } } )( sen ), true );
-									}
+									{ try_subsitute_skolem( true, var, sen ); }
 									else
-									{
-										std::for_each
-										(
-											term_map.begin( ),
-											term_map.end( ),
-											[&,this]( auto & s )
-											{
-												if ( s.second.count( t.first ) == 0 )
-												{
-													s.second.insert( t.first );
-													this->try_insert
-													(
-														sequent,
-														substitution( { { var, s.first } } )(
-															sen ),
-														false
-													);
-												}
-											}
-										);
-										try_insert( temp_sequent, t.first, false );
-									}
+									{ try_subsitute_term( false, var, sen ); }
 								} ),
 							make_atomic_actor(
 								[&]( const atomic_sentence & as )
