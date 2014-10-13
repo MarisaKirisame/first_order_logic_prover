@@ -412,7 +412,8 @@ namespace first_order_logic
 														< bool >( )
 												) );
 										}
-										catch ( contradiction & con ) { pt.join( con.pt ); }
+										catch ( contradiction & con )
+										{ pt.join( con.pt ); }
 										try
 										{
 											rdt.try_insert( rdt.sequent, r, false );
@@ -425,7 +426,8 @@ namespace first_order_logic
 														< bool >( )
 												) );
 										}
-										catch ( contradiction & con ) { pt.join( con.pt ); }
+										catch ( contradiction & con )
+										{ pt.join( con.pt ); }
 										have_branch = true;
 									}
 								} ),
@@ -452,7 +454,8 @@ namespace first_order_logic
 														< bool >( )
 												) );
 										}
-										catch ( contradiction & con ) { pt.join( con.pt ); }
+										catch ( contradiction & con )
+										{ pt.join( con.pt ); }
 										try
 										{
 											rdt.try_insert( rdt.sequent, r, true );
@@ -465,7 +468,8 @@ namespace first_order_logic
 														< bool >( )
 												) );
 										}
-										catch ( contradiction & con ) { pt.join( con.pt ); }
+										catch ( contradiction & con )
+										{ pt.join( con.pt ); }
 										have_branch = true;
 									}
 									else
