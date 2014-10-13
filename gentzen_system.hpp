@@ -75,12 +75,14 @@ namespace first_order_logic
 								variable( "t" ),
 								make_imply
 								(
-									make_equal( make_variable( "s" ), make_variable( "t" ) ),
+									make_equal(
+										make_variable( "s" ),
+										make_variable( "t" ) ),
 									make_equal
 									(
 										make_function(
 											f.name,
-											{ make_variable( std::string( "s" ) ) } ),
+											{ make_variable( "s" ) } ),
 										make_function(
 											f.name,
 											{ make_variable( "t" ) } )
@@ -101,8 +103,10 @@ namespace first_order_logic
 						boost::counting_iterator< size_t >( f.arity ),
 						[&]( size_t i )
 						{
-							args.push_back( make_variable( "s" + std::to_string( i ) ) );
-							argt.push_back( make_variable( "t" + std::to_string( i ) ) );
+							args.push_back(
+								make_variable( "s" + std::to_string( i ) ) );
+							argt.push_back(
+								make_variable( "t" + std::to_string( i ) ) );
 						} );
 					free_sentence and_stack =
 							make_and(
@@ -298,7 +302,8 @@ namespace first_order_logic
 								std::for_each(
 									branch.begin( ),
 									branch.end( ),
-									[&]( const auto & t ){ leaf.join( std::get< 1 >( t ) ); } );
+									[&]( const auto & t )
+										{ leaf.join( std::get< 1 >( t ) ); } );
 								return true;
 							}
 							auto it =
@@ -318,7 +323,8 @@ namespace first_order_logic
 					{
 						if ( ! std::get< 2 >( p ) )
 						{
-							std::get< 2 >( p ) = std::get< 0 >( p ).expand( std::get< 1 >( p ) );
+							std::get< 2 >( p ) =
+								std::get< 0 >( p ).expand( std::get< 1 >( p ) );
 							auto ret = try_join( );
 							if ( ret ) { return ret; }
 						}
@@ -370,7 +376,9 @@ namespace first_order_logic
 									{
 										try_insert(
 											sequent,
-											substitution( { { var, term( new_variable( ) ) } } )( sen ), false );
+											substitution( { { var, term( new_variable( ) ) } } )(
+												sen ),
+											false );
 									}
 								} ),
 							make_some_actor(
@@ -396,7 +404,8 @@ namespace first_order_logic
 													this->try_insert
 													(
 														sequent,
-														substitution( { { var, s.first } } )( sen ),
+														substitution( { { var, s.first } } )(
+															sen ),
 														false
 													);
 												}
@@ -406,7 +415,8 @@ namespace first_order_logic
 									}
 								} ),
 							make_atomic_actor(
-								[&]( const atomic_sentence & as ) { try_insert( expanded, as, t.second ); } ),
+								[&]( const atomic_sentence & as )
+								{ try_insert( expanded, as, t.second ); } ),
 							make_and_actor(
 								[&]( const free_sentence & l, const free_sentence & r )
 								{
