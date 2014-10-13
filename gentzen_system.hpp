@@ -340,8 +340,15 @@ namespace first_order_logic
 											this->try_insert
 											(
 												sequent,
-												substitution( { { var, s.first } } )
-													( sen ),
+												substitution
+												(
+													{
+														{
+															var,
+															s.first
+														}
+													}
+												)( sen ),
 												b
 											);
 										}
@@ -365,8 +372,7 @@ namespace first_order_logic
 												term( new_variable( ) )
 											}
 										}
-									)
-										( sen ),
+									)( sen ),
 									b );
 							};
 					try
