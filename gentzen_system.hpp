@@ -323,7 +323,10 @@ namespace first_order_logic
 					std::pair< free_sentence, bool > t = * sequent.begin( );
 					sequent.erase( sequent.begin( ) );
 					auto try_subsitute_term =
-							[&,this]( bool b, const variable & var, const free_sentence & sen )
+							[&,this](
+								bool b,
+								const variable & var,
+								const free_sentence & sen )
 							{
 								std::for_each
 								(
@@ -337,7 +340,8 @@ namespace first_order_logic
 											this->try_insert
 											(
 												sequent,
-												substitution( { { var, s.first } } )( sen ),
+												substitution( { { var, s.first } } )
+													( sen ),
 												b
 											);
 										}
@@ -346,11 +350,16 @@ namespace first_order_logic
 								try_insert( temp_sequent, t.first, b );
 							};
 					auto try_subsitute_skolem =
-							[&,this]( bool b, const variable & var, const free_sentence & sen )
+							[&,this](
+								bool b,
+								const variable & var,
+								const free_sentence & sen )
 							{
 								try_insert(
 									sequent,
-									substitution( { { var, term( new_variable( ) ) } } )( sen ), b );
+									substitution( { { var, term( new_variable( ) ) } } )
+										( sen ),
+									b );
 							};
 					try
 					{
@@ -390,22 +399,31 @@ namespace first_order_logic
 										sequence rdt( * this );
 										try
 										{
-											ldt.try_insert( ldt.sequent, l, false );
+											ldt.try_insert(
+												ldt.sequent,
+												l,
+												false );
 											branch.push_back(
-												std::make_tuple(
+												std::make_tuple
+												(
 													ldt,
 													proof_tree( ),
-													boost::optional< bool >( ) ) );
+													boost::optional
+														< bool >( )
+												) );
 										}
 										catch ( contradiction & con ) { pt.join( con.pt ); }
 										try
 										{
 											rdt.try_insert( rdt.sequent, r, false );
 											branch.push_back(
-												std::make_tuple(
+												std::make_tuple
+												(
 													rdt,
 													proof_tree( ),
-													boost::optional< bool >( ) ) );
+													boost::optional
+														< bool >( )
+												) );
 										}
 										catch ( contradiction & con ) { pt.join( con.pt ); }
 										have_branch = true;
@@ -421,22 +439,31 @@ namespace first_order_logic
 										sequence rdt( * this );
 										try
 										{
-											ldt.try_insert( ldt.sequent, l, true );
+											ldt.try_insert(
+												ldt.sequent,
+												l,
+												true );
 											branch.push_back(
-												std::make_tuple(
+												std::make_tuple
+												(
 													ldt,
 													proof_tree( ),
-													boost::optional< bool >( ) ) );
+													boost::optional
+														< bool >( )
+												) );
 										}
 										catch ( contradiction & con ) { pt.join( con.pt ); }
 										try
 										{
 											rdt.try_insert( rdt.sequent, r, true );
 											branch.push_back(
-												std::make_tuple(
+												std::make_tuple
+												(
 													rdt,
 													proof_tree( ),
-													boost::optional< bool >( ) ) );
+													boost::optional
+														< bool >( )
+												) );
 										}
 										catch ( contradiction & con ) { pt.join( con.pt ); }
 										have_branch = true;
