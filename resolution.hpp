@@ -114,14 +114,16 @@ namespace first_order_logic
                                             [&]( const free_propositional_sentence & sen )
                                             { return move_negation_in( sen ); } ),
                                     make_and_actor(
-                                            [&]( const free_propositional_sentence & l, const free_propositional_sentence & r )
+                                            [&]( const free_propositional_sentence & l,
+                                                 const free_propositional_sentence & r )
                                             {
                                                 return make_or(
                                                     move_negation_in( make_not( l ) ),
                                                     move_negation_in( make_not( r ) ) );
                                             } ),
                                     make_or_actor(
-                                        [&]( const free_propositional_sentence & l, const free_propositional_sentence & r )
+                                        [&]( const free_propositional_sentence & l,
+                                             const free_propositional_sentence & r )
                                         {
                                             return make_and(
                                                 move_negation_in( make_not( l ) ),
