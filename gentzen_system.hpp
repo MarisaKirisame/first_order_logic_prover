@@ -70,23 +70,20 @@ namespace first_order_logic
 						make_all
 						(
 							variable( "s" ),
-							make_all
+							variable( "t" ),
+							make_imply
 							(
-								variable( "t" ),
-								make_imply
+								make_equal(
+									make_variable( "s" ),
+									make_variable( "t" ) ),
+								make_equal
 								(
-									make_equal(
-										make_variable( "s" ),
-										make_variable( "t" ) ),
-									make_equal
-									(
-										make_function(
-											f.name,
-											{ make_variable( "s" ) } ),
-										make_function(
-											f.name,
-											{ make_variable( "t" ) } )
-									)
+									make_function(
+										f.name,
+										{ make_variable( "s" ) } ),
+									make_function(
+										f.name,
+										{ make_variable( "t" ) } )
 								)
 							)
 						),
@@ -143,24 +140,21 @@ namespace first_order_logic
 						make_all
 						(
 							variable( "s" ),
-							make_all
+							variable( "t" ),
+							make_imply
 							(
-								variable( "t" ),
-								make_imply
+								make_and
 								(
-									make_and
-									(
-										make_equal(
-											make_variable( "s" ),
-											make_variable( "t" ) ),
-										make_predicate(
-											f.name,
-											{ make_variable( "s" ) } )
-									),
+									make_equal(
+										make_variable( "s" ),
+										make_variable( "t" ) ),
 									make_predicate(
 										f.name,
-										{ make_variable( "t" ) } )
-								)
+										{ make_variable( "s" ) } )
+								),
+								make_predicate(
+									f.name,
+									{ make_variable( "t" ) } )
 							)
 						),
 						true

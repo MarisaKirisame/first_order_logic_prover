@@ -56,6 +56,23 @@ namespace first_order_logic
 
 	template< typename T >
 	T make_pass( const typename next_sentence_type< T >::type & t );
+
+	template< typename F, typename M, typename R, typename ... REST >
+	auto make_and( const F & f, const M & m, const R & r, const REST & ... rest )
+	{ return make_and( f, make_and( m, r, rest ... ) ); }
+
+	template< typename F, typename M, typename R, typename ... REST >
+	auto make_or( const F & f, const M & m, const R & r, const REST & ... rest )
+	{ return make_or( f, make_or( m, r, rest ... ) ); }
+
+	template< typename F, typename M, typename R, typename ... REST >
+	auto make_all( const F & f, const M & m, const R & r, const REST & ... rest )
+	{ return make_all( f, make_all( m, r, rest ... ) ); }
+
+	template< typename F, typename M, typename R, typename ... REST >
+	auto make_some( const F & f, const M & m, const R & r, const REST & ... rest )
+	{ return make_some( f, make_some( m, r, rest ... ) ); }
+
 }
 #include "../first_order_logic.hpp"
 #endif // FORWARD_FIRST_ORDER_LOGIC_H
