@@ -78,8 +78,12 @@ namespace first_order_logic
 									make_equal( make_variable( "s" ), make_variable( "t" ) ),
 									make_equal
 									(
-										make_function( f.name, { make_variable( std::string( "s" ) ) } ),
-										make_function( f.name, { make_variable( "t" ) } )
+										make_function(
+											f.name,
+											{ make_variable( std::string( "s" ) ) } ),
+										make_function(
+											f.name,
+											{ make_variable( "t" ) } )
 									)
 								)
 							)
@@ -100,15 +104,27 @@ namespace first_order_logic
 							args.push_back( make_variable( "s" + std::to_string( i ) ) );
 							argt.push_back( make_variable( "t" + std::to_string( i ) ) );
 						} );
-					free_sentence and_stack = make_and( make_equal( args[0], argt[0] ), make_equal( args[1], argt[1] ) );
+					free_sentence and_stack =
+							make_and(
+								make_equal( args[0], argt[0] ),
+							make_equal( args[1], argt[1] ) );
 					for ( size_t i = 2; i < f.arity; ++i )
-					{ and_stack = make_and( and_stack, make_equal( args[i], argt[i] ) ); }
+					{
+						and_stack =
+								make_and( and_stack, make_equal( args[i], argt[i] ) );
+					}
 					auto add =
 							make_imply(
 								and_stack,
-								make_equal( make_function( f.name, args ), make_function( f.name, argt ) ) );
+								make_equal(
+									make_function( f.name, args ),
+									make_function( f.name, argt ) ) );
 					for ( size_t i = 0; i < f.arity; ++i )
-					{ add = make_all( args[i]->name, make_all( argt[i]->name, add ) ); }
+					{
+						add = make_all(
+									args[i]->name,
+									make_all( argt[i]->name, add ) );
+					}
 					try_insert( sequent, add, true );
 				}
 			}
@@ -130,10 +146,16 @@ namespace first_order_logic
 								(
 									make_and
 									(
-										make_equal( make_variable( "s" ), make_variable( "t" ) ),
-										make_predicate( f.name, { make_variable( "s" ) } )
+										make_equal(
+											make_variable( "s" ),
+											make_variable( "t" ) ),
+										make_predicate(
+											f.name,
+											{ make_variable( "s" ) } )
 									),
-									make_predicate( f.name, { make_variable( "t" ) } )
+									make_predicate(
+										f.name,
+										{ make_variable( "t" ) } )
 								)
 							)
 						),
@@ -150,11 +172,15 @@ namespace first_order_logic
 						boost::counting_iterator< size_t >( f.arity ),
 						[&]( size_t i )
 						{
-							args.push_back( make_variable( "s" + std::to_string( i ) ) );
-							argt.push_back( make_variable( "t" + std::to_string( i ) ) );
+							args.push_back(
+								make_variable( "s" + std::to_string( i ) ) );
+							argt.push_back(
+								make_variable( "t" + std::to_string( i ) ) );
 						} );
 					free_sentence and_stack =
-							make_and( make_equal( args[0], argt[0] ), make_equal( args[1], argt[1] ) );
+							make_and(
+								make_equal( args[0], argt[0] ),
+								make_equal( args[1], argt[1] ) );
 					try_insert(
 						sequent,
 						make_imply(
@@ -167,7 +193,9 @@ namespace first_order_logic
 			{
 				try_insert(
 					sequent,
-					make_all( variable( "t" ), make_equal( make_variable( "t" ), make_variable( "t" ) ) ),
+					make_all(
+						variable( "t" ),
+						make_equal( make_variable( "t" ), make_variable( "t" ) ) ),
 					true );
 				try_insert( sequent,
 							make_all
@@ -178,8 +206,12 @@ namespace first_order_logic
 									variable( "y" ),
 									make_imply
 									(
-										make_equal( make_variable( "x" ), make_variable( "y" ) ),
-										make_equal( make_variable( "y" ), make_variable( "x" ) )
+										make_equal(
+											make_variable( "x" ),
+											make_variable( "y" ) ),
+										make_equal(
+											make_variable( "y" ),
+											make_variable( "x" ) )
 									)
 								)
 							), true );
@@ -202,12 +234,20 @@ namespace first_order_logic
 												(
 													make_and
 													(
-														make_equal( make_variable( "s1" ), make_variable( "t1" ) ),
-														make_equal( make_variable( "s2" ), make_variable( "t2" ) )
+														make_equal(
+															make_variable( "s1" ),
+															make_variable( "t1" ) ),
+														make_equal(
+															make_variable( "s2" ),
+															make_variable( "t2" ) )
 													),
-													make_equal( make_variable( "s1" ), make_variable( "s2" ) )
+													make_equal(
+														make_variable( "s1" ),
+														make_variable( "s2" ) )
 												),
-												make_equal( make_variable( "t1" ), make_variable( "t2" ) )
+												make_equal(
+													make_variable( "t1" ),
+													make_variable( "t2" ) )
 											)
 										)
 									)
@@ -252,24 +292,26 @@ namespace first_order_logic
 							if ( std::all_of(
 									branch.begin( ),
 									branch.end( ),
-									[&]( const auto & t ) { return std::get< 2 >( t ) == true; } ) )
-									{
-										std::for_each(
-											branch.begin( ),
-											branch.end( ),
-											[&]( const auto & t ){ leaf.join( std::get< 1 >( t ) ); } );
-										return true;
-									}
-									auto it =
-										std::find_if(
-											branch.begin( ),
-											branch.end( ),
-											[&]( const auto & t ){ return std::get< 2 >( t ) == false; } );
-									if ( it != branch.end( ) )
-									{
-										leaf.join( std::get< 1 >( * it ) );
-										return false;
-									}
+									[&]( const auto & t )
+										{ return std::get< 2 >( t ) == true; } ) )
+							{
+								std::for_each(
+									branch.begin( ),
+									branch.end( ),
+									[&]( const auto & t ){ leaf.join( std::get< 1 >( t ) ); } );
+								return true;
+							}
+							auto it =
+								std::find_if(
+									branch.begin( ),
+									branch.end( ),
+									[&]( const auto & t )
+										{ return std::get< 2 >( t ) == false; } );
+							if ( it != branch.end( ) )
+							{
+								leaf.join( std::get< 1 >( * it ) );
+								return false;
+							}
 							return boost::optional< bool >( );
 						};
 					for ( std::tuple< sequence, proof_tree, boost::optional< bool > > & p : branch )
@@ -363,7 +405,8 @@ namespace first_order_logic
 										try_insert( temp_sequent, t.first, false );
 									}
 								} ),
-							make_atomic_actor( [&]( const atomic_sentence & as ) { try_insert( expanded, as, t.second ); } ),
+							make_atomic_actor(
+								[&]( const atomic_sentence & as ) { try_insert( expanded, as, t.second ); } ),
 							make_and_actor(
 								[&]( const free_sentence & l, const free_sentence & r )
 								{
@@ -381,14 +424,20 @@ namespace first_order_logic
 										{
 											ldt.try_insert( ldt.sequent, l, false );
 											branch.push_back(
-												std::make_tuple( ldt, proof_tree( ), boost::optional< bool >( ) ) );
+												std::make_tuple(
+													ldt,
+													proof_tree( ),
+													boost::optional< bool >( ) ) );
 										}
 										catch ( contradiction & con ) { pt.join( con.pt ); }
 										try
 										{
 											rdt.try_insert( rdt.sequent, r, false );
 											branch.push_back(
-												std::make_tuple( rdt, proof_tree( ), boost::optional< bool >( ) ) );
+												std::make_tuple(
+													rdt,
+													proof_tree( ),
+													boost::optional< bool >( ) ) );
 										}
 										catch ( contradiction & con ) { pt.join( con.pt ); }
 										have_branch = true;
@@ -406,14 +455,20 @@ namespace first_order_logic
 										{
 											ldt.try_insert( ldt.sequent, l, true );
 											branch.push_back(
-												std::make_tuple( ldt, proof_tree( ), boost::optional< bool >( ) ) );
+												std::make_tuple(
+													ldt,
+													proof_tree( ),
+													boost::optional< bool >( ) ) );
 										}
 										catch ( contradiction & con ) { pt.join( con.pt ); }
 										try
 										{
 											rdt.try_insert( rdt.sequent, r, true );
 											branch.push_back(
-												std::make_tuple( rdt, proof_tree( ), boost::optional< bool >( ) ) );
+												std::make_tuple(
+													rdt,
+													proof_tree( ),
+													boost::optional< bool >( ) ) );
 										}
 										catch ( contradiction & con ) { pt.join( con.pt ); }
 										have_branch = true;
@@ -424,7 +479,9 @@ namespace first_order_logic
 										try_insert( sequent, r, false );
 									}
 								} ),
-							make_not_actor( [&]( const free_sentence & sen ) { try_insert( sequent, sen, ! t.second ); } )
+							make_not_actor(
+								[&]( const free_sentence & sen )
+								{ try_insert( sequent, sen, ! t.second ); } )
 						);
 					}
 					catch ( contradiction & con )
@@ -465,7 +522,8 @@ namespace first_order_logic
 				t.cv
 				(
 					make_function_output_iterator(
-						[&]( const term & t ){ cv_map.insert( std::make_pair( t, std::set< free_sentence >( ) ) ); } )
+						[&]( const term & t )
+						{ cv_map.insert( std::make_pair( t, std::set< free_sentence >( ) ) ); } )
 				);
 				term_map = cv_map;
 				if ( cv_map.empty( ) ) { new_variable( ); }
