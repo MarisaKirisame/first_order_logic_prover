@@ -18,10 +18,22 @@ namespace first_order_logic
 		std::map< function, std::pair< term_generator, term_generator > > functions;
 		const std::set< function > & original_functions;
 		term_generator( const term_generator & tg ) :
-			that( tg.that ), arity( tg.arity ), cv( tg.cv ), term_map( tg.term_map ),
-			original_functions( tg.original_functions ), i( this->functions.begin( ) ) { }
-		term_generator( deduction_tree * that, size_t arity, decltype( cv ) & cv, const std::set< function > & functions )
-			: that( that), arity( arity ), cv( cv ), original_functions( functions ), i( this->functions.begin( ) ) { }
+            that( tg.that ),
+            arity( tg.arity ),
+            cv( tg.cv ),
+            term_map( tg.term_map ),
+            original_functions( tg.original_functions ),
+            i( this->functions.begin( ) ) { }
+        term_generator(
+                deduction_tree * that,
+                size_t arity,
+                decltype( cv ) & cv,
+                const std::set< function > & functions )
+            : that( that ),
+              arity( arity ),
+              cv( cv ),
+              original_functions( functions ),
+              i( this->functions.begin( ) ) { }
 		decltype( functions.begin( ) ) i;
 		std::vector< term > generate( decltype( functions.begin( ) ) it )
 		{
@@ -36,7 +48,8 @@ namespace first_order_logic
 				return f;
 			}
 		}
-		term_generator generate_term_generator( size_t a ) const { return term_generator( that, a, cv, original_functions ); }
+        term_generator generate_term_generator( size_t a ) const
+        { return term_generator( that, a, cv, original_functions ); }
 		std::vector< term > generate( )
 		{
 			if ( arity == 0 ) { return { }; }

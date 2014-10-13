@@ -106,9 +106,12 @@ namespace first_order_logic
 			(*this)->cache = (*this)->name + ( stack.empty( ) ? "" : "(" + stack + ")" );
 			return (*this)->cache;
 		}
-		bool operator < ( const term & comp ) const { return static_cast< std::string >( * this ) < static_cast< std::string >( comp ); }
-		bool operator == ( const term & comp ) const { return static_cast< std::string >( * this ) == static_cast< std::string >( comp ); }
-		bool operator != ( const term & comp ) const { return static_cast< std::string >( * this ) != static_cast< std::string >( comp ); }
+        bool operator < ( const term & comp ) const
+        { return static_cast< std::string >( * this ) < static_cast< std::string >( comp ); }
+        bool operator == ( const term & comp ) const
+        { return static_cast< std::string >( * this ) == static_cast< std::string >( comp ); }
+        bool operator != ( const term & comp ) const
+        { return static_cast< std::string >( * this ) != static_cast< std::string >( comp ); }
 		explicit term( ) { }
 		explicit term( const variable & var ) : data( new internal( type::variable, var.name, { } ) ) { }
 		explicit term( const constant & var ) : data( new internal( type::constant, var.name, { } ) ) { }

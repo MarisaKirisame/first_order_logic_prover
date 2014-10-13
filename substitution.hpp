@@ -49,7 +49,11 @@ namespace first_order_logic
 	template< typename F, typename GENERATOR >
 	void rename_variable( const variable & sen, const F & usable, const GENERATOR & gen, substitution & renamed );
 	template< typename F, typename T, typename GENERATOR >
-	void rename_variable( const sentence< T > & sen, const F & usable, const GENERATOR & gen, substitution & renamed );
+    void rename_variable(
+            const sentence< T > & sen,
+            const F & usable,
+            const GENERATOR & gen,
+            substitution & renamed );
 	template< typename INITER, typename F, typename GENERATOR >
 	void rename_variable( INITER begin, INITER end, const F & usable, const GENERATOR & gen, substitution & renamed );
 	template< typename ... T >
@@ -60,7 +64,8 @@ namespace first_order_logic
 	{
 		return as.type_restore_full< atomic_sentence >
 				(
-					make_equal_actor( [&]( const term & l, const term & r ){ return make_equal( (*this)(l), (*this)(r) ); } ),
+                    make_equal_actor(
+                        [&]( const term & l, const term & r ){ return make_equal( (*this)(l), (*this)(r) ); } ),
 					make_predicate_actor(
 						[&]( const std::string & str, const std::vector< term > & vec )
 						{
