@@ -340,14 +340,9 @@ namespace first_order_logic
 											this->try_insert
 											(
 												sequent,
-												substitution
-												(
-													{
-														{
-															var,
-															s.first
-														}
-													}
+												substitution( { {
+													var,
+													s.first } }
 												)( sen ),
 												b
 											);
@@ -475,7 +470,10 @@ namespace first_order_logic
 										{ pt.join( con.pt ); }
 										try
 										{
-											rdt.try_insert( rdt.sequent, r, true );
+											rdt.try_insert(
+												rdt.sequent,
+												r,
+												true );
 											branch.push_back(
 												std::make_tuple
 												(
