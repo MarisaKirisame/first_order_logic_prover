@@ -26,7 +26,10 @@ namespace first_order_logic
 			std::set< std::string > ret;
 			auto extract =
 					[&]( const atomic_sentence & s )
-					{ s.cv( make_function_output_iterator( [&]( const term & t ){ ret.insert( t->name ); } ) ); };
+					{
+						s.cv( make_function_output_iterator(
+							[&]( const term & t ){ ret.insert( t->name ); } ) );
+					};
 			for ( const definite_clause & dc : kb )
 			{
 				std::for_each( dc.premise.begin( ), dc.premise.end( ), extract );
@@ -47,16 +50,19 @@ namespace first_order_logic
 			auto generate =
 					[&,this]( const auto & self, const substitution & sub )->void
 					{
-						if ( gp.size( ) == premise.size( ) ) { new_known_facts.push_back( sub( rename( conclusion ) ) ); }
+						if ( gp.size( ) == premise.size( ) )
+						{ new_known_facts.push_back( sub( rename( conclusion ) ) ); }
 						else
 						{
 							this->matching_facts(
 								rename( premise[ gp.size( ) ] ),
 								sub,
 								make_function_output_iterator(
-									[&]( const std::pair< atomic_sentence, substitution > & p )
+									[&]( const auto & p )
 									{
-										if ( ( new_known_facts.empty( ) ) || ( ! unify( new_known_facts.back( ), query ) ) )
+										if (
+												( new_known_facts.empty( ) ) ||
+												( ! unify( new_known_facts.back( ), query ) ) )
 										{
 											gp.push_back( p.first );
 											self( self, p.second );
@@ -71,7 +77,8 @@ namespace first_order_logic
 				if ( std::none_of(
 						known_facts.begin( ),
 						known_facts.end( ),
-						[&]( const atomic_sentence & s ){ return unify( sen, s ); } ) )
+						[&]( const atomic_sentence & s )
+							{ return unify( sen, s ); } ) )
 				{
 					known_facts.push_back( sen );
 					ret = true;
@@ -98,9 +105,12 @@ namespace first_order_logic
 							rename_variable(
 								dc.premise.begin( ),
 								dc.premise.end( ),
-								[&]( const std::string & v ){ return var_name.count( v ) == 0; },
-								[]( const std::string & n ){ return n + "_"; } );
-					have_new_inference = try_infer_forward( dc.premise, dc.conclusion, rename, sen ) || have_new_inference;
+								[&]( const std::string & v )
+									{ return var_name.count( v ) == 0; },
+								[]( const std::string & n ) { return n + "_"; } );
+					have_new_inference =
+							try_infer_forward( dc.premise, dc.conclusion, rename, sen ) ||
+							have_new_inference;
 					auto ret = unify( known_facts.back( ), sen );
 					if ( ret ) { return ret; }
 				}
@@ -131,8 +141,10 @@ namespace first_order_logic
 										rename_variable(
 											dc.premise.begin( ),
 											dc.premise.end( ),
-											[&]( const std::string & v ){ return var_name.count( v ) == 0; },
-											[]( const std::string & n ){ return n + "_"; } );
+											[&]( const std::string & v )
+												{ return var_name.count( v ) == 0; },
+											[]( const std::string & n )
+												{ return n + "_"; } );
 								auto ret = unify( rename( dc.conclusion ), s );
 								if ( ret )
 								{
@@ -156,7 +168,7 @@ namespace first_order_logic
 				for ( const std::pair< atomic_sentence, std::vector< std::vector< atomic_sentence > > > & p :
 					  requiring_fact )
 				{
-					for ( const std::vector< atomic_sentence > & vec : p.second )
+					for ( const auto & vec : p.second )
 					{
 						substitution rename =
 								rename_variable(
