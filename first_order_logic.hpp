@@ -58,7 +58,12 @@ namespace first_order_logic
 	typename add_sentence_front< T, set_c< sentence_type, sentence_type::logical_not > >::type
 	make_not( const T & s )
 	{
-		typedef typename add_sentence_front< T, set_c< sentence_type, sentence_type::logical_not > >::type ret_type;
+		typedef typename
+		add_sentence_front
+		<
+			T,
+			set_c< sentence_type, sentence_type::logical_not >
+		>::type ret_type;
 		return ret_type( sentence_type::logical_not, { static_cast< ret_type >( s ) } );
 	}
 
