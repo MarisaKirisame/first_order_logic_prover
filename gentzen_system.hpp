@@ -216,30 +216,24 @@ namespace first_order_logic
 								variable( "s1" ),
 								variable( "t1" ),
 								variable( "s2" ),
-								make_all
+								variable( "t2" ),
+								make_imply
 								(
-									variable( "t2" ),
-									make_imply
+									make_and
 									(
-										make_and
-										(
-											make_and
-											(
-												make_equal(
-													make_variable( "s1" ),
-													make_variable( "t1" ) ),
-												make_equal(
-													make_variable( "s2" ),
-													make_variable( "t2" ) )
-											),
-											make_equal(
-												make_variable( "s1" ),
-												make_variable( "s2" ) )
-										),
 										make_equal(
-											make_variable( "t1" ),
-											make_variable( "t2" ) )
-									)
+											make_variable( "s1" ),
+											make_variable( "t1" ) ),
+										make_equal(
+											make_variable( "s2" ),
+											make_variable( "t2" ) ),
+										make_equal(
+											make_variable( "s1" ),
+											make_variable( "s2" ) )
+									),
+									make_equal(
+										make_variable( "t1" ),
+										make_variable( "t2" ) )
 								)
 							),
 							true );
@@ -304,7 +298,7 @@ namespace first_order_logic
 							}
 							return boost::optional< bool >( );
 						};
-					for ( std::tuple< sequence, proof_tree, boost::optional< bool > > & p : branch )
+					for ( auto & p : branch )
 					{
 						if ( ! std::get< 2 >( p ) )
 						{
