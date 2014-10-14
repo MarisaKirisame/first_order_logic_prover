@@ -165,8 +165,6 @@ namespace first_order_logic
             if ( length( ) > comp.length( ) ) { return false; }
             return static_cast< std::string >( * this ) < static_cast< std::string >( comp );
         }
-        bool have_quantifier( ) const;
-        bool is_in_prenex_form( ) const;
         sentence< T > standardize_bound_variable( ) const;
         sentence< T > standardize_bound_variable( std::set< std::string > & term_map ) const;
         typename
@@ -217,7 +215,7 @@ namespace first_order_logic
         template< sentence_type st >
         struct get_sentence_type< st, false, false >
         { typedef typename next_sentence_type< sentence< T >  >::type::template get_sentence_type< st >::type type; };
-        typedef typename get_sentence_type< sentence_type::logical_and >::type wand_sentence_type;
+        typedef typename get_sentence_type< sentence_type::logical_and >::type and_sentence_type;
         typedef typename get_sentence_type< sentence_type::logical_or >::type or_sentence_type;
         typedef typename get_sentence_type< sentence_type::logical_not >::type not_sentence_type;
         typedef typename get_sentence_type< sentence_type::all >::type all_sentence_type;
