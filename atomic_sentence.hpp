@@ -153,7 +153,6 @@ namespace first_order_logic
 			data( new internal( ty, ter ) ) { }
 		atomic_sentence( type ty, const std::string & str ) :
 			data( new internal( ty, str ) ) { }
-		atomic_sentence( ) { }
 		template< typename OUTITER >
 		OUTITER constants( OUTITER result ) const
 		{

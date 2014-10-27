@@ -25,7 +25,7 @@ namespace first_order_logic
         namespace qi = spirit::qi;
         namespace encoding  = boost::spirit::unicode;
         template< typename IT >
-        struct FOL_grammar : qi::grammar< IT, free_sentence( ), encoding::space_type >
+        struct FOL_grammar : qi::grammar< IT, boost::optional< free_sentence >( ), encoding::space_type >
         {
             FOL_grammar( ) : FOL_grammar::base_type( expression )
             {
@@ -49,57 +49,43 @@ namespace first_order_logic
                 using phoenix::construct;
                 text %= lexeme[alpha>>*(alnum)];
                 parse_propositional_letter = text[ _val = bind( make_propositional_letter, _1 ) ];
-                bool_exp %=
-                    ( lit( '(' ) >> expression >> lit( ')' ) ) |
-                    with_equality |
-                    predicate |
-                    parse_propositional_letter;
+                bool_exp =
+                    ( lit( '(' ) >> expression >> lit( ')' ) ) [ _val = _1 ] |
+                    with_equality [ _val = _1 ] |
+                    predicate [ _val = _1 ] |
+                    parse_propositional_letter [ _val = _1 ];
                 with_equality =
                     ( term_exp >> lit( '=' ) >> term_exp )
-                    [ bind( []( auto & val, auto & l, auto & r ){ val = make_equal( l, r ); }, _val, _1, _2 ) ];
+                    [ bind( []( auto & val, auto & l, auto & r ) { val = make_equal( l, r ); }, _val, _1, _2 ) ];
                 predicate =
-                    ( text >> lit( '(' ) >> ( term_exp % ',' ) >> lit( ')' ) )[ _val = bind( make_predicate, _1, _2 ) ];
+                    ( text >> lit( '(' ) >> ( term_exp % ',' ) >> lit( ')' ) ) [ _val = bind( make_predicate, _1, _2 ) ];
                 with_not =
                     bool_exp[ _val = _1 ] |
                         ( lit( '!' ) >> with_not )
-                        [ bind( []( auto & val, auto & param ){ val = make_not( param ); }, _val, _1 ) ];
+                        [ bind( []( auto & val, auto & param ) { val = make_not( * param ); }, _val, _1 ) ];
                 with_binary =
                     with_not[ _val = _1 ] >> *
                     (
                         ( lit( "/\\" ) >> with_not )
-                            [ bind( []( auto & val, auto & param ){ val = make_and( val, param ); }, _val, _1 ) ] |
+                            [ bind( []( auto & val, auto & param ) { val = make_and( * val, * param ); }, _val, _1 ) ] |
                         ( ( lit( "\\/" ) >> with_not )
-                            [ bind( []( auto & val, auto & param ){ val = make_or( val, param ); }, _val, _1 ) ] )
+                            [ bind( []( auto & val, auto & param ) { val = make_or( * val, * param ); }, _val, _1 ) ] )
                     );
                 with_quantifier =
                     ( lit( u8"∃" ) >> parse_variable >> expression )
-                        [
-                            bind(
-                                []( auto & val, auto & param1, auto & param2 )
-                                    { val = make_some( param1, param2 ); },
-                                _val,
-                                _1,
-                                _2 )
-                        ] |
+                        [ bind( []( auto & val, auto & param1, auto & param2 ) { val = make_some( param1, * param2 ); }, _val, _1, _2 ) ] |
                     ( lit( u8"∀" ) >> parse_variable >> expression )
-                        [
-                            bind(
-                                []( auto & val, auto & param1, auto & param2 )
-                                    { val = make_all( param1, param2 ); },
-                                _val,
-                                _1,
-                                _2 )
-                        ] |
+                        [ bind( []( auto & val, auto & param1, auto & param2 ) { val = make_all( param1, * param2 ); }, _val, _1, _2 )] |
                 with_binary[ _val = _1 ];
                 with_implication =
                 with_quantifier[ _val = _1 ] >> *
                 (
                     ( lit( "->" ) >> with_quantifier )
-                        [ bind( []( auto & val, auto & param ){ val = make_imply( val, param ); }, _val, _1 ) ] |
+                        [ bind( []( auto & val, auto & param ){ val = make_imply( * val, * param ); }, _val, _1 ) ] |
                     ( lit( "<-" ) >> with_quantifier )
-                        [ bind( []( auto & val, auto & param ){ val = make_imply( param, val ); }, _val, _1 ) ] |
+                        [ bind( []( auto & val, auto & param ){ val = make_imply( * param, * val ); }, _val, _1 ) ] |
                     ( lit( "<->" ) >> with_quantifier )
-                        [ bind( []( auto & val, auto & param ){ val = make_iff( val, param ); }, _val, _1 ) ]
+                        [ bind( []( auto & val, auto & param ){ val = make_iff( * val, * param ); }, _val, _1 ) ]
                 );
                 expression %= with_implication;
                 term_exp = function[ _val = _1 ] | text[ _val = bind( make_variable, _1 ) ];
@@ -111,7 +97,7 @@ namespace first_order_logic
             qi::rule< IT, term( ), encoding::space_type >
                 function,
                 term_exp;
-                qi::rule< IT, free_sentence( ), encoding::space_type >
+            qi::rule< IT, boost::optional< free_sentence >( ), encoding::space_type >
                 with_equality,
                 predicate,
                 expression,
@@ -121,14 +107,14 @@ namespace first_order_logic
                 with_quantifier,
                 parse_propositional_letter,
                 with_implication;
-                qi::rule< IT, std::string( ), encoding::space_type> text;
+            qi::rule< IT, std::string( ), encoding::space_type > text;
         };
     }
         boost::optional< free_sentence > prase( const std::string & s )
         {
             auto i = s.begin( );
             auto e = s.end( );
-            free_sentence ret;
+            boost::optional< free_sentence > ret;
             FOL_grammar< decltype( i ) > fol;
             bool succeed = boost::spirit::qi::phrase_parse( i, e, fol, boost::spirit::unicode::space, ret );
             if ( ! ( succeed && i == e ) ) { return boost::optional< free_sentence >( ); }

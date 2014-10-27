@@ -133,7 +133,6 @@ namespace first_order_logic
             data( new internal( ty, il ) ) { }
         sentence( sentence_type ty, const variable & l, const sentence< T > & r ) :
             data( new internal( ty, l, r ) ) { }
-        sentence( ) { }
         sentence( const atomic_sentence & as ) :
             sentence( sentence_type::pass, typename next_sentence_type< sentence< T > >::type( as ) ) { }
         bool operator == ( const sentence< T > & comp ) const { return !( (*this) < comp || comp < (*this) ); }
