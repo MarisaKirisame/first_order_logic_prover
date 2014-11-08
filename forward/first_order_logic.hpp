@@ -3,7 +3,7 @@
 #include <string>
 #include <vector>
 #include <boost/mpl/vector.hpp>
-#include "sentence_helper.hpp"
+#include "../first_order_logic_prover/sentence_helper.hpp"
 namespace first_order_logic
 {
 	struct term;
@@ -74,5 +74,5 @@ namespace first_order_logic
 	{ return make_some( f, make_some( m, r, rest ... ) ); }
 
 }
-#include "../first_order_logic.hpp"
+
 #endif // FORWARD_FIRST_ORDER_LOGIC_H

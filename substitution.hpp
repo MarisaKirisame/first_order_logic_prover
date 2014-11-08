@@ -14,7 +14,7 @@ namespace first_order_logic
 	{
 		std::map< variable, term > data;
 		term operator ( )( const term & t ) const;
-		atomic_sentence operator ( )( const atomic_sentence & as ) const;
+        inline atomic_sentence operator ( )( const atomic_sentence & as ) const;
 		template< typename T >
 		sentence< T > operator ( )( const sentence< T > & s ) const;
 		substitution( const std::map< variable, term > & data ) : data( data ) { }
