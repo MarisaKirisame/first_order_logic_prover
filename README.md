@@ -4,7 +4,7 @@ First order logic prover
 This is a library which contains:
 
  - Backward chaining algorithm
- - Parametric typed First order logic 
+ - Dependent typed First order logic 
  - Forward chaining algorithm
  - Gentzen system
  - Parser for parsing FOL.
