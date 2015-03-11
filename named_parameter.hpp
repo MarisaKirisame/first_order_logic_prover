@@ -7,7 +7,7 @@ struct NAME ## _actor\
     T t;\
     template< typename ... ARG > auto operator ( )( const ARG & ... arg ) const { return t( arg ... ); }\
     explicit NAME ## _actor( const T & t ) : t( t ) { }\
-};\
+}; \
 template< typename T >\
 struct NAME ## _actor_helper : boost::mpl::false_{ };\
 template< typename T >\
