@@ -19,7 +19,7 @@ HEADERS += \
     definite_clause.hpp \
     sentence.hpp \
     knowledge_base.hpp \
-    praser.hpp \
+    parser.hpp \
     function_output_iterator.hpp \
     forward/first_order_logic.hpp \
     implementation/substitution.hpp \

@@ -1,5 +1,5 @@
-#ifndef FIRST_ORDER_LOGIC_PRASER_HPP
-#define FIRST_ORDER_LOGIC_PRASER_HPP
+#ifndef FIRST_ORDER_LOGIC_PARSER_HPP
+#define FIRST_ORDER_LOGIC_PARSER_HPP
 #include "sentence.hpp"
 #include "forward/first_order_logic.hpp"
 #include <memory>
@@ -110,15 +110,15 @@ namespace first_order_logic
             qi::rule< IT, std::string( ), encoding::space_type > text;
         };
     }
-        boost::optional< free_sentence > prase( const std::string & s )
-        {
-            auto i = s.begin( );
-            auto e = s.end( );
-            boost::optional< free_sentence > ret;
-            FOL_grammar< decltype( i ) > fol;
-            bool succeed = boost::spirit::qi::phrase_parse( i, e, fol, boost::spirit::unicode::space, ret );
-            if ( ! ( succeed && i == e ) ) { return boost::optional< free_sentence >( ); }
-            return ret;
-        }
+    boost::optional< free_sentence > parse( const std::string & s )
+    {
+        auto i = s.begin( );
+        auto e = s.end( );
+        boost::optional< free_sentence > ret;
+        FOL_grammar< decltype( i ) > fol;
+        bool succeed = boost::spirit::qi::phrase_parse( i, e, fol, boost::spirit::unicode::space, ret );
+        if ( ! ( succeed && i == e ) ) { return boost::optional< free_sentence >( ); }
+        return ret;
     }
-#endif // FIRST_ORDER_LOGIC_PRASER_HPP
+}
+#endif // FIRST_ORDER_LOGIC_PARSER_HPP

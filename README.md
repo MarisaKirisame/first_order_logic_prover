@@ -9,7 +9,6 @@ This is a library which contains:
  - Gentzen system
  - Parser for parsing FOL.
  - Resolution method
- - Rete algorithm( unimplemented yet )
  - Unify
 
 Dependency: See .pro. **Use a lot of C++1y feature so need a good compiler.**

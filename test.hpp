@@ -8,7 +8,7 @@
 #include "substitution.hpp"
 #include "definite_clause.hpp"
 #include "knowledge_base.hpp"
-#include "praser.hpp"
+#include "parser.hpp"
 #include "resolution.hpp"
 namespace first_order_logic
 {
@@ -138,7 +138,7 @@ namespace first_order_logic
         substitution expected = std::map< variable, term > { { variable( "x" ), make_constant( "West" ) } };
         BOOST_CHECK( res && * res == expected );
     }
-    BOOST_AUTO_TEST_CASE( praser ) { BOOST_CHECK( prase( "∀x F(x)" ) ); }
+    BOOST_AUTO_TEST_CASE( parser ) { BOOST_CHECK( parse( "∀x F(x)" ) ); }
     BOOST_AUTO_TEST_CASE( resolution_test )
     {
         free_sentence axiom1 = make_all(
