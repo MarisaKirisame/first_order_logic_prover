@@ -214,4 +214,63 @@ namespace first_order_logic
                     make_predicate( "Criminal", { make_variable( "x" ) } ) ) );
     }
 }
+#include "horn_clauses.hpp"
+#include "DPLL.hpp"
+#include "WALKSAT.hpp"
+namespace propositional_calculus
+{
+    enum satisfiability
+    { valid, satisfiable, unsatisfiable };
+    using namespace first_order_logic;
+    const std::vector< std::pair< free_propositional_sentence, satisfiability > > & test_prop( )
+    {
+        free_propositional_sentence A( make_predicate( "A", { } ) );
+        free_propositional_sentence B( make_predicate( "B", { } ) );
+        free_propositional_sentence C( make_predicate( "C", { } ) );
+        free_propositional_sentence not_a( make_not( A ) );
+        free_propositional_sentence valid_prop( make_or( A, not_a ) );
+        free_propositional_sentence unsatisfiable_prop( make_and( A, not_a ) );
+        free_propositional_sentence associativity_law_prop( make_iff( make_or( make_or( A, B ), C ), make_or( make_or( B, C ), A ) ) );
+        free_propositional_sentence valid_prop2( make_imply( A, make_imply( B, A ) ) );
+        free_propositional_sentence eqprop( make_iff( A, B ) );
+        free_propositional_sentence eqprop2( pre_CNF( eqprop ) );
+        static std::vector< std::pair< free_propositional_sentence, satisfiability > > ret
+        {
+            { A, satisfiable },
+            { valid_prop, valid },
+            { associativity_law_prop, valid },
+            { unsatisfiable_prop, unsatisfiable },
+            { valid_prop2, valid },
+            { pre_CNF( make_iff( eqprop, eqprop2 ) ), valid },
+        };
+        return ret;
+    }
+
+    BOOST_AUTO_TEST_CASE( DPLL_TEST )
+    {
+        for ( const std::pair< free_propositional_sentence, satisfiability > & p : test_prop( ) )
+        { BOOST_CHECK_EQUAL( DPLL( to_CNF( p.first ) ), p.second == satisfiable || p.second == valid ); }
+    }
+
+    BOOST_AUTO_TEST_CASE( WALKSAT_TEST )
+    {
+        std::random_device rd;
+        for ( const std::pair< free_propositional_sentence, satisfiability > & p : test_prop( ) )
+        { BOOST_CHECK_EQUAL( WALKSAT( to_CNF( p.first ), 0.5, 1000, rd ), p.second == satisfiable || p.second == valid ); }
+    }
+
+    BOOST_AUTO_TEST_CASE( forward_chaining_test )
+    {
+        BOOST_CHECK( forward_chaining(
+            {
+                { {}, "A" },
+                { {}, "B" },
+                { { "A", "B" }, "L" },
+                { { "A", "P" }, "L" },
+                { { "B", "L" }, "M" },
+                { { "L", "M" }, "P" },
+                { { "P" }, "Q" } },
+            "Q" ) );
+    }
+}
 #endif //THEOREM_PROVER_EXAMPLE

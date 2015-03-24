@@ -34,11 +34,11 @@ namespace first_order_logic
             mutable std::string cache;
             std::vector
             <
-            boost::variant
-            <
-            boost::recursive_wrapper< sentence< T > >,
-            typename next_sentence_type< sentence< T > >::type
-            >
+                boost::variant
+                <
+                    boost::recursive_wrapper< sentence< T > >,
+                    typename next_sentence_type< sentence< T > >::type
+                >
             > arguments;
             internal( sentence_type st, const sentence< T > & r ) :
                 type( st ), arguments( { r } ) { }

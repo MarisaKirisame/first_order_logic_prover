@@ -30,7 +30,12 @@ HEADERS += \
     named_parameter.hpp \
     sentence_helper.hpp \
     TMP.hpp \
-    converter.hpp
+    converter.hpp \
+    DPLL.hpp \
+    interpolant.hpp \
+    WALKSAT.hpp \
+    horn_clauses.hpp \
+    CNF.hpp
 OTHER_FILES += \
     theorem_prover.pro.user \
     LICENSE \

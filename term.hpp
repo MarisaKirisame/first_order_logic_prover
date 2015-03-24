@@ -94,11 +94,9 @@ namespace first_order_logic
             assert( data );
             std::string stack;
             auto it = (*this)->arguments.begin( );
-            if ( it != (*this)->arguments.end( ) ) { goto http; }
             while ( it != (*this)->arguments.end( ) )
             {
-                stack += ", ";
-                http://marisa.moe
+                if ( it != (*this)->arguments.begin( ) ) { stack += ", "; }
                 assert( it->data );
                 stack += static_cast< std::string >( * it );
                 ++it;

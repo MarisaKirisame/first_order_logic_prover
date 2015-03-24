@@ -3,69 +3,9 @@
 #include "sentence.hpp"
 #include "term.hpp"
 #include "TMP.hpp"
+#include "CNF.hpp"
 namespace first_order_logic
 {
-    template< typename t >
-    struct conjunction
-    {
-        std::set< t > data;
-        conjunction( std::initializer_list< t > d ) : data( d ) { }
-        conjunction( std::set< t > && d ) : data( std::move( d ) ) { }
-        conjunction( ) { }
-    };
-    template< typename t >
-    struct disjunction
-    {
-        std::set< t > data;
-        disjunction( std::initializer_list< t > d ) : data( d ) { }
-        disjunction( ) { }
-        bool operator < ( const disjunction & comp ) const { return data < comp.data; }
-        bool operator == ( const disjunction & comp ) const { return data == comp.data; }
-        struct join_faliure { };
-        disjunction join( const disjunction & d ) const
-        {
-            if ( & d == this ) { throw join_faliure( ); }
-            assert( d.data.size( ) < 1000 );
-            assert( data.size( ) < 1000 );
-            if ( d.data.size( ) < data.size( ) ) { return d.join( * this ); }
-            std::set< t > conjugate_set;
-            for ( auto i : data )
-            {
-                auto con = i.conjugate( );
-                assert( d.data.size( ) < 1000 );
-                assert( data.size( ) < 1000 );
-                if ( d.data.find( con ) != d.data.end( ) )
-                { conjugate_set.insert( i ); }
-            }
-            if ( conjugate_set.size( ) != 1 ) { join_faliure jf; throw jf; }
-            else
-            {
-                disjunction ret( d.data );
-                std::copy( data.begin( ), data.end( ), std::inserter( ret.data, ret.data.begin( ) ) );
-                ret.data.erase( * conjugate_set.begin( ) );
-                ret.data.erase( conjugate_set.begin( )->conjugate( ) );
-                return ret;
-            }
-        }
-        disjunction( const std::set< t > & d ) : data( d ) { }
-        disjunction( std::set< t > && d ) : data( std::move( d ) ) { }
-    };
-    struct literal
-    {
-        atomic_sentence data;
-        bool b;
-        literal( const atomic_sentence & d, bool b ) : data( d ), b( b ) { }
-        bool operator < ( const literal & comp ) const { return std::tie( data, b ) < std::tie( comp.data, comp.b ); }
-        bool operator == ( const literal & comp ) const { return std::tie( data, b ) == std::tie( comp.data, comp.b ); }
-        literal conjugate( ) const
-        {
-            literal ret( * this );
-            ret.b = ! ret.b;
-            return ret;
-        }
-    };
-    typedef disjunction< literal > clause;
-    typedef conjunction< clause > CNF;
     typedef sentence
     <
         vector
@@ -310,7 +250,7 @@ namespace first_order_logic
                     move_quantifier_out( ).
                     skolemization_remove_existential( ).
                     drop_universal( ) ) );
-        std::set< clause > to_be_added;
+        std::list< clause > to_be_added;
         bool have_new_inference = true;
         while ( have_new_inference )
         {
@@ -332,15 +272,15 @@ namespace first_order_logic
                                     for ( const literal & ins : l.data )
                                     {
                                         if ( (*un)(ins.data) != (*un)(ll.data) && (*un)(ins.data) != (*un)(rr.data) )
-                                        { cl.data.insert( literal( (*un)( ins.data ), ins.b ) ); }
+                                        { cl.data.push_back( literal( (*un)( ins.data ), ins.b ) ); }
                                     }
                                     for ( const literal & ins : r.data )
                                     {
                                         if ( (*un)(ins.data) != (*un)(ll.data) && (*un)(ins.data) != (*un)(rr.data) )
-                                        { cl.data.insert( literal( (*un)( ins.data ), ins.b ) ); }
+                                        { cl.data.push_back( literal( (*un)( ins.data ), ins.b ) ); }
                                     }
                                     if ( cl.data.empty( ) ) { return true; }
-                                    to_be_added.insert( cl );
+                                    to_be_added.push_back( cl );
                                 }
                             }
                         }
@@ -349,8 +289,11 @@ namespace first_order_logic
             }
             for ( const clause & c : to_be_added )
             {
-                auto res = cnf.data.insert( c );
-                have_new_inference = have_new_inference || res.second;
+                if ( std::find( cnf.data.begin( ), cnf.data.end( ), c ) == cnf.data.end( ) )
+                {
+                    cnf.data.push_back( c );
+                    have_new_inference = true;
+                }
             }
             to_be_added.clear( );
         }

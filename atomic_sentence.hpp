@@ -133,11 +133,9 @@ namespace first_order_logic
                             {
                                 std::string stack;
                                 auto it = vec.begin( );
-                                goto http;
                                 while ( it != vec.end( ) )
                                 {
-                                    stack += ", ";
-                                    http://marisa.moe
+                                    if ( it != vec.begin( ) ) { stack += ", "; }
                                     stack += static_cast< std::string >( * it );
                                     ++it;
                                 }
@@ -147,11 +145,11 @@ namespace first_order_logic
                             [&]( const std::string & str ) { return str; } )
                     );
         }
-        atomic_sentence( type ty, const std::string & str, const std::vector< term > & ter ) :
+        explicit atomic_sentence( type ty, const std::string & str, const std::vector< term > & ter ) :
             data( new internal( ty, str, ter ) ) { }
-        atomic_sentence( type ty, const std::initializer_list< term > & ter ) :
+        explicit atomic_sentence( type ty, const std::initializer_list< term > & ter ) :
             data( new internal( ty, ter ) ) { }
-        atomic_sentence( type ty, const std::string & str ) :
+        explicit atomic_sentence( type ty, const std::string & str ) :
             data( new internal( ty, str ) ) { }
         template< typename OUTITER >
         OUTITER constants( OUTITER result ) const
