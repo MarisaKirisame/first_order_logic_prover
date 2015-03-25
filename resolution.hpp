@@ -4,6 +4,7 @@
 #include "term.hpp"
 #include "TMP.hpp"
 #include "CNF.hpp"
+#include "sentence_operations.hpp"
 namespace first_order_logic
 {
     typedef sentence
@@ -245,10 +246,8 @@ namespace first_order_logic
     {
         CNF cnf(
                 to_CNF(
-                    make_and( sen, make_not( goal ).restore_quantifier_universal( ) ).
-                    rectify( ).
-                    move_quantifier_out( ).
-                    skolemization_remove_existential( ).
+                    skolemization_remove_existential( rectify( make_and( sen, make_not( goal ).restore_quantifier_universal( ) ) ).
+                    move_quantifier_out( ) ).
                     drop_universal( ) ) );
         std::list< clause > to_be_added;
         bool have_new_inference = true;

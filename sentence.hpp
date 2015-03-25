@@ -165,31 +165,20 @@ namespace first_order_logic
             if ( length( ) > comp.length( ) ) { return false; }
             return static_cast< std::string >( * this ) < static_cast< std::string >( comp );
         }
-        sentence< T > standardize_bound_variable( ) const;
-        sentence< T > standardize_bound_variable( std::set< std::string > & term_map ) const;
         typename
         move_operator_out
         <
             sentence< T >,
             set_c< sentence_type, sentence_type::all, sentence_type::some >
         >::type move_quantifier_out( ) const;
-        typename remove_operator< sentence< T >, set_c< sentence_type, sentence_type::some > >::type
-        skolemization_remove_existential( std::set< variable > & previous_quantifier ) const;
         typename remove_operator< sentence< T >, set_c< sentence_type, sentence_type::all > >::type
         skolemization_remove_universal( std::set< variable > & previous_quantifier ) const;
-        typename remove_operator< sentence< T >, set_c< sentence_type, sentence_type::some > >::type
-        skolemization_remove_existential( ) const;
         typename remove_operator< sentence< T >, set_c< sentence_type, sentence_type::all > >::type
         skolemization_remove_universal( ) const;
         typename remove_operator< sentence< T >, set_c< sentence_type, sentence_type::some > >::type
         drop_existential( ) const;
         typename remove_operator< sentence< T >, set_c< sentence_type, sentence_type::all > >::type
         drop_universal( ) const;
-        sentence< T > rectify( ) const;
-        sentence< T > rectify(
-                std::set< variable > & used_quantifier,
-                const std::set< variable > & free_variable,
-                std::set< std::string > & used_name ) const;
         template< typename OUTITER >
         OUTITER used_name( OUTITER result ) const;
         explicit operator bool ( ) const { return data.get( ) != nullptr; }
@@ -661,30 +650,11 @@ namespace first_order_logic
     }
 
     template< typename T >
-    typename remove_operator< sentence< T >, set_c< sentence_type, sentence_type::some > >::type
-    sentence< T >::skolemization_remove_existential( ) const
-    {
-        std::set< variable > s;
-        return skolemization_remove_existential( s );
-    }
-
-    template< typename T >
     typename remove_operator< sentence< T >, set_c< sentence_type, sentence_type::all > >::type
     sentence< T >::skolemization_remove_universal( ) const
     {
         std::set< variable > s;
         return skolemization_remove_universal( s );
-    }
-
-    template< typename T >
-    sentence< T > sentence< T >::rectify( ) const
-    {
-        std::set< variable > sv;
-        std::set< std::string > used_name;
-        std::set< variable > var;
-        free_variables( std::inserter( var, var.begin( ) ) );
-        this->used_name( std::inserter( used_name, used_name.begin( ) ) );
-        return rectify( sv, var, used_name );
     }
 
     template< typename T >
@@ -941,7 +911,7 @@ namespace first_order_logic
     }
 
     template< typename T >
-    sentence< T > sentence< T >::standardize_bound_variable( ) const
+    sentence< T > standardize_bound_variable( const sentence< T > & self )
     {
         std::set< std::string > term_map;
         cv( make_function_output_iterator(
@@ -950,7 +920,7 @@ namespace first_order_logic
                     assert( t->term_type == term::type::constant || t->term_type == term::type::variable );
                     term_map.insert( t->name );
                 } ) );
-        return standardize_bound_variable( term_map );
+        return standardize_bound_variable( self, term_map );
     }
 
     template< typename T >
