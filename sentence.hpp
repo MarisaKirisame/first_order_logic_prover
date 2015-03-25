@@ -114,17 +114,6 @@ namespace first_order_logic
             static_assert( full_type_restore< ACTORS ... >::value, "type missing" );
             return type_restore< RET >( t ..., error< RET >( ) );
         }
-        template< typename RET, typename ... ACTORS >
-        RET type_restore( const ACTORS & ... t ) const;
-        template< typename RET, typename T1, typename T2, typename T3, typename T4, typename T5, typename T6 >
-        RET type_restore_inner(
-                const and_actor< T1 > & and_func,
-                const or_actor< T2 > & or_func,
-                const not_actor< T3 > & not_func,
-                const all_actor< T4 > & all_func,
-                const some_actor< T5 > & some_func,
-                const atomic_actor< T6 > & atomic_func ) const;
-        explicit operator std::string( ) const;
         sentence( sentence_type ty,
                   const std::initializer_list< typename next_sentence_type< sentence< T > >::type > & il ) :
             data( new internal( ty, il ) ) { }
@@ -246,6 +235,150 @@ namespace first_order_logic
                         void
                     >::value;
         };
+        template< typename RET, typename T1, typename T2, typename T3, typename T4, typename T5, typename T6 >
+        RET type_restore_inner(
+            const and_actor< T1 > & and_func,
+            const or_actor< T2 > & or_func,
+            const not_actor< T3 > & not_func,
+            const all_actor< T4 > & all_func,
+            const some_actor< T5 > & some_func,
+            const atomic_actor< T6 > & atomic_func ) const
+        {
+            switch ( (*this)->type )
+            {
+                case sentence_type::logical_and:
+                    return
+                        misc::make_expansion(
+                            []( const std::false_type &, const auto &, const auto & )
+                            { return error< RET >( )( ); },
+                            [&]( const std::true_type &, const auto & l, const auto & r )
+                            { return and_func( l, r ); } )
+                            (
+                                have
+                                <
+                                    typename current_set< sentence< T > >::type,
+                                    set_c< sentence_type, sentence_type::logical_and >
+                                >( ),
+                                boost::get< sentence< T > >( (*this)->arguments[0] ),
+                                boost::get< sentence< T > >( (*this)->arguments[1] )
+                            );
+                case sentence_type::logical_not:
+                    return
+                        misc::make_expansion(
+                            []( const std::false_type &, const auto & ) { return error< RET >( )( ); },
+                            [&]( const std::true_type &, const auto & s ) { return not_func( s ); } )
+                            (
+                                have
+                                <
+                                    typename current_set< sentence< T >  >::type,
+                                    set_c< sentence_type, sentence_type::logical_not >
+                                >( ),
+                                boost::get< sentence< T > >( (*this)->arguments[0] )
+                            );
+                case sentence_type::logical_or:
+                    return
+                        misc::make_expansion(
+                            []( const std::false_type &, const auto &, const auto & )
+                            { return error< RET >( )( ); },
+                            [&]( const std::true_type &, const auto & l, const auto & r )
+                            { return or_func( l, r ); } )
+                            (
+                                have
+                                <
+                                    typename current_set< sentence< T >  >::type,
+                                    set_c< sentence_type, sentence_type::logical_or >
+                                >( ),
+                                boost::get< sentence< T > >( (*this)->arguments[0] ),
+                                boost::get< sentence< T > >( (*this)->arguments[1] )
+                            );
+                case sentence_type::all:
+                    return
+                        misc::make_expansion(
+                            []( const std::false_type &, const auto & ) { return error< RET >( )( ); },
+                            [&]( const std::true_type &, const auto & s )
+                            { return all_func( variable( (*this)->name ), s ); } )
+                            (
+                                have
+                                <
+                                    typename current_set< sentence< T >  >::type,
+                                    set_c< sentence_type, sentence_type::all >
+                                >( ),
+                                boost::get< sentence< T > >( (*this)->arguments[0] )
+                            );
+                case sentence_type::some:
+                    return
+                        misc::make_expansion(
+                            []( const std::false_type &, const auto & ) { return error< RET >( )( ); },
+                            [&]( const std::true_type &, const auto & s )
+                            { return some_func( variable( (*this)->name ), s ); } )
+                            (
+                                have
+                                <
+                                    typename current_set< sentence< T >  >::type,
+                                    set_c< sentence_type, sentence_type::some >
+                                >( ),
+                                boost::get< sentence< T > >( (*this)->arguments[0] )
+                            );
+                case sentence_type::pass:
+                    return
+                        misc::make_expansion(
+                            [&]( const atomic_sentence & as ) { return atomic_func( as ); },
+                            [&]( const typename next_sentence_type< sentence< T > >::type & n )
+                            {
+                                return n.template type_restore< RET >
+                                        (
+                                            and_func,
+                                            or_func,
+                                            not_func,
+                                            all_func,
+                                            some_func,
+                                            atomic_func,
+                                            error< RET >( )
+                                        );
+                            } )
+                            ( boost::get< typename next_sentence_type< sentence< T > >::type >(
+                                  (*this)->arguments[0] ) );
+                default:
+                    throw std::invalid_argument( "unknown sentence_type in sentence::type_restore" );
+            }
+        }
+
+        template< typename RET, typename ... ACTORS >
+        RET type_restore( const ACTORS & ... t ) const
+        {
+            return type_restore_inner< RET >(
+                extract< and_actor_helper >(
+                    t ...,
+                    make_and_actor(
+                        std::get
+                        < std::tuple_size< std::tuple< ACTORS ... > >::value - 1 >( std::tie( t ... ) ) ) ),
+                extract< or_actor_helper >(
+                    t ...,
+                    make_or_actor(
+                        std::get
+                        < std::tuple_size< std::tuple< ACTORS ... > >::value - 1 >( std::tie( t ... ) ) ) ),
+                extract< not_actor_helper >(
+                    t ...,
+                    make_not_actor(
+                        std::get
+                        < std::tuple_size< std::tuple< ACTORS ... > >::value - 1 >( std::tie( t ... ) ) ) ),
+                extract< all_actor_helper >(
+                    t ...,
+                    make_all_actor(
+                        std::get
+                        < std::tuple_size< std::tuple< ACTORS ... > >::value - 1 >( std::tie( t ... ) ) ) ),
+                extract< some_actor_helper >(
+                    t ...,
+                    make_some_actor(
+                        std::get
+                        < std::tuple_size< std::tuple< ACTORS ... > >::value - 1 >( std::tie( t ... ) ) ) ),
+                extract< atomic_actor_helper >(
+                    t ...,
+                    make_atomic_actor(
+                        std::get
+                        < std::tuple_size< std::tuple< ACTORS ... > >::value - 1 >( std::tie( t ... ) ) ) ) );
+        }
+
         template
         <
             typename TO,
@@ -259,7 +392,74 @@ namespace first_order_logic
                 can_convert_to< sentence_type::some, sentence< TO > >::value
             >
         >
-        operator sentence< TO >( ) const;
+        operator sentence< TO >( ) const
+        {
+            return type_restore_full< sentence< TO > >(
+                        make_and_actor(
+                            []( const auto & l, const auto & r ) { return and_converter< TO >( )( l, r ); } ),
+                        make_or_actor(
+                            []( const auto & l, const auto & r ) { return or_converter< TO >( )( l, r ); } ),
+                        make_not_actor(
+                            []( const auto & t ) { return not_converter< TO >( )( t ); } ),
+                        make_all_actor(
+                            []( const variable & v, const auto & t ) { return all_converter< TO >( )( v, t ); } ),
+                        make_some_actor(
+                            []( const variable & v, const auto & t )
+                            { return some_converter< TO >( )( v, t ); } ),
+                        make_atomic_actor( []( const atomic_sentence & as ) { return as; } ) );
+        }
+
+        operator std::string( ) const
+        {
+            if ( ! (*this)->cache.empty( ) ) { return (*this)->cache; }
+            (*this)->cache =
+                    "(" +
+                    type_restore_full< std::string >
+                    (
+                        make_and_actor(
+                            [&]( const sentence< T > & l, const sentence< T > & r )
+                            {
+                                return
+                                        static_cast< std::string >( l ) +
+                                        "/\\" +
+                                        static_cast< std::string >( r );
+                            } ),
+                        make_some_actor(
+                            [&]( const variable & var, const sentence< T > & sen )
+                            {
+                                return
+                                        "∃" +
+                                        var.name +
+                                        " " +
+                                        static_cast< std::string >( sen );
+                            } ),
+                        make_all_actor(
+                            [&]( const variable & var, const sentence< T > & sen )
+                            {
+                                return
+                                        "∀" +
+                                        var.name +
+                                        " " +
+                                        static_cast< std::string >( sen );
+                            } ),
+                        make_or_actor(
+                            [&]( const sentence< T > & l, const sentence< T > & r )
+                            {
+                                return
+                                        static_cast< std::string >( l ) +
+                                        "\\/" +
+                                        static_cast< std::string >( r );
+                            } ),
+                        make_not_actor(
+                            [&]( const sentence< T > & sen )
+                            { return "!" + static_cast< std::string >( sen ); } ),
+                        make_atomic_actor(
+                            [&]( const atomic_sentence & as )
+                            { return static_cast< std::string >( as ); } )
+                    ) +
+                    ")";
+            return (*this)->cache;
+        }
     };
     typedef sentence< vector< set_c< sentence_type, sentence_type::logical_not > > > not_sen_type;
     static_assert( std::is_convertible< not_sen_type, free_sentence >::value, "must be convertible to free sentence" );
