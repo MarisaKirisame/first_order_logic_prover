@@ -2,7 +2,6 @@
 #define ATOMIC_SENTENCE_HPP
 #include "term.hpp"
 #include "named_parameter.hpp"
-#include "sentence.hpp"
 namespace first_order_logic
 {
     DEFINE_ACTOR(equal);

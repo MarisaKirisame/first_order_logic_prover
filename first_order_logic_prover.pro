@@ -22,7 +22,6 @@ HEADERS += \
     parser.hpp \
     function_output_iterator.hpp \
     forward/first_order_logic.hpp \
-    implementation/sentence.hpp \
     first_order_logic.hpp \
     resolution.hpp \
     atomic_sentence.hpp \
@@ -34,7 +33,8 @@ HEADERS += \
     interpolant.hpp \
     WALKSAT.hpp \
     horn_clauses.hpp \
-    CNF.hpp
+    CNF.hpp \
+    sentence_operations.hpp
 OTHER_FILES += \
     theorem_prover.pro.user \
     LICENSE \

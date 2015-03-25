@@ -1,2 +1,2 @@
 #include "test.hpp"
-#include "implementation/sentence.hpp"
+#include "sentence_operations.hpp"
