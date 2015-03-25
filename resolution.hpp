@@ -246,9 +246,9 @@ namespace first_order_logic
     {
         CNF cnf(
                 to_CNF(
-                    skolemization_remove_existential( rectify( make_and( sen, make_not( goal ).restore_quantifier_universal( ) ) ).
-                    move_quantifier_out( ) ).
-                    drop_universal( ) ) );
+                    drop_universal( skolemization_remove_existential( move_quantifier_out( rectify( make_and(
+                        sen,
+                        restore_quantifier_universal( make_not( goal ) ) ) ) ) ) ) ) );
         std::list< clause > to_be_added;
         bool have_new_inference = true;
         while ( have_new_inference )

@@ -27,10 +27,7 @@ namespace first_order_logic
             std::set< std::string > ret;
             auto extract =
                     [&]( const atomic_sentence & s )
-            {
-                s.cv( make_function_output_iterator(
-                          [&]( const term & t ){ ret.insert( t->name ); } ) );
-            };
+            { cv( s, make_function_output_iterator( [&]( const term & t ){ ret.insert( t->name ); } ) ); };
             for ( const definite_clause & dc : kb )
             {
                 std::for_each( dc.premise.begin( ), dc.premise.end( ), extract );

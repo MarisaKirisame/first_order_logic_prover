@@ -170,7 +170,7 @@ namespace first_order_logic
 namespace std
 {
     template< typename L, typename R >
-    struct std::common_type< first_order_logic::sentence< L >, first_order_logic::sentence< R > >
+    struct common_type< first_order_logic::sentence< L >, first_order_logic::sentence< R > >
     {
         template
         <

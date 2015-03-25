@@ -14,6 +14,7 @@
 #include "forward/first_order_logic.hpp"
 #include "substitution.hpp"
 #include <boost/optional.hpp>
+#include "sentence_operations.hpp"
 namespace first_order_logic
 {
     struct gentzen_system
@@ -531,17 +532,18 @@ namespace first_order_logic
             sequence( const free_sentence & t ) :
                 sequent( { { t, false } } ), tg( this, 1, cv_map, functions )
             {
-                t.functions( std::inserter( functions, functions.begin( ) ) );
-                t.predicates( std::inserter( predicates, predicates.begin( ) ) );
-                t.cv
+                first_order_logic::functions( t, std::inserter( functions, functions.begin( ) ) );
+                first_order_logic::predicates( t, std::inserter( predicates, predicates.begin( ) ) );
+                cv
                 (
+                    t,
                     make_function_output_iterator(
                         [&]( const term & t )
                         { cv_map.insert( std::make_pair( t, std::set< free_sentence >( ) ) ); } )
                 );
                 term_map = cv_map;
                 if ( cv_map.empty( ) ) { new_variable( ); }
-                if ( t.have_equal( ) ) { add_equal_generator( ); }
+                if ( have_equal( t ) ) { add_equal_generator( ); }
             }
         };
         static std::pair< proof_tree, bool > is_valid( free_sentence & te )

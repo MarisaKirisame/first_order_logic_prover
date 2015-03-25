@@ -11,6 +11,10 @@
 #include "../misc/combinator.hpp"
 namespace first_order_logic
 {
+    template< typename T, typename OUTITER >
+    OUTITER free_variables( const sentence< T > & self, OUTITER result );
+    template< typename OUTITER >
+    OUTITER free_variables( const atomic_sentence & self, OUTITER result );
     struct substitution
     {
         std::map< variable, term > data;
@@ -418,7 +422,7 @@ namespace first_order_logic
             const sentence< T > & sen, const F & usable, const GENERATOR & gen, substitution & renamed )
     {
         std::set< variable > tem;
-        sen.free_variables( std::inserter( tem, tem.begin( ) ) );
+        free_variables( sen, std::inserter( tem, tem.begin( ) ) );
         rename_variable( tem.begin( ), tem.end( ), usable, gen, renamed );
     }
     template< typename F, typename GENERATOR >
@@ -426,7 +430,7 @@ namespace first_order_logic
             const atomic_sentence & sen, const F & usable, const GENERATOR & gen, substitution & renamed )
     {
         std::set< variable > tem;
-        sen.free_variables( std::inserter( tem, tem.begin( ) ) );
+        free_variables( sen, std::inserter( tem, tem.begin( ) ) );
         rename_variable( tem.begin( ), tem.end( ), usable, gen, renamed );
     }
     template< typename INITER, typename F, typename GENERATOR >
