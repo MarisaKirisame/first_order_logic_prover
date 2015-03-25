@@ -22,7 +22,6 @@ HEADERS += \
     parser.hpp \
     function_output_iterator.hpp \
     forward/first_order_logic.hpp \
-    implementation/substitution.hpp \
     implementation/sentence.hpp \
     first_order_logic.hpp \
     resolution.hpp \
