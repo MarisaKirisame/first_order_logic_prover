@@ -113,7 +113,7 @@ namespace first_order_logic
             throw std::invalid_argument( "unknown enum type" );
         }
         const internal * operator -> ( ) const { return data.get( ); }
-        explicit operator std::string( ) const
+        explicit operator const std::string &( ) const
         {
             if ( ! (*this)->cache.empty( ) ) { return (*this)->cache; }
             return (*this)->cache =
