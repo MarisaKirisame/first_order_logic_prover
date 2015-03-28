@@ -248,7 +248,7 @@ namespace first_order_logic
             {
                 case sentence_type::logical_and:
                     return
-                        misc::make_expansion(
+                        common::make_expansion(
                             []( const std::false_type &, const auto &, const auto & )
                             { return error< RET >( )( ); },
                             [&]( const std::true_type &, const auto & l, const auto & r )
@@ -264,7 +264,7 @@ namespace first_order_logic
                             );
                 case sentence_type::logical_not:
                     return
-                        misc::make_expansion(
+                        common::make_expansion(
                             []( const std::false_type &, const auto & ) { return error< RET >( )( ); },
                             [&]( const std::true_type &, const auto & s ) { return not_func( s ); } )
                             (
@@ -277,7 +277,7 @@ namespace first_order_logic
                             );
                 case sentence_type::logical_or:
                     return
-                        misc::make_expansion(
+                        common::make_expansion(
                             []( const std::false_type &, const auto &, const auto & )
                             { return error< RET >( )( ); },
                             [&]( const std::true_type &, const auto & l, const auto & r )
@@ -293,7 +293,7 @@ namespace first_order_logic
                             );
                 case sentence_type::all:
                     return
-                        misc::make_expansion(
+                        common::make_expansion(
                             []( const std::false_type &, const auto & ) { return error< RET >( )( ); },
                             [&]( const std::true_type &, const auto & s )
                             { return all_func( variable( (*this)->name ), s ); } )
@@ -307,7 +307,7 @@ namespace first_order_logic
                             );
                 case sentence_type::some:
                     return
-                        misc::make_expansion(
+                        common::make_expansion(
                             []( const std::false_type &, const auto & ) { return error< RET >( )( ); },
                             [&]( const std::true_type &, const auto & s )
                             { return some_func( variable( (*this)->name ), s ); } )
@@ -321,7 +321,7 @@ namespace first_order_logic
                             );
                 case sentence_type::pass:
                     return
-                        misc::make_expansion(
+                        common::make_expansion(
                             [&]( const atomic_sentence & as ) { return atomic_func( as ); },
                             [&]( const typename next_sentence_type< sentence< T > >::type & n )
                             {

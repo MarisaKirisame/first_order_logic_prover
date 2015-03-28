@@ -2,7 +2,7 @@
 #define CONVERTER_HPP
 #include "sentence_helper.hpp"
 #include "forward/first_order_logic.hpp"
-#include "../misc/expansion.hpp"
+#include "../cpp_common/expansion.hpp"
 namespace first_order_logic
 {
     struct variable;

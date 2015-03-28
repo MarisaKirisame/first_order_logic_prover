@@ -8,7 +8,7 @@
 #include <boost/optional.hpp>
 #include "sentence.hpp"
 #include "atomic_sentence.hpp"
-#include "../misc/combinator.hpp"
+#include "../cpp_common/combinator.hpp"
 namespace first_order_logic
 {
     template< typename T, typename OUTITER >
@@ -227,7 +227,7 @@ namespace first_order_logic
             {
                 return
                     var.name == t->name ||
-                    misc::fix(
+                    common::fix(
                         [&]( const auto & self, const variable & var, const term & t )->bool
                         {
                             switch ( t->term_type )

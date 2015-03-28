@@ -3,7 +3,7 @@
 #include <list>
 #include "definite_clause.hpp"
 #include "substitution.hpp"
-#include "../misc/combinator.hpp"
+#include "../cpp_common/combinator.hpp"
 namespace first_order_logic
 {
     struct knowledge_base
@@ -45,7 +45,7 @@ namespace first_order_logic
             std::vector< atomic_sentence > new_known_facts;
             substitution s;
             std::vector< atomic_sentence > gp;
-            misc::fix(
+            common::fix(
                 [&,this]( const auto & self, const substitution & sub )->void
                 {
                     if ( gp.size( ) == premise.size( ) )
