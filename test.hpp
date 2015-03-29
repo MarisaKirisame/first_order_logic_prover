@@ -249,14 +249,14 @@ namespace propositional_calculus
     BOOST_AUTO_TEST_CASE( DPLL_TEST )
     {
         for ( const std::pair< free_propositional_sentence, satisfiability > & p : test_prop( ) )
-        { BOOST_CHECK_EQUAL( DPLL( to_CNF( p.first ) ), p.second == satisfiable || p.second == valid ); }
+        { BOOST_CHECK_EQUAL( DPLL( list_list_literal( p.first ) ), p.second == satisfiable || p.second == valid ); }
     }
 
     BOOST_AUTO_TEST_CASE( WALKSAT_TEST )
     {
         std::random_device rd;
         for ( const std::pair< free_propositional_sentence, satisfiability > & p : test_prop( ) )
-        { BOOST_CHECK_EQUAL( WALKSAT( to_CNF( p.first ), 0.5, 1000, rd ), p.second == satisfiable || p.second == valid ); }
+        { BOOST_CHECK_EQUAL( WALKSAT( list_list_literal( p.first ), 0.5, 1000, rd ), p.second == satisfiable || p.second == valid ); }
     }
 
     BOOST_AUTO_TEST_CASE( forward_chaining_test )

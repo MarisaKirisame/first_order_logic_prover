@@ -1,10 +1,11 @@
 #ifndef RESOLUTION_HPP
 #define RESOLUTION_HPP
+#include <boost/optional/optional.hpp>
 #include "sentence.hpp"
 #include "term.hpp"
 #include "TMP.hpp"
-#include "CNF.hpp"
 #include "sentence_operations.hpp"
+#include "../cpp_common/iterator.hpp"
 namespace first_order_logic
 {
     typedef sentence
@@ -168,6 +169,14 @@ namespace first_order_logic
                 make_atomic_actor( []( const atomic_sentence & as ) { return as; } ) );
     }
 
+    struct literal
+    {
+        atomic_sentence as;
+        bool b;
+        literal( const atomic_sentence & as, bool b ) : as( as ), b( b ) { }
+        bool operator < ( const literal & cmp ) const { return std::tie( as, b ) < std::tie( cmp.as, cmp.b );}
+    };
+
     literal get_literal( const not_type & nt )
     {
         return nt.type_restore_full< literal >(
@@ -195,14 +204,14 @@ namespace first_order_logic
                     {
                         literal l = get_literal( sen );
                         l.b = ! l.b;
-                        * result = l;
+                        * result = boost::make_optional( l );
                         ++result;
                         return result;
                     } ),
                 make_atomic_actor(
                     [&]( const atomic_sentence & as )
                     {
-                        * result = literal( as, true );
+                        * result = boost::make_optional( literal( as, true ) );
                         ++result;
                         return result;
                     } )
@@ -210,21 +219,20 @@ namespace first_order_logic
     }
 
     template< typename OUTITER >
-    OUTITER flatten( const and_or_not_type & prop, OUTITER result )
+    OUTITER get_cnf( const and_or_not_type & prop, OUTITER result )
     {
         auto extract_clause =
             [&]( const or_not_type & t )
             {
-                clause cl;
-                get_clause( t, std::inserter( cl.data, cl.data.begin( ) ) );
-                * result = cl;
+                result = get_clause( t, result );
+                * result = boost::optional< literal >( );
                 ++result;
                 return result;
             };
         return prop.type_restore_full< OUTITER >(
                 make_and_actor(
                     [&]( const and_or_not_type & l, const and_or_not_type & r )
-                    { return flatten( l, flatten( r, result ) ); } ),
+                    { return get_cnf( l, get_cnf( r, result ) ); } ),
                 make_not_actor( [&]( const not_type & l ) { return extract_clause( make_not( l ) ); } ),
                 make_or_actor(
                     [&]( const or_not_type & l, const or_not_type & r )
@@ -235,62 +243,91 @@ namespace first_order_logic
     and_or_not_type pre_CNF( const free_propositional_sentence & prop )
     { return move_or_in( move_negation_in( prop ) ); }
 
-    CNF to_CNF( const free_propositional_sentence & prop )
+    template< typename OUTITER >
+    OUTITER to_CNF( const free_propositional_sentence & prop, OUTITER out )
+    { return get_cnf( pre_CNF( prop ), out ); }
+
+    std::list< std::list< literal > > list_list_literal( const free_propositional_sentence & sen )
     {
-        CNF ret;
-        flatten( pre_CNF( prop ), std::inserter( ret.data, ret.data.begin( ) ) );
-        return ret;
+        std::list< std::list< literal > > CNF;
+        std::list< literal > builder;
+        to_CNF(
+            sen,
+            make_function_output_iterator(
+                [&]( const boost::optional< literal > & bl )
+                {
+                    if ( bl ) { builder.push_back( bl.get( ) ); }
+                    else
+                    {
+                        std::list< literal > tem;
+                        std::swap( tem, builder );
+                        CNF.push_back( std::move( tem ) );
+                    }
+                } ) );
+        return CNF;
     }
 
     bool resolution( const free_sentence & sen, const free_sentence & goal )
     {
-        CNF cnf(
-                to_CNF(
-                    drop_universal( skolemization_remove_existential( move_quantifier_out( rectify( make_and(
-                        sen,
-                        restore_quantifier_universal( make_not( goal ) ) ) ) ) ) ) ) );
-        std::list< clause > to_be_added;
+        std::set< std::set< literal > > CNF;
+        std::set< literal > builder;
+        to_CNF(
+            drop_universal( skolemization_remove_existential( move_quantifier_out( rectify( make_and(
+                sen,
+                restore_quantifier_universal( make_not( goal ) ) ) ) ) ) ),
+            make_function_output_iterator(
+                [&]( const boost::optional< literal > & bl )
+                {
+                    if ( bl ) { builder.insert( bl.get( ) ); }
+                    else
+                    {
+                        std::set< literal > tem;
+                        std::swap( tem, builder );
+                        CNF.insert( std::move( tem ) );
+                    }
+                } ) );
+        std::set< std::set< literal > > to_be_added;
         bool have_new_inference = true;
         while ( have_new_inference )
         {
             have_new_inference = false;
-            for ( const clause & l : cnf.data )
+            for ( const auto & l : CNF )
             {
-                for ( const clause & r : cnf.data )
+                for ( const auto & r : CNF )
                 {
-                    for ( const literal & ll : l.data )
+                    for ( const literal & ll : l )
                     {
-                        for ( const literal & rr : r.data )
+                        for ( const literal & rr : r )
                         {
                             if ( ll.b != rr.b )
                             {
-                                auto un = unify( ll.data, rr.data );
+                                auto un = unify( ll.as, rr.as );
                                 if ( un )
                                 {
-                                    clause cl;
-                                    for ( const literal & ins : l.data )
+                                    std::set< literal > cl;
+                                    for ( const literal & ins : l )
                                     {
-                                        if ( (*un)(ins.data) != (*un)(ll.data) && (*un)(ins.data) != (*un)(rr.data) )
-                                        { cl.data.push_back( literal( (*un)( ins.data ), ins.b ) ); }
+                                        if ( (*un)( ins.as ) != (*un)( ll.as ) && (*un)( ins.as ) != (*un)( rr.as ) )
+                                        { cl.insert( literal( (*un)( ins.as ), ins.b ) ); }
                                     }
-                                    for ( const literal & ins : r.data )
+                                    for ( const literal & ins : r )
                                     {
-                                        if ( (*un)(ins.data) != (*un)(ll.data) && (*un)(ins.data) != (*un)(rr.data) )
-                                        { cl.data.push_back( literal( (*un)( ins.data ), ins.b ) ); }
+                                        if ( (*un)( ins.as ) != (*un)( ll.as ) && (*un)( ins.as ) != (*un)( rr.as ) )
+                                        { cl.insert( literal( (*un)( ins.as ), ins.b ) ); }
                                     }
-                                    if ( cl.data.empty( ) ) { return true; }
-                                    to_be_added.push_back( cl );
+                                    if ( cl.empty( ) ) { return true; }
+                                    to_be_added.insert( cl );
                                 }
                             }
                         }
                     }
                 }
             }
-            for ( const clause & c : to_be_added )
+            for ( const auto & clause : to_be_added )
             {
-                if ( std::find( cnf.data.begin( ), cnf.data.end( ), c ) == cnf.data.end( ) )
+                if ( CNF.count( clause ) == 0 )
                 {
-                    cnf.data.push_back( c );
+                    CNF.insert( clause );
                     have_new_inference = true;
                 }
             }

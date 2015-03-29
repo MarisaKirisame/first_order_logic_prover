@@ -2,19 +2,19 @@
 #define WALKSAT_HPP
 #include <random>
 #include <iterator>
-#include "CNF.hpp"
+#include "resolution.hpp"
 namespace first_order_logic
 {
     template< typename T, typename RD >
-    bool WALKSAT( const CNF & cnf, double p, T max_count, RD & rd )
+    bool WALKSAT( const std::list< std::list< literal > > & cnf, double p, T max_count, RD & rd )
     {
         std::map< atomic_sentence, bool > ass;
-        for ( const clause & cl : cnf.data )
+        for ( const auto & cl : cnf )
         {
-            for ( const literal & l : cl.data )
+            for ( const literal & l : cl )
             {
-                if ( ass.count( l.data ) == 0 )
-                { ass.insert( { l.data, std::uniform_int_distribution<>( 0, 1 )( rd ) } ); }
+                if ( ass.count( l.as ) == 0 )
+                { ass.insert( { l.as, std::uniform_int_distribution<>( 0, 1 )( rd ) } ); }
             }
         }
         if ( ass.empty( ) ) { return true; }
@@ -22,19 +22,19 @@ namespace first_order_logic
             [&]( )->size_t
             {
                 return std::accumulate(
-                    cnf.data.begin( ),
-                    cnf.data.end( ),
+                    cnf.begin( ),
+                    cnf.end( ),
                     static_cast< size_t >( 0 ),
-                    [&]( size_t s, const clause & cl )->size_t
+                    [&]( size_t s, const auto & cl )->size_t
                     {
                         return
                             s +
                             (std::any_of(
-                                cl.data.begin( ),
-                                cl.data.end( ),
+                                cl.begin( ),
+                                cl.end( ),
                                 [&]( const literal & l )
                                 {
-                                    auto it = ass.find( l.data );
+                                    auto it = ass.find( l.as );
                                     assert( it != ass.end( ) );
                                     return it->second == l.b;
                                 } ) ? 0 : 1);

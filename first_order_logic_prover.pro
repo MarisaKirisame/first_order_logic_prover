@@ -33,7 +33,6 @@ HEADERS += \
     interpolant.hpp \
     WALKSAT.hpp \
     horn_clauses.hpp \
-    CNF.hpp \
     sentence_operations.hpp
 OTHER_FILES += \
     theorem_prover.pro.user \
