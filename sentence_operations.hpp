@@ -1,6 +1,7 @@
 #ifndef SENTENCE_OPERATIONS_HPP
 #define SENTENCE_OPERATIONS_HPP
 #include "sentence.hpp"
+#include "substitution.hpp"
 namespace first_order_logic
 {
     template< typename T >
