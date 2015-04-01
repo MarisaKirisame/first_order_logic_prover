@@ -9,6 +9,7 @@
 #include "sentence.hpp"
 #include "atomic_sentence.hpp"
 #include "../cpp_common/combinator.hpp"
+#include "CNF.hpp"
 namespace first_order_logic
 {
     template< typename T, typename OUTITER >
@@ -18,161 +19,111 @@ namespace first_order_logic
     struct substitution
     {
         std::map< variable, term > data;
-        term operator ( )( const term & t ) const;
-        inline atomic_sentence operator ( )( const atomic_sentence & as ) const;
+        term operator ( )( const term & t ) const
+        {
+            switch ( t->term_type )
+            {
+                case term::type::constant:
+                    return t;
+                case term::type::variable:
+                {
+                    auto it = data.find( t->name );
+                    return it == data.end( ) ? t : it->second;
+                }
+                case term::type::function:
+                {
+                    std::vector< term > tem;
+                    std::transform(
+                        t->arguments.begin( ),
+                        t->arguments.end( ),
+                        std::back_inserter( tem ),
+                        [&]( const term & te ){ return(*this)(te); } );
+                    return make_function( t->name, tem );
+                }
+            }
+            throw std::invalid_argument( "unknown enum type" );
+        }
+        atomic_sentence operator ( )( const atomic_sentence & as ) const
+        {
+            return as.type_restore_full< atomic_sentence >
+                    (
+                        make_equal_actor(
+                            [&]( const term & l, const term & r )
+                            { return make_equal( (*this)(l), (*this)(r) ); } ),
+                        make_predicate_actor(
+                            [&]( const std::string & str, const std::vector< term > & vec )
+                            {
+                                std::vector< term > tem;
+                                std::transform(
+                                    vec.begin( ),
+                                    vec.end( ),
+                                    std::back_inserter( tem ),
+                                    [&]( const term & te ){ return(*this)(te); } );
+                                return make_predicate( str, tem );
+                            } ),
+                        make_propositional_letter_actor(
+                            [&]( const std::string & str ){ return make_propositional_letter( str ); } )
+                    );
+        }
+        literal operator ( )( const literal & l ) const { return literal( (*this)(l.as), l.b ); }
         template< typename T >
-        sentence< T > operator ( )( const sentence< T > & s ) const;
+        sentence< T > operator ( )( const sentence< T > & s ) const
+        {
+            return
+                s.template type_restore_full< sentence< T > >
+                (
+                    make_all_actor(
+                        [&]( const variable & var, const auto & sen )
+                        {
+                            auto it = data.find( var );
+                            return ( it != data.end( ) ) ? make_all( var, sen ) : make_all( var, (*this)(sen) );
+                        } ),
+                    make_some_actor(
+                        [&]( const variable & var, const auto & sen )
+                        {
+                            auto it = data.find( var );
+                            return ( it != data.end( ) ) ? make_some( var, sen ) : make_some( var, (*this)(sen) );
+                        } ),
+                    make_and_actor(
+                            [&]( const auto & l, const auto & r )
+                            { return make_and( (*this)(l), (*this)(r) ); } ),
+                    make_or_actor(
+                            [&]( const auto & l, const auto & r )
+                            { return make_or( (*this)(l), (*this)(r) ); } ),
+                    make_not_actor(
+                            [&]( const auto & sen ) { return make_not( (*this)(sen) ); } ),
+                    make_atomic_actor(
+                            [&]( const atomic_sentence & sen ) { return sentence< T >( (*this)( sen ) ); } )
+                );
+        }
         substitution( const std::map< variable, term > & data ) : data( data ) { }
         substitution( ) { }
         bool operator ==( const substitution & s ) const { return data == s.data; }
-        bool coherent( const substitution & comp ) const;
-        static boost::optional< substitution > join( const substitution & l, const substitution & r );
+        bool coherent( const substitution & comp ) const
+        {
+            return std::any_of(
+                        comp.data.begin( ),
+                        comp.data.end( ),
+                        [&]( const std::pair< variable, term > & p )
+            {
+                auto it = data.find( p.first );
+                return it == data.end( ) && it->second == p.second;
+            } );
+        }
+        static boost::optional< substitution > join( const substitution & l, const substitution & r )
+        {
+            if ( l.data.size( ) > r.data.size( ) ) { return join( r, l ); }
+            substitution ret( r );
+            for ( const std::pair< variable, term > & i : l.data )
+            {
+                auto it = ret.data.insert( i );
+                if ( it.first->first != i.first ) { return boost::optional< substitution >( ); }
+            }
+            return ret;
+        }
     };
-    template< typename T >
+    boost::optional< substitution > unify( const term & p, const term & q, const substitution & sub );
     boost::optional< substitution > unify(
-            const sentence< T > & p, const atomic_sentence & q, const substitution & sub );
-    template< typename T >
-    boost::optional< substitution > unify(
-            const atomic_sentence & p, const sentence< T > & q, const substitution & sub );
-    boost::optional< substitution > unify(
-            const term & p, const term & q, const substitution & sub );
-    boost::optional< substitution > unify(
-            const std::vector< term > & p, const std::vector< term > & q, const substitution & sub );
-    boost::optional< substitution > unify(
-            const variable & var, const term & t, const substitution & sub );
-    boost::optional< substitution > unify(
-            const term & p, const term & q, const substitution & sub );
-    boost::optional< substitution > unify(
-            const variable & var, const term & t, const substitution & sub );
-    template< typename T >
-    boost::optional< substitution > unify(
-            const sentence< T > & p, const sentence< T > & q, const substitution & sub );
-    boost::optional< substitution > unify(
-            const atomic_sentence & p, const atomic_sentence & q, const substitution & sub );
-    template< typename F, typename GENERATOR >
-    void rename_variable( const term & t, const F & usable, const GENERATOR & gen, substitution & renamed );
-    template< typename F, typename GENERATOR >
-    void rename_variable(
-            const variable & sen, const F & usable, const GENERATOR & gen, substitution & renamed );
-    template< typename F, typename T, typename GENERATOR >
-    void rename_variable(
-            const sentence< T > & sen,
-            const F & usable,
-            const GENERATOR & gen,
-            substitution & renamed );
-    template< typename INITER, typename F, typename GENERATOR >
-    void rename_variable(
-            INITER begin,
-            INITER end,
-            const F & usable,
-            const GENERATOR & gen,
-            substitution & renamed );
-    template< typename ... T >
-    boost::optional< substitution > unify( const T & ... );
-    template< typename ... T >
-    substitution rename_variable( const T & ... );
-    atomic_sentence substitution::operator ( )( const atomic_sentence & as ) const
-    {
-        return as.type_restore_full< atomic_sentence >
-                (
-                    make_equal_actor(
-                        [&]( const term & l, const term & r )
-                        { return make_equal( (*this)(l), (*this)(r) ); } ),
-                    make_predicate_actor(
-                        [&]( const std::string & str, const std::vector< term > & vec )
-                        {
-                            std::vector< term > tem;
-                            std::transform(
-                                vec.begin( ),
-                                vec.end( ),
-                                std::back_inserter( tem ),
-                                [&]( const term & te ){ return(*this)(te); } );
-                            return make_predicate( str, tem );
-                        } ),
-                    make_propositional_letter_actor(
-                        [&]( const std::string & str ){ return make_propositional_letter( str ); } )
-                );
-    }
-    inline term substitution::operator ( )( const term & t ) const
-    {
-        switch ( t->term_type )
-        {
-            case term::type::constant:
-                return t;
-            case term::type::variable:
-            {
-                auto it = data.find( t->name );
-                return it == data.end( ) ? t : it->second;
-            }
-            case term::type::function:
-            {
-                std::vector< term > tem;
-                std::transform(
-                    t->arguments.begin( ),
-                    t->arguments.end( ),
-                    std::back_inserter( tem ),
-                    [&]( const term & te ){ return(*this)(te); } );
-                return make_function( t->name, tem );
-            }
-        }
-        throw std::invalid_argument( "unknown enum type" );
-    }
-    template< typename T >
-    sentence< T > substitution::operator ( )( const sentence< T > & s ) const
-    {
-        sentence< T > ret =
-            s.template type_restore_full< sentence< T > >
-            (
-                make_all_actor(
-                    [&]( const variable & var, const auto & sen )
-                    {
-                        auto it = data.find( var );
-                        return ( it != data.end( ) ) ? make_all( var, sen ) : make_all( var, (*this)(sen) );
-                    } ),
-                make_some_actor(
-                    [&]( const variable & var, const auto & sen )
-                    {
-                        auto it = data.find( var );
-                        return ( it != data.end( ) ) ? make_some( var, sen ) : make_some( var, (*this)(sen) );
-                    } ),
-                make_and_actor(
-                        [&]( const auto & l, const auto & r )
-                        { return make_and( (*this)(l), (*this)(r) ); } ),
-                make_or_actor(
-                        [&]( const auto & l, const auto & r )
-                        { return make_or( (*this)(l), (*this)(r) ); } ),
-                make_not_actor(
-                        [&]( const auto & sen ) { return make_not( (*this)(sen) ); } ),
-                make_atomic_actor(
-                        [&]( const atomic_sentence & sen ) { return sentence< T >( (*this)( sen ) ); } )
-            );
-        assert( ret.data );
-        return ret;
-    }
-    inline bool substitution::coherent( const substitution & comp ) const
-    {
-        return std::any_of(
-                    comp.data.begin( ),
-                    comp.data.end( ),
-                    [&]( const std::pair< variable, term > & p )
-        {
-            auto it = data.find( p.first );
-            return it == data.end( ) && it->second == p.second;
-        } );
-    }
-    inline boost::optional< substitution > substitution::join(
-            const substitution & l, const substitution & r )
-    {
-        if ( l.data.size( ) > r.data.size( ) ) { return join( r, l ); }
-        substitution ret( r );
-        for ( const std::pair< variable, term > & i : l.data )
-        {
-            auto it = ret.data.insert( i );
-            if ( it.first->first != i.first ) { return boost::optional< substitution >( ); }
-        }
-        return ret;
-    }
-    inline boost::optional< substitution > unify(
             const std::vector< term > & p, const std::vector< term > & q, const substitution & sub )
     {
         substitution ret( sub );
@@ -191,7 +142,9 @@ namespace first_order_logic
         }
         return ret;
     }
-    inline boost::optional< substitution > unify( const term & p, const term & q, const substitution & sub )
+    boost::optional< substitution > unify(
+            const variable & var, const term & t, const substitution & sub );
+    boost::optional< substitution > unify( const term & p, const term & q, const substitution & sub )
     {
         if ( p->term_type != term::type::variable && q->term_type == term::type::variable )
         { return unify( q, p, sub ); }
@@ -208,7 +161,7 @@ namespace first_order_logic
         }
         throw std::invalid_argument( "unknown enum type." );
     }
-    inline boost::optional< substitution > unify(
+    boost::optional< substitution > unify(
             const variable & var, const term & t, const substitution & sub )
     {
         {
@@ -250,7 +203,7 @@ namespace first_order_logic
         auto it = ret.data.insert( { var, t } );
         return it.first->second == t ? ret : boost::optional< substitution >( );
     }
-    inline boost::optional< substitution > unify(
+    boost::optional< substitution > unify(
             const atomic_sentence & p, const atomic_sentence & q, const substitution & sub )
     {
         if ( p->atomic_sentence_type != q->atomic_sentence_type || p->name != q->name )

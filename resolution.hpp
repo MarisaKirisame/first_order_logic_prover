@@ -35,13 +35,13 @@ namespace first_order_logic
                                         std::set< literal > cl;
                                         for ( const literal & ins : l )
                                         {
-                                            if ( (*un)( ins.as ) != (*un)( ll.as ) )
-                                            { cl.insert( literal( (*un)( ins.as ), ins.b ) ); }
+                                            if ( (*un)( ins ) != (*un)( ll ) )
+                                            { cl.insert( (*un)( ins ) ); }
                                         }
                                         for ( const literal & ins : r )
                                         {
-                                            if ( (*un)( ins.as ) != (*un)( rr.as ) )
-                                            { cl.insert( literal( (*un)( ins.as ), ins.b ) ); }
+                                            if ( (*un)( ins ) != (*un)( rr ) )
+                                            { cl.insert( (*un)( ins ) ); }
                                         }
                                         if ( cl.empty( ) ) { return false; }
                                         to_be_added.insert( cl );
