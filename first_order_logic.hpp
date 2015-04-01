@@ -8,20 +8,20 @@
 #include "sentence_helper.hpp"
 namespace first_order_logic
 {
-    inline term make_function( const std::string & s, const std::vector< term > & t )
+    term make_function( const std::string & s, const std::vector< term > & t )
     { return term( term::type::function, s, t ); }
 
-    inline term make_constant( const std::string & s )
+    term make_constant( const std::string & s )
     { return term( constant( s ) ); }
 
-    inline term make_variable( const std::string & s )
+    term make_variable( const std::string & s )
     { return term( variable( s ) ); }
 
-    inline atomic_sentence make_predicate( const std::string & s, const std::vector< term > & t )
+    atomic_sentence make_predicate( const std::string & s, const std::vector< term > & t )
     { return atomic_sentence( atomic_sentence::type::predicate, s, t ); }
 
-    inline atomic_sentence make_propositional_letter( const std::string & s )
-    { return atomic_sentence( atomic_sentence::type::propositional_letter, s ); }
+    atomic_sentence make_propositional_letter( const std::string & s )
+    { return make_predicate( s, { } ); }
 
     static_assert(
             std::is_convertible
@@ -127,7 +127,7 @@ namespace first_order_logic
         return ret_type( sentence_type::some, l, static_cast< ret_type >( s ) );
     }
 
-    inline atomic_sentence make_equal( const term & l, const term & r )
+    atomic_sentence make_equal( const term & l, const term & r )
     { return atomic_sentence( atomic_sentence::type::equal, { l, r } ); }
 
     template< typename T >

@@ -6,10 +6,9 @@ namespace first_order_logic
 {
     DEFINE_ACTOR(equal);
     DEFINE_ACTOR(predicate);
-    DEFINE_ACTOR(propositional_letter);
     struct atomic_sentence
     {
-        enum class type { equal, predicate, propositional_letter };
+        enum class type { equal, predicate };
         template< typename OS >
         OS friend operator << ( const OS &, const type & );
         struct internal
@@ -53,8 +52,8 @@ namespace first_order_logic
         RET type_restore_full( const T & ... t ) const
         {
             static_assert(
-                        std::tuple_size< std::tuple< T ... > >::value == 3,
-                        "should have three arguments" );
+                        std::tuple_size< std::tuple< T ... > >::value == 2,
+                        "should have two arguments" );
             return type_restore< RET >( t ..., error< RET >( ) );
         }
         template< typename RET, typename ... T >
@@ -82,24 +81,12 @@ namespace first_order_logic
                                         std::tuple< T ... >
                                     >::value -
                                     1
-                                >( std::tie( t ... ) ) ) ),
-                        extract< propositional_letter_actor_helper >(
-                            t ...,
-                            make_propositional_letter_actor(
-                                std::get
-                                <
-                                    std::tuple_size
-                                    <
-                                        std::tuple< T ... >
-                                    >::value -
-                                    1
                                 >( std::tie( t ... ) ) ) ) );
         }
-        template< typename RET, typename T1, typename T2, typename T3 >
+        template< typename RET, typename T1, typename T2 >
         RET type_restore_inner(
                 const equal_actor< T1 > & equal_func,
-                const predicate_actor< T2 > & predicate_func,
-                const propositional_letter_actor< T3 > & propositional_letter_func ) const
+                const predicate_actor< T2 > & predicate_func ) const
         {
             switch ( (*this)->atomic_sentence_type )
             {
@@ -107,8 +94,6 @@ namespace first_order_logic
                 return equal_func( (*this)->arguments[0], (*this)->arguments[1] );
             case type::predicate:
                 return predicate_func( (*this)->name, (*this)->arguments );
-            case type::propositional_letter:
-                return propositional_letter_func( (*this)->name );
             }
             throw std::invalid_argument( "unknown enum type" );
         }
@@ -139,10 +124,7 @@ namespace first_order_logic
                                     ++it;
                                 }
                                 return str + "(" + stack + ")";
-                            } ),
-                        make_propositional_letter_actor(
-                            [&]( const std::string & str ) { return str; } )
-                    );
+                            } ) );
         }
         explicit atomic_sentence( type ty, const std::string & str, const std::vector< term > & ter ) :
             data( new internal( ty, str, ter ) ) { }
@@ -164,8 +146,6 @@ namespace first_order_logic
                         "equal" :
                     st == atomic_sentence::type::predicate ?
                         "predicate" :
-                    st == atomic_sentence::type::propositional_letter ?
-                        "propositional_letter" :
                     std::to_string( static_cast< long >( st ) ) );
     }
 }

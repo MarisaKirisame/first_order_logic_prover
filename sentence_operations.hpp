@@ -622,7 +622,7 @@ namespace first_order_logic
                 make_or_actor( [&]( const auto & l, const auto & r ) { return used_name( l, used_name( r, result ) ); } ),
                 make_and_actor( [&]( const auto & l, const auto & r ) { return used_name( l, used_name( r, result ) ); } ),
                 make_not_actor( [&]( const auto & sen ) { return used_name( sen, result ); } ),
-                make_atomic_actor( [&]( const atomic_sentence & sen ){ return used_name( sen, result ); } )
+                make_atomic_actor( [&]( const atomic_sentence & sen ) { return used_name( sen, result ); } )
             );
     }
 
@@ -733,9 +733,7 @@ namespace first_order_logic
                             for ( const term & t : vec )
                             { result = t.constants( result ); }
                             return result;
-                        } ),
-                    make_propositional_letter_actor(
-                        [&]( const std::string & ) { return result; } ) );
+                        } ) );
     }
     template< typename OUTITER >
     OUTITER free_variables( const atomic_sentence & self, OUTITER result )
@@ -746,8 +744,7 @@ namespace first_order_logic
                 { result = l.variables( r.variables( result ) ); } ),
             make_predicate_actor(
                 [&]( const std::string &, const std::vector< term > & vec )
-                { for ( const term & t : vec ) { result = t.variables( result ); } } ),
-            make_propositional_letter_actor( []( const std::string & ){ } ) );
+                { for ( const term & t : vec ) { result = t.variables( result ); } } ) );
         return result;
     }
     template< typename OUTITER >
@@ -759,9 +756,10 @@ namespace first_order_logic
                 { result = l.functions( r.functions( result ) ); } ),
             make_predicate_actor(
                 [&]( const std::string &, const std::vector< term > & vec )
-                { for ( const term & t : vec )
-                { result = t.functions( result ); } } ),
-            make_propositional_letter_actor( []( const std::string & ){ } ) );
+                {
+                    for ( const term & t : vec )
+                    { result = t.functions( result ); }
+                } ) );
         return result;
     }
     template< typename OUTITER >
@@ -779,13 +777,6 @@ namespace first_order_logic
                     for ( const term & t : vec )
                     { result = t.used_name( result ); }
                     return result;
-                } ),
-            make_propositional_letter_actor(
-                [&]( const std::string & str )
-                {
-                    *result = str;
-                    ++result;
-                    return result;
                 } ) );
      }
     template< typename OUTITER >
@@ -798,8 +789,7 @@ namespace first_order_logic
                 {
                     *result = predicate( str, vec.size( ) );
                     ++result;
-                } ),
-            make_propositional_letter_actor( []( const std::string & ){ } ) );
+                } ) );
         return result;
     }
     template< typename OUTITER >

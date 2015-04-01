@@ -60,10 +60,7 @@ namespace first_order_logic
                                     std::back_inserter( tem ),
                                     [&]( const term & te ){ return(*this)(te); } );
                                 return make_predicate( str, tem );
-                            } ),
-                        make_propositional_letter_actor(
-                            [&]( const std::string & str ){ return make_propositional_letter( str ); } )
-                    );
+                            } ) );
         }
         literal operator ( )( const literal & l ) const { return literal( (*this)(l.as), l.b ); }
         template< typename T >
@@ -228,8 +225,6 @@ namespace first_order_logic
                         error< >( ) );
                     return ret;
                 } ),
-            make_propositional_letter_actor(
-                [&]( const std::string & ){ return boost::optional< substitution >( sub ); } ),
             make_equal_actor(
                 [&]( const term & l, const term & r )
                 {
