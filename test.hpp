@@ -224,9 +224,9 @@ namespace propositional_calculus
     using namespace first_order_logic;
     const std::vector< std::pair< free_propositional_sentence, satisfiability > > & test_prop( )
     {
-        free_propositional_sentence A( make_predicate( "A", { } ) );
-        free_propositional_sentence B( make_predicate( "B", { } ) );
-        free_propositional_sentence C( make_predicate( "C", { } ) );
+        free_propositional_sentence A( make_propositional_letter( "A" ) );
+        free_propositional_sentence B( make_propositional_letter( "B" ) );
+        free_propositional_sentence C( make_propositional_letter( "C" ) );
         free_propositional_sentence not_a( make_not( A ) );
         free_propositional_sentence valid_prop( make_or( A, not_a ) );
         free_propositional_sentence unsatisfiable_prop( make_and( A, not_a ) );
@@ -241,7 +241,7 @@ namespace propositional_calculus
             { associativity_law_prop, valid },
             { unsatisfiable_prop, unsatisfiable },
             { valid_prop2, valid },
-            { pre_CNF( make_iff( eqprop, eqprop2 ) ), valid },
+            { make_iff( eqprop, eqprop2 ), valid },
         };
         return ret;
     }
@@ -259,6 +259,16 @@ namespace propositional_calculus
         { BOOST_CHECK_EQUAL( WALKSAT( list_list_literal( p.first ), 0.5, 1000, rd ), p.second == satisfiable || p.second == valid ); }
     }
 
+    BOOST_AUTO_TEST_CASE( PROP_RESOLUTION_TEST )
+    {
+        for ( const std::pair< free_propositional_sentence, satisfiability > & p : test_prop( ) )
+        {
+            BOOST_CHECK_EQUAL( resolution( p.first ), p.second != unsatisfiable );
+            if ( resolution( p.first ) != ( p.second != unsatisfiable ) )
+            { std::cout << pre_CNF( p.first ) << std::endl; }
+        }
+    }
+
     BOOST_AUTO_TEST_CASE( forward_chaining_test )
     {
         BOOST_CHECK( forward_chaining(
@@ -269,7 +279,8 @@ namespace propositional_calculus
                 { { "A", "P" }, "L" },
                 { { "B", "L" }, "M" },
                 { { "L", "M" }, "P" },
-                { { "P" }, "Q" } },
+                { { "P" }, "Q" }
+            },
             "Q" ) );
     }
 }

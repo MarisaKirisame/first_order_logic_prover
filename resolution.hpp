@@ -9,16 +9,9 @@
 #include "CNF.hpp"
 namespace first_order_logic
 {
-    bool resolution( const free_sentence & sen, const free_sentence & goal )
+    bool resolution( const free_propositional_sentence & sen )
     {
-        auto CNF = set_set_literal(
-                    drop_universal(
-                        skolemization_remove_existential(
-                            move_quantifier_out(
-                                rectify(
-                                    make_and(
-                                        sen,
-                                        restore_quantifier_universal( make_not( goal ) ) ) ) ) ) ) );
+        auto CNF = set_set_literal( sen );
         std::set< std::set< literal > > to_be_added;
         bool have_new_inference = true;
         while ( have_new_inference )
@@ -28,28 +21,31 @@ namespace first_order_logic
             {
                 for ( const auto & r : CNF )
                 {
-                    for ( const literal & ll : l )
+                    if ( l != r )
                     {
-                        for ( const literal & rr : r )
+                        for ( const literal & ll : l )
                         {
-                            if ( ll.b != rr.b )
+                            for ( const literal & rr : r )
                             {
-                                auto un = unify( ll.as, rr.as );
-                                if ( un )
+                                if ( ll.b != rr.b )
                                 {
-                                    std::set< literal > cl;
-                                    for ( const literal & ins : l )
+                                    auto un = unify( ll.as, rr.as );
+                                    if ( un )
                                     {
-                                        if ( (*un)( ins.as ) != (*un)( ll.as ) && (*un)( ins.as ) != (*un)( rr.as ) )
-                                        { cl.insert( literal( (*un)( ins.as ), ins.b ) ); }
+                                        std::set< literal > cl;
+                                        for ( const literal & ins : l )
+                                        {
+                                            if ( (*un)( ins.as ) != (*un)( ll.as ) )
+                                            { cl.insert( literal( (*un)( ins.as ), ins.b ) ); }
+                                        }
+                                        for ( const literal & ins : r )
+                                        {
+                                            if ( (*un)( ins.as ) != (*un)( rr.as ) )
+                                            { cl.insert( literal( (*un)( ins.as ), ins.b ) ); }
+                                        }
+                                        if ( cl.empty( ) ) { return false; }
+                                        to_be_added.insert( cl );
                                     }
-                                    for ( const literal & ins : r )
-                                    {
-                                        if ( (*un)( ins.as ) != (*un)( ll.as ) && (*un)( ins.as ) != (*un)( rr.as ) )
-                                        { cl.insert( literal( (*un)( ins.as ), ins.b ) ); }
-                                    }
-                                    if ( cl.empty( ) ) { return true; }
-                                    to_be_added.insert( cl );
                                 }
                             }
                         }
@@ -66,7 +62,19 @@ namespace first_order_logic
             }
             to_be_added.clear( );
         }
-        return false;
+        return true;
+    }
+
+    bool resolution( const free_sentence & sen, const free_sentence & goal )
+    {
+        return ! resolution(
+                    drop_universal(
+                        skolemization_remove_existential(
+                            move_quantifier_out(
+                                rectify(
+                                    make_and(
+                                        sen,
+                                        restore_quantifier_universal( make_not( goal ) ) ) ) ) ) ) );
     }
 }
 #endif // RESOLUTION_HPP

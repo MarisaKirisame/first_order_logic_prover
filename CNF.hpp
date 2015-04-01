@@ -1,6 +1,11 @@
 #ifndef CNF_HPP
 #define CNF_HPP
 #include "sentence.hpp"
+#include <list>
+#include <set>
+#include <iterator>
+#include <algorithm>
+#include <boost/iterator/transform_iterator.hpp>
 namespace first_order_logic
 {
     typedef sentence
@@ -170,6 +175,11 @@ namespace first_order_logic
         bool b;
         literal( const atomic_sentence & as, bool b ) : as( as ), b( b ) { }
         bool operator < ( const literal & cmp ) const { return std::tie( as, b ) < std::tie( cmp.as, cmp.b );}
+        bool operator == ( const literal & cmp ) const { return std::tie( as, b ) == std::tie( cmp.as, cmp.b );}
+        bool operator != ( const literal & cmp ) const { return std::tie( as, b ) != std::tie( cmp.as, cmp.b );}
+        bool operator > ( const literal & cmp ) const { return std::tie( as, b ) > std::tie( cmp.as, cmp.b );}
+        bool operator >= ( const literal & cmp ) const { return std::tie( as, b ) <= std::tie( cmp.as, cmp.b );}
+        bool operator <= ( const literal & cmp ) const { return std::tie( as, b ) >= std::tie( cmp.as, cmp.b );}
     };
 
     literal get_literal( const not_type & nt )
@@ -280,6 +290,26 @@ namespace first_order_logic
                 }
             } ) );
         return CNF;
+    }
+
+    template< typename T >
+    std::list< T > set_to_list( const std::set< T > & c ) { return std::list< T >( c.begin( ), c.end( ) ); }
+
+    template< typename T >
+    std::set< T > list_to_set( const std::list< T > & c ) { return std::set< T >( c.begin( ), c.end( ) ); }
+
+    template< typename T >
+    std::list< std::list< T > > set_set_to_list_list( const std::set< std::set< T > > & c )
+    {
+        auto f = []( const std::set< T > & c ) { return set_to_list( c ); };
+        return std::list< std::list< T > >( boost::make_transform_iterator( c.begin( ), f ), boost::make_transform_iterator( c.end( ), f ) );
+    }
+
+    template< typename T >
+    std::set< std::set< T > > list_list_to_set_set( const std::list< std::list< T > > & c )
+    {
+        auto f = []( const std::list< T > & c ) { return list_to_set( c ); };
+        return std::set< std::set< T > >( boost::make_transform_iterator( c.begin( ), f ), boost::make_transform_iterator( c.end( ), f ) );
     }
 }
 #endif // CNF_HPP
