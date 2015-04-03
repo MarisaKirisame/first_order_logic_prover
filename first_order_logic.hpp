@@ -18,7 +18,7 @@ namespace first_order_logic
     { return term( variable( s ) ); }
 
     atomic_sentence make_predicate( const std::string & s, const std::vector< term > & t )
-    { return atomic_sentence( atomic_sentence::type::predicate, s, t ); }
+    { return atomic_sentence( s, t ); }
 
     atomic_sentence make_propositional_letter( const std::string & s )
     { return make_predicate( s, { } ); }
@@ -128,7 +128,7 @@ namespace first_order_logic
     }
 
     atomic_sentence make_equal( const term & l, const term & r )
-    { return atomic_sentence( atomic_sentence::type::equal, { l, r } ); }
+    { return make_predicate( "=", { l, r } ); }
 
     template< typename T >
     T make_pass( const typename next_sentence_type< T >::type & t )

@@ -26,7 +26,7 @@ namespace first_order_logic
                         substitution sub( { std::make_pair( v, make_variable( gen_str ) ) } );
                         return make_some( v, sub( sen ) );
                     } ),
-                make_atomic_actor( [&]( const atomic_sentence & as ){ return sentence< T >( as ); } ),
+                make_atomic_actor( [&]( const atomic_sentence & as ) { return sentence< T >( as ); } ),
                 make_and_actor(
                     [&]( const sentence< T > & l, const sentence< T > & r )
                     {
@@ -424,7 +424,7 @@ namespace first_order_logic
                     { return have_equal( s ); } ),
                 make_atomic_actor(
                     [&]( const atomic_sentence & as )
-                    { return as->atomic_sentence_type == atomic_sentence::type::equal; } ),
+                    { return as.name == "="; } ),
                 make_and_actor(
                     [&]( const sentence< T > & l, const sentence< T > & r )
                     { return have_equal( l ) || have_equal( r ); } ),
@@ -722,74 +722,35 @@ namespace first_order_logic
     template< typename OUTITER >
     OUTITER constants( const atomic_sentence & self, OUTITER result )
     {
-        return
-                self.type_restore_full< OUTITER >(
-                    make_equal_actor(
-                        [&]( const term & l, const term & r )
-                        { return l.constants( r.constants( result ) ); } ),
-                    make_predicate_actor(
-                        [&]( const std::string &, const std::vector< term > & vec )
-                        {
-                            for ( const term & t : vec )
-                            { result = t.constants( result ); }
-                            return result;
-                        } ) );
+        for ( const term & t : self.arguments ) { result = t.constants( result ); }
+        return result;
     }
     template< typename OUTITER >
     OUTITER free_variables( const atomic_sentence & self, OUTITER result )
     {
-        self.template type_restore_full< void >(
-            make_equal_actor(
-                [&]( const term & l, const term & r )
-                { result = l.variables( r.variables( result ) ); } ),
-            make_predicate_actor(
-                [&]( const std::string &, const std::vector< term > & vec )
-                { for ( const term & t : vec ) { result = t.variables( result ); } } ) );
+        for ( const term & t : self.arguments ) { result = t.variables( result ); }
         return result;
     }
     template< typename OUTITER >
     OUTITER functions( const atomic_sentence & self, OUTITER result )
     {
-        self.template type_restore_full< void >(
-            make_equal_actor(
-                [&]( const term & l, const term & r )
-                { result = l.functions( r.functions( result ) ); } ),
-            make_predicate_actor(
-                [&]( const std::string &, const std::vector< term > & vec )
-                {
-                    for ( const term & t : vec )
-                    { result = t.functions( result ); }
-                } ) );
+        for ( const term & t : self.arguments ) { result = t.functions( result ); }
         return result;
     }
     template< typename OUTITER >
     OUTITER used_name( const atomic_sentence & self, OUTITER result )
     {
-        return self.template type_restore_full< OUTITER >(
-            make_equal_actor(
-                [&]( const term & l, const term & r )
-                { return l.used_name( r.used_name( result ) ); } ),
-            make_predicate_actor(
-                [&]( const std::string & str, const std::vector< term > & vec )
-                {
-                    * result = str;
-                    ++result;
-                    for ( const term & t : vec )
-                    { result = t.used_name( result ); }
-                    return result;
-                } ) );
+        * result = self.name;
+        ++result;
+        for ( const term & t : self.arguments )
+        { result = t.used_name( result ); }
+        return result;
      }
     template< typename OUTITER >
     OUTITER predicates( const atomic_sentence & self, OUTITER result )
     {
-        self.template type_restore_full< void >(
-            make_equal_actor( [&]( const term &, const term & ){ } ),
-            make_predicate_actor(
-                [&]( const std::string & str, const std::vector< term > & vec )
-                {
-                    *result = predicate( str, vec.size( ) );
-                    ++result;
-                } ) );
+        *result = predicate( self.name, self.arguments.size( ) );
+        ++result;
         return result;
     }
     template< typename OUTITER >

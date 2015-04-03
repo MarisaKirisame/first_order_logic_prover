@@ -45,22 +45,13 @@ namespace first_order_logic
         }
         atomic_sentence operator ( )( const atomic_sentence & as ) const
         {
-            return as.type_restore_full< atomic_sentence >
-                    (
-                        make_equal_actor(
-                            [&]( const term & l, const term & r )
-                            { return make_equal( (*this)(l), (*this)(r) ); } ),
-                        make_predicate_actor(
-                            [&]( const std::string & str, const std::vector< term > & vec )
-                            {
-                                std::vector< term > tem;
-                                std::transform(
-                                    vec.begin( ),
-                                    vec.end( ),
-                                    std::back_inserter( tem ),
-                                    [&]( const term & te ){ return(*this)(te); } );
-                                return make_predicate( str, tem );
-                            } ) );
+            std::vector< term > tem;
+            std::transform(
+                as.arguments.begin( ),
+                as.arguments.end( ),
+                std::back_inserter( tem ),
+                [&]( const term & te ){ return(*this)(te); } );
+            return make_predicate( as.name, tem );
         }
         literal operator ( )( const literal & l ) const { return literal( (*this)(l.as), l.b ); }
         template< typename T >
@@ -203,42 +194,16 @@ namespace first_order_logic
     boost::optional< substitution > unify(
             const atomic_sentence & p, const atomic_sentence & q, const substitution & sub )
     {
-        if ( p->atomic_sentence_type != q->atomic_sentence_type || p->name != q->name )
-        { return boost::optional< substitution >( ); }
-        return p.type_restore_full< boost::optional< substitution > >(
-            make_predicate_actor(
-                [&]( const std::string &, const std::vector< term > & ter )
-                {
-                    boost::optional< substitution > ret;
-                    q.type_restore< void >(
-                        make_predicate_actor(
-                            [&]( const std::string &, const std::vector< term > & te )
-                            {
-                                assert( ter.size( ) == te.size( ) );
-                                ret = sub;
-                                for ( size_t i = 0; i < te.size( ); ++i )
-                                {
-                                    if ( ret ) { ret = unify( ter[i], te[i], * ret ); }
-                                    else { break; }
-                                }
-                            } ),
-                        error< >( ) );
-                    return ret;
-                } ),
-            make_equal_actor(
-                [&]( const term & l, const term & r )
-                {
-                    boost::optional< substitution > ret;
-                    q.type_restore< void >(
-                        make_equal_actor(
-                            [&]( const term & ll, const term & rr )
-                            {
-                                auto tem = unify( l, ll, sub );
-                                if ( tem ) { ret = unify( r, rr, * tem ); }
-                            } ),
-                        error< >( ) );
-                    return ret;
-                } ) );
+        if ( p.name != q.name ) { return boost::optional< substitution >( ); }
+        boost::optional< substitution > ret;
+        assert( p.arguments.size( ) == q.arguments.size( ) );
+        ret = sub;
+        for ( size_t i = 0; i < p.arguments.size( ); ++i )
+        {
+            if ( ret ) { ret = unify( p.arguments[i], q.arguments[i], * ret ); }
+            else { break; }
+        }
+        return ret;
     }
     template< typename T >
     boost::optional< substitution > unify(

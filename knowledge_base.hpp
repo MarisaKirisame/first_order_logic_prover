@@ -16,7 +16,6 @@ namespace first_order_logic
             for ( auto i = known_facts.begin( ); i != known_facts.end( ); ++i )
             {
                 const auto & sen = * i;
-                assert( static_cast< bool >( sen.data ) );
                 auto res = unify( match, sen, sub );
                 if ( res ) { * result = std::make_pair( sen, * res ); }
             }

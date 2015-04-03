@@ -323,7 +323,7 @@ namespace first_order_logic
                     return
                         common::make_expansion(
                             [&]( const atomic_sentence & as ) { return atomic_func( as ); },
-                            [&]( const typename next_sentence_type< sentence< T > >::type & n )
+                            [&]( const auto & n )
                             {
                                 return n.template type_restore< RET >
                                         (
