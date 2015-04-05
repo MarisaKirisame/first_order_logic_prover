@@ -209,14 +209,14 @@ namespace first_order_logic
                     {
                         literal l = get_literal( sen );
                         l.b = ! l.b;
-                        * result = boost::make_optional( l );
+                        * result = l;
                         ++result;
                         return result;
                     } ),
                 make_atomic_actor(
                     [&]( const atomic_sentence & as )
                     {
-                        * result = boost::make_optional( literal( as, true ) );
+                        * result = literal( as, true );
                         ++result;
                         return result;
                     } )
