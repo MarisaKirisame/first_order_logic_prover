@@ -1,5 +1,6 @@
 #ifndef THEOREM_PROVER_FIRST_ORDER_LOGIC_DEDUCTION_TREE
 #define THEOREM_PROVER_FIRST_ORDER_LOGIC_DEDUCTION_TREE
+#include "satisfiability.hpp"
 #include "predicate.hpp"
 #include "memory"
 #include "utility"
@@ -40,9 +41,8 @@ namespace first_order_logic
             std::set< function > functions;
             std::set< predicate > predicates;
             term_generator< sequence > tg;
-            std::vector< std::tuple< sequence, proof_tree, boost::optional< bool > > > branch;
+            std::vector< std::tuple< sequence, proof_tree, boost::optional< validity > > > branch;
             sequence * parent = nullptr;
-            bool have_branch = false;
             struct contradiction { proof_tree pt; };
             void try_insert(
                 std::map< free_sentence, bool > & m,
@@ -266,38 +266,35 @@ namespace first_order_logic
                 std::for_each( expanded.begin( ), expanded.end( ), function );
                 return std::make_pair( postive, negative );
             }
-            boost::optional< bool > expand( proof_tree & leaf )
+            boost::optional< validity > expand( proof_tree & leaf )
             {
-                if ( have_branch )
+                if ( ! branch.empty( ) )
                 {
                     auto try_join =
-                        [&]( )->boost::optional< bool >
+                        [&]( )->boost::optional< validity >
                         {
                             if ( std::all_of(
                                     branch.begin( ),
                                     branch.end( ),
-                                    [&]( const auto & t )
-                                        { return std::get< 2 >( t ) == true; } ) )
+                                    [&]( const auto & t ) { return std::get< 2 >( t ) == validity::valid; } ) )
                             {
                                 std::for_each(
                                     branch.begin( ),
                                     branch.end( ),
-                                    [&]( const auto & t )
-                                        { leaf.join( std::get< 1 >( t ) ); } );
-                                return true;
+                                    [&]( const auto & t ) { leaf.join( std::get< 1 >( t ) ); } );
+                                return validity::valid;
                             }
                             auto it =
                                 std::find_if(
                                     branch.begin( ),
                                     branch.end( ),
-                                    [&]( const auto & t )
-                                        { return std::get< 2 >( t ) == false; } );
+                                    [&]( const auto & t ) { return std::get< 2 >( t ) == validity::invalid; } );
                             if ( it != branch.end( ) )
                             {
                                 leaf.join( std::get< 1 >( * it ) );
-                                return false;
+                                return validity::invalid;
                             }
-                            return boost::optional< bool >( );
+                            return boost::optional< validity >( );
                         };
                     for ( auto & p : branch )
                     {
@@ -318,7 +315,7 @@ namespace first_order_logic
                     assert( f.size( ) == 1 );
                     term_map.insert( std::make_pair( f[0], std::set< free_sentence >( ) ) );
                 }
-                if ( sequent.empty( ) ) { return false; }
+                if ( sequent.empty( ) ) { return validity::invalid; }
                 while ( ( ! sequent.empty( ) ) && branch.empty( ) )
                 {
                     std::pair< free_sentence, bool > t = * sequent.begin( );
@@ -418,8 +415,7 @@ namespace first_order_logic
                                                 (
                                                     ldt,
                                                     proof_tree( ),
-                                                    boost::optional
-                                                    < bool >( )
+                                                    boost::optional< validity >( )
                                                 ) );
                                         }
                                         catch ( contradiction & con )
@@ -435,13 +431,11 @@ namespace first_order_logic
                                                 (
                                                     rdt,
                                                     proof_tree( ),
-                                                    boost::optional
-                                                    < bool >( )
+                                                    boost::optional< validity >( )
                                                 ) );
                                         }
                                         catch ( contradiction & con )
                                         { pt.join( con.pt ); }
-                                        have_branch = true;
                                     }
                                 } ),
                             make_or_actor(
@@ -463,8 +457,7 @@ namespace first_order_logic
                                                 (
                                                     ldt,
                                                     proof_tree( ),
-                                                    boost::optional
-                                                    < bool >( )
+                                                    boost::optional< validity >( )
                                                 ) );
                                         }
                                         catch ( contradiction & con )
@@ -480,13 +473,11 @@ namespace first_order_logic
                                                 (
                                                     rdt,
                                                     proof_tree( ),
-                                                    boost::optional
-                                                    < bool >( )
+                                                    boost::optional< validity >( )
                                                 ) );
                                         }
                                         catch ( contradiction & con )
                                         { pt.join( con.pt ); }
-                                        have_branch = true;
                                     }
                                     else
                                     {
@@ -502,13 +493,13 @@ namespace first_order_logic
                     catch ( contradiction & con )
                     {
                         leaf.join( con.pt );
-                        return true;
+                        return validity::valid;
                     }
                     leaf = leaf.join( proof_tree( static_cast< std::string >( * this ) ) );
                 }
-                return boost::optional< bool >( );
+                return boost::optional< validity >( );
             }
-            bool is_valid( )
+            validity is_valid( )
             {
                 pt = proof_tree( static_cast< std::string >( * this ) );
                 proof_tree leaf = pt;
@@ -517,7 +508,6 @@ namespace first_order_logic
                     auto ret = expand( leaf );
                     if ( ret ) { return * ret; }
                 }
-                return false;
             }
             sequence( const sequence & t ) :
                 sequent( t.sequent ),
@@ -546,11 +536,10 @@ namespace first_order_logic
                 if ( have_equal( t ) ) { add_equal_generator( ); }
             }
         };
-        static std::pair< proof_tree, bool > is_valid( free_sentence & te )
+        static std::pair< proof_tree, validity > is_valid( free_sentence & te )
         {
             sequence t( te );
-            bool res = t.is_valid( );
-            return std::make_pair( t.pt, res );
+            return std::make_pair( t.pt, t.is_valid( ) );
         }
     };
 }

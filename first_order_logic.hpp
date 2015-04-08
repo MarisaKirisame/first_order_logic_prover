@@ -8,19 +8,19 @@
 #include "sentence_helper.hpp"
 namespace first_order_logic
 {
-    term make_function( const std::string & s, const std::vector< term > & t )
+    inline term make_function( const std::string & s, const std::vector< term > & t )
     { return term( term::type::function, s, t ); }
 
-    term make_constant( const std::string & s )
+    inline term make_constant( const std::string & s )
     { return term( constant( s ) ); }
 
-    term make_variable( const std::string & s )
+    inline term make_variable( const std::string & s )
     { return term( variable( s ) ); }
 
-    atomic_sentence make_predicate( const std::string & s, const std::vector< term > & t )
+    inline atomic_sentence make_predicate( const std::string & s, const std::vector< term > & t )
     { return atomic_sentence( s, t ); }
 
-    atomic_sentence make_propositional_letter( const std::string & s )
+    inline atomic_sentence make_propositional_letter( const std::string & s )
     { return make_predicate( s, { } ); }
 
     static_assert(
@@ -127,7 +127,7 @@ namespace first_order_logic
         return ret_type( sentence_type::some, l, static_cast< ret_type >( s ) );
     }
 
-    atomic_sentence make_equal( const term & l, const term & r )
+    inline atomic_sentence make_equal( const term & l, const term & r )
     { return make_predicate( "=", { l, r } ); }
 
     template< typename T >

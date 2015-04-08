@@ -10,6 +10,8 @@
 #include "knowledge_base.hpp"
 #include "parser.hpp"
 #include "resolution.hpp"
+#include "DPLL.hpp"
+#include "WALKSAT.hpp"
 namespace first_order_logic
 {
     BOOST_AUTO_TEST_CASE( gentzen_system_test )
@@ -20,7 +22,7 @@ namespace first_order_logic
                 make_all(
                     variable( "x" ),
                     make_predicate( "F", { make_function( "f", { make_variable( "x" ) } ) } ) ) );
-        BOOST_CHECK( gentzen_system::is_valid( fol ).second );
+        BOOST_CHECK_EQUAL( gentzen_system::is_valid( fol ).second, validity::valid );
         free_sentence fol2 =
             make_imply(
                 make_some
@@ -30,8 +32,8 @@ namespace first_order_logic
                     (
                         make_propositional_letter( "p" ),
                         make_predicate( "Q", { make_variable( "x" ) } )
-                        )
-                    ),
+                    )
+                ),
                 make_imply
                 (
                     make_propositional_letter( "p" ),
@@ -71,9 +73,9 @@ namespace first_order_logic
                 ),
                 make_predicate( "p", { make_function( "f", { make_variable( "x" ) } ) } )
             );
-        BOOST_CHECK( gentzen_system::is_valid( fol2 ).second );
-        BOOST_CHECK( gentzen_system::is_valid( fol3 ).second );
-        BOOST_CHECK( gentzen_system::is_valid( fol4 ).second );
+        BOOST_CHECK_EQUAL( gentzen_system::is_valid( fol2 ).second, validity::valid );
+        BOOST_CHECK_EQUAL( gentzen_system::is_valid( fol3 ).second, validity::valid );
+        BOOST_CHECK_EQUAL( gentzen_system::is_valid( fol4 ).second, validity::valid );
     }
 
     BOOST_AUTO_TEST_CASE( forward_chaning_algorithm )
@@ -213,16 +215,12 @@ namespace first_order_logic
                         axiom7 ),
                     make_predicate( "Criminal", { make_variable( "x" ) } ) ) );
     }
-}
-#include "horn_clauses.hpp"
-#include "DPLL.hpp"
-#include "WALKSAT.hpp"
-namespace propositional_calculus
-{
-    enum satisfiability
-    { valid, satisfiable, unsatisfiable };
-    using namespace first_order_logic;
-    const std::vector< std::pair< free_propositional_sentence, satisfiability > > & test_prop( )
+    const
+    std::pair
+    <
+        std::vector< std::pair< free_propositional_sentence, satisfiability > >,
+        std::vector< std::pair< free_propositional_sentence, validity > >
+    > & test_prop( )
     {
         free_propositional_sentence A( make_propositional_letter( "A" ) );
         free_propositional_sentence B( make_propositional_letter( "B" ) );
@@ -234,54 +232,50 @@ namespace propositional_calculus
         free_propositional_sentence valid_prop2( make_imply( A, make_imply( B, A ) ) );
         free_propositional_sentence eqprop( make_iff( A, B ) );
         free_propositional_sentence eqprop2( pre_CNF( eqprop ) );
-        static std::vector< std::pair< free_propositional_sentence, satisfiability > > ret
+        static std::vector< std::pair< free_propositional_sentence, satisfiability > > ret1
         {
-            { A, satisfiable },
-            { valid_prop, valid },
-            { associativity_law_prop, valid },
-            { unsatisfiable_prop, unsatisfiable },
-            { valid_prop2, valid },
-            { make_iff( eqprop, eqprop2 ), valid },
+            { A, satisfiability::satisfiable },
+            { valid_prop, satisfiability::satisfiable },
+            { associativity_law_prop, satisfiability::satisfiable },
+            { unsatisfiable_prop, satisfiability::unsatisfiable },
+            { valid_prop2, satisfiability::satisfiable },
+            { make_iff( eqprop, eqprop2 ), satisfiability::satisfiable },
         };
+        static std::vector< std::pair< free_propositional_sentence, validity > > ret2
+        {
+            { A, validity::invalid },
+            { valid_prop, validity::valid },
+            { associativity_law_prop, validity::valid },
+            { unsatisfiable_prop, validity::invalid },
+            { valid_prop2, validity::valid },
+            { make_iff( eqprop, eqprop2 ), validity::valid },
+        };
+        static
+        std::pair
+        <
+            std::vector< std::pair< free_propositional_sentence, satisfiability > >,
+            std::vector< std::pair< free_propositional_sentence, validity > >
+        >ret(ret1, ret2);
         return ret;
     }
 
     BOOST_AUTO_TEST_CASE( DPLL_TEST )
     {
-        for ( const std::pair< free_propositional_sentence, satisfiability > & p : test_prop( ) )
-        { BOOST_CHECK_EQUAL( DPLL( list_list_literal( p.first ) ), p.second == satisfiable || p.second == valid ); }
+        for ( const auto & p : test_prop( ).first )
+        { BOOST_CHECK_EQUAL( DPLL( list_list_literal( p.first ) ), p.second ); }
     }
 
     BOOST_AUTO_TEST_CASE( WALKSAT_TEST )
     {
         std::random_device rd;
-        for ( const std::pair< free_propositional_sentence, satisfiability > & p : test_prop( ) )
-        { BOOST_CHECK_EQUAL( WALKSAT( list_list_literal( p.first ), 0.5, 1000, rd ), p.second == satisfiable || p.second == valid ); }
+        for ( const std::pair< free_propositional_sentence, satisfiability > & p : test_prop( ).first )
+        { BOOST_CHECK_EQUAL( WALKSAT( list_list_literal( p.first ), 0.5, 1000, rd ), p.second ); }
     }
 
     BOOST_AUTO_TEST_CASE( PROP_RESOLUTION_TEST )
     {
-        for ( const std::pair< free_propositional_sentence, satisfiability > & p : test_prop( ) )
-        {
-            BOOST_CHECK_EQUAL( resolution( p.first ), p.second != unsatisfiable );
-            if ( resolution( p.first ) != ( p.second != unsatisfiable ) )
-            { std::cout << pre_CNF( p.first ) << std::endl; }
-        }
-    }
-
-    BOOST_AUTO_TEST_CASE( forward_chaining_test )
-    {
-        BOOST_CHECK( forward_chaining(
-            {
-                { {}, "A" },
-                { {}, "B" },
-                { { "A", "B" }, "L" },
-                { { "A", "P" }, "L" },
-                { { "B", "L" }, "M" },
-                { { "L", "M" }, "P" },
-                { { "P" }, "Q" }
-            },
-            "Q" ) );
+        for ( const std::pair< free_propositional_sentence, satisfiability > & p : test_prop( ).first )
+        { BOOST_CHECK_EQUAL( resolution( p.first ), p.second ); }
     }
 }
 #endif //THEOREM_PROVER_EXAMPLE

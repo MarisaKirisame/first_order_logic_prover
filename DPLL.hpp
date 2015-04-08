@@ -5,6 +5,7 @@
 #include <map>
 #include <cassert>
 #include <boost/variant.hpp>
+#include "satisfiability.hpp"
 namespace first_order_logic
 {
     template< typename OUTITER >
@@ -34,7 +35,7 @@ namespace first_order_logic
         }
         return cnf;
     }
-    bool DPLL( const std::list< std::list< literal > > & cnf, std::vector< std::pair< atomic_sentence, bool > > optimize )
+    satisfiability DPLL( const std::list< std::list< literal > > & cnf, std::vector< std::pair< atomic_sentence, bool > > optimize )
     {
         if ( ! optimize.empty( ) )
         {
@@ -44,17 +45,18 @@ namespace first_order_logic
         }
         else
         {
-            if ( cnf.empty( ) ) { return true; }
-            if ( std::any_of( cnf.begin( ), cnf.end( ), []( const auto & p ){ return p.empty( ); } ) ) { return false; }
+            if ( cnf.empty( ) ) { return satisfiability::satisfiable; }
+            if ( std::any_of( cnf.begin( ), cnf.end( ), []( const auto & p ){ return p.empty( ); } ) ) { return satisfiability::unsatisfiable; }
             find_pure_symbol( cnf, std::back_inserter( optimize ) );
             find_unit_clause( cnf, std::back_inserter( optimize ) );
             if ( ! optimize.empty( ) ) { return DPLL( cnf, std::move( optimize ) ); }
             assert( cnf.begin( )->begin( ) != cnf.begin( )->end( ) );
             return
-                DPLL( substitute( cnf, cnf.begin( )->begin( )->as, true ), optimize ) ||
-                DPLL( substitute( cnf, cnf.begin( )->begin( )->as, false ), optimize );
+                (is_satisfiable( DPLL( substitute( cnf, cnf.begin( )->begin( )->as, true ), optimize ) ).get( ) ||
+                is_satisfiable( DPLL( substitute( cnf, cnf.begin( )->begin( )->as, false ), optimize ) ).get( ) ) ?
+                        satisfiability::satisfiable : satisfiability::unsatisfiable;
         }
     }
-    bool DPLL( const std::list< std::list< literal > > & cnf ) { return DPLL( cnf, { } ); }
+    satisfiability DPLL( const std::list< std::list< literal > > & cnf ) { return DPLL( cnf, { } ); }
 }
 #endif // DPLL_HPP

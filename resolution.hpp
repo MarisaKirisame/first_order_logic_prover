@@ -7,9 +7,10 @@
 #include "sentence_operations.hpp"
 #include "../cpp_common/iterator.hpp"
 #include "CNF.hpp"
+#include "satisfiability.hpp"
 namespace first_order_logic
 {
-    bool resolution( const free_propositional_sentence & sen )
+    satisfiability resolution( const free_propositional_sentence & sen )
     {
         auto CNF = set_set_literal( sen );
         std::set< std::set< literal > > to_be_added;
@@ -43,7 +44,7 @@ namespace first_order_logic
                                             if ( (*un)( ins ) != (*un)( rr ) )
                                             { cl.insert( (*un)( ins ) ); }
                                         }
-                                        if ( cl.empty( ) ) { return false; }
+                                        if ( cl.empty( ) ) { return satisfiability::unsatisfiable; }
                                         to_be_added.insert( cl );
                                     }
                                 }
@@ -62,19 +63,15 @@ namespace first_order_logic
             }
             to_be_added.clear( );
         }
-        return true;
+        return satisfiability::satisfiable;
     }
 
-    bool resolution( const free_sentence & sen, const free_sentence & goal )
+    validity resolution( const free_sentence & sen, const free_sentence & goal )
     {
-        return ! resolution(
-                    drop_universal(
-                        skolemization_remove_existential(
-                            move_quantifier_out(
-                                rectify(
-                                    make_and(
-                                        sen,
-                                        restore_quantifier_universal( make_not( goal ) ) ) ) ) ) ) );
+        return is_satisfiable( resolution( drop_universal( skolemization_remove_existential( move_quantifier_out( rectify(
+                    make_and(
+                        sen,
+                        restore_quantifier_universal( make_not( goal ) ) ) ) ) ) ) ) ) ? validity::invalid : validity::valid;
     }
 }
 #endif // RESOLUTION_HPP

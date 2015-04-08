@@ -30,11 +30,10 @@ HEADERS += \
     TMP.hpp \
     converter.hpp \
     DPLL.hpp \
-    interpolant.hpp \
     WALKSAT.hpp \
-    horn_clauses.hpp \
     sentence_operations.hpp \
-    CNF.hpp
+    CNF.hpp \
+    satisfiability.hpp
 OTHER_FILES += \
     theorem_prover.pro.user \
     LICENSE \

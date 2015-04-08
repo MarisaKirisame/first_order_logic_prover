@@ -3,10 +3,11 @@
 #include <random>
 #include <iterator>
 #include "resolution.hpp"
+#include "satisfiability.hpp"
 namespace first_order_logic
 {
     template< typename T, typename RD >
-    bool WALKSAT( const std::list< std::list< literal > > & cnf, double p, T max_count, RD & rd )
+    satisfiability WALKSAT( const std::list< std::list< literal > > & cnf, double p, T max_count, RD & rd )
     {
         std::map< atomic_sentence, bool > ass;
         for ( const auto & cl : cnf )
@@ -17,7 +18,7 @@ namespace first_order_logic
                 { ass.insert( { l.as, std::uniform_int_distribution<>( 0, 1 )( rd ) } ); }
             }
         }
-        if ( ass.empty( ) ) { return true; }
+        if ( ass.empty( ) ) { return satisfiability::satisfiable; }
         auto conflict_number =
             [&]( )->size_t
             {
@@ -42,7 +43,7 @@ namespace first_order_logic
             };
         while ( max_count > 0 )
         {
-            if ( conflict_number( ) == 0 ) { return true; }
+            if ( conflict_number( ) == 0 ) { return satisfiability::satisfiable; }
             --max_count;
             if ( p > std::uniform_real_distribution<>( 0, 1 )( rd ) )
             {
@@ -68,7 +69,7 @@ namespace first_order_logic
                 it->second = ! it->second;
             }
         }
-        return false;
+        return satisfiability::unsatisfiable;
     }
 }
 #endif // WALKSAT_HPP
