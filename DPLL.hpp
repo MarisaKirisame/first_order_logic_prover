@@ -6,12 +6,40 @@
 #include <cassert>
 #include <boost/variant.hpp>
 #include "satisfiability.hpp"
+#include "../cpp_common/iterator.hpp"
 namespace first_order_logic
 {
     template< typename OUTITER >
-    OUTITER find_pure_symbol( const std::list< std::list< literal > > & cnf, OUTITER out ) { return out; }
+    OUTITER find_pure_symbol( const std::list< std::list< literal > > & cnf, OUTITER out )
+    {
+        auto ret = common::make_iterator_iterator( cnf.begin( ), cnf.end( ) );
+        std::map< atomic_sentence, bool > map;
+        for ( const auto & i : common::make_range_container_proxy( ret.first, ret.second ) ) { map.insert( { i.as, i.b } ); }
+        for ( const auto & i : common::make_range_container_proxy( ret.first, ret.second ) )
+        {
+            auto it = map.find( i.as );
+            if ( it != map.end( ) && ( it->second != i.b ) ) { map.erase( i.as ); }
+        }
+        for ( const auto & i : map )
+        {
+            *out = literal( i.first, i.second );
+            ++out;
+        }
+        return out;
+    }
     template< typename OUTITER >
-    OUTITER find_unit_clause( const std::list< std::list< literal > > & cnf, OUTITER out ) { return out; }
+    OUTITER find_unit_clause( const std::list< std::list< literal > > & cnf, OUTITER out )
+    {
+        for ( const auto & l : cnf )
+        {
+            if ( l.size( ) == 1 )
+            {
+                *out = l.front( );
+                ++out;
+            }
+        }
+        return out;
+    }
     std::list< std::list< literal > > substitute( std::list< std::list< literal > > cnf, const atomic_sentence & as, bool with )
     {
         for ( auto it = cnf.begin( ); it != cnf.end( ); )
@@ -35,13 +63,13 @@ namespace first_order_logic
         }
         return cnf;
     }
-    satisfiability DPLL( const std::list< std::list< literal > > & cnf, std::vector< std::pair< atomic_sentence, bool > > optimize )
+    satisfiability DPLL( const std::list< std::list< literal > > & cnf, std::vector< literal > optimize )
     {
         if ( ! optimize.empty( ) )
         {
             auto ret = optimize.back( );
             optimize.pop_back( );
-            return DPLL( substitute( cnf, ret.first, ret.second ), std::move( optimize ) );
+            return DPLL( substitute( cnf, ret.as, ret.b ), std::move( optimize ) );
         }
         else
         {
