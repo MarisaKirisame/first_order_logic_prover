@@ -24,10 +24,10 @@ namespace first_order_logic
     static_assert(
         free_propositional_sentence::full_type_restore
         <
-            and_actor< error< > >,
-            or_actor< error< > >,
-            not_actor< error< > >,
-            atomic_actor< error< > >
+            and_actor< common::error< > >,
+            or_actor< common::error< > >,
+            not_actor< common::error< > >,
+            atomic_actor< common::error< > >
         >::value,
         "type missing" );
     typedef

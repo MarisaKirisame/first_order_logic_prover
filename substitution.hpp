@@ -211,7 +211,7 @@ namespace first_order_logic
     {
         boost::optional< atomic_sentence > as;
         p.type_restore( make_atomic_actor(
-                            [&]( const atomic_sentence & asen ) { as = asen; } ), error< >( ) );
+                            [&]( const atomic_sentence & asen ) { as = asen; } ), common::error< >( ) );
         return as ? unify( * as, q, sub ) : boost::optional< substitution >( );
     }
     template< typename T >
@@ -237,7 +237,7 @@ namespace first_order_logic
                                                 substitution( { { va, term( var ) } } )( se ),
                                                 sen,
                                                 sub ); } ),
-                                error< >( ) );
+                                common::error< >( ) );
                             return ret;
                         } ),
                     make_some_actor(
@@ -253,7 +253,7 @@ namespace first_order_logic
                                                     sen,
                                                     sub );
                                     } ),
-                                error< >( ) );
+                                common::error< >( ) );
                             return ret;
                         } ),
                     make_and_actor(
@@ -267,7 +267,7 @@ namespace first_order_logic
                                         auto tem = unify( l, ll, sub );
                                         if ( tem ) { ret = unify( r, rr, * tem ); }
                                     } ),
-                                error< >( ) );
+                                common::error< >( ) );
                             return ret;
                         } ),
                     make_or_actor(
@@ -281,7 +281,7 @@ namespace first_order_logic
                                         auto tem = unify( l, ll, sub );
                                         if ( tem ) { ret = unify( r, rr, * tem ); }
                                     } ),
-                                error< >( ) );
+                                common::error< >( ) );
                             return ret;
                         } ),
                     make_not_actor(
@@ -291,7 +291,7 @@ namespace first_order_logic
                             q.type_restore(
                                 make_not_actor(
                                     [&]( const sentence< T > & s ){ ret = unify( sen, s, sub ); } ),
-                                error< >( ) );
+                                common::error< >( ) );
                             return ret;
                         } ),
                     make_atomic_actor(
@@ -301,7 +301,7 @@ namespace first_order_logic
                             q.type_restore(
                                 make_atomic_actor(
                                     [&]( const atomic_sentence & as2 ){ ret = unify( as1, as2, sub ); } ),
-                                error< >( ) );
+                                common::error< >( ) );
                             return ret;
                         } ) );
     }

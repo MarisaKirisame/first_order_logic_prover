@@ -15,6 +15,7 @@
 #include "TMP.hpp"
 #include "converter.hpp"
 #include "atomic_sentence.hpp"
+#include "../cpp_common/named_parameter.hpp"
 namespace first_order_logic
 {
     DEFINE_ACTOR(and);
@@ -112,7 +113,7 @@ namespace first_order_logic
         RET type_restore_full( const ACTORS & ... t ) const
         {
             static_assert( full_type_restore< ACTORS ... >::value, "type missing" );
-            return type_restore< RET >( t ..., error< RET >( ) );
+            return type_restore< RET >( t ..., common::error< RET >( ) );
         }
         sentence( sentence_type ty,
                   const std::initializer_list< typename next_sentence_type< sentence< T > >::type > & il ) :
@@ -250,7 +251,7 @@ namespace first_order_logic
                     return
                         common::make_expansion(
                             []( const std::false_type &, const auto &, const auto & )
-                            { return error< RET >( )( ); },
+                            { return common::error< RET >( )( ); },
                             [&]( const std::true_type &, const auto & l, const auto & r )
                             { return and_func( l, r ); } )
                             (
@@ -265,7 +266,7 @@ namespace first_order_logic
                 case sentence_type::logical_not:
                     return
                         common::make_expansion(
-                            []( const std::false_type &, const auto & ) { return error< RET >( )( ); },
+                            []( const std::false_type &, const auto & ) { return common::error< RET >( )( ); },
                             [&]( const std::true_type &, const auto & s ) { return not_func( s ); } )
                             (
                                 have
@@ -279,7 +280,7 @@ namespace first_order_logic
                     return
                         common::make_expansion(
                             []( const std::false_type &, const auto &, const auto & )
-                            { return error< RET >( )( ); },
+                            { return common::error< RET >( )( ); },
                             [&]( const std::true_type &, const auto & l, const auto & r )
                             { return or_func( l, r ); } )
                             (
@@ -294,7 +295,7 @@ namespace first_order_logic
                 case sentence_type::all:
                     return
                         common::make_expansion(
-                            []( const std::false_type &, const auto & ) { return error< RET >( )( ); },
+                            []( const std::false_type &, const auto & ) { return common::error< RET >( )( ); },
                             [&]( const std::true_type &, const auto & s )
                             { return all_func( variable( (*this)->name ), s ); } )
                             (
@@ -308,7 +309,7 @@ namespace first_order_logic
                 case sentence_type::some:
                     return
                         common::make_expansion(
-                            []( const std::false_type &, const auto & ) { return error< RET >( )( ); },
+                            []( const std::false_type &, const auto & ) { return common::error< RET >( )( ); },
                             [&]( const std::true_type &, const auto & s )
                             { return some_func( variable( (*this)->name ), s ); } )
                             (
@@ -333,7 +334,7 @@ namespace first_order_logic
                                             all_func,
                                             some_func,
                                             atomic_func,
-                                            error< RET >( )
+                                            common::error< RET >( )
                                         );
                             } )
                             ( boost::get< typename next_sentence_type< sentence< T > >::type >(
@@ -347,32 +348,32 @@ namespace first_order_logic
         RET type_restore( const ACTORS & ... t ) const
         {
             return type_restore_inner< RET >(
-                extract< and_actor_helper >(
+                common::extract< and_actor_helper >(
                     t ...,
                     make_and_actor(
                         std::get
                         < std::tuple_size< std::tuple< ACTORS ... > >::value - 1 >( std::tie( t ... ) ) ) ),
-                extract< or_actor_helper >(
+                common::extract< or_actor_helper >(
                     t ...,
                     make_or_actor(
                         std::get
                         < std::tuple_size< std::tuple< ACTORS ... > >::value - 1 >( std::tie( t ... ) ) ) ),
-                extract< not_actor_helper >(
+                common::extract< not_actor_helper >(
                     t ...,
                     make_not_actor(
                         std::get
                         < std::tuple_size< std::tuple< ACTORS ... > >::value - 1 >( std::tie( t ... ) ) ) ),
-                extract< all_actor_helper >(
+                common::extract< all_actor_helper >(
                     t ...,
                     make_all_actor(
                         std::get
                         < std::tuple_size< std::tuple< ACTORS ... > >::value - 1 >( std::tie( t ... ) ) ) ),
-                extract< some_actor_helper >(
+                common::extract< some_actor_helper >(
                     t ...,
                     make_some_actor(
                         std::get
                         < std::tuple_size< std::tuple< ACTORS ... > >::value - 1 >( std::tie( t ... ) ) ) ),
-                extract< atomic_actor_helper >(
+                common::extract< atomic_actor_helper >(
                     t ...,
                     make_atomic_actor(
                         std::get
