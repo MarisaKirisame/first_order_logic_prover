@@ -1,7 +1,6 @@
 #ifndef ATOMIC_SENTENCE_HPP
 #define ATOMIC_SENTENCE_HPP
 #include "term.hpp"
-#include "named_parameter.hpp"
 namespace first_order_logic
 {
     struct atomic_sentence

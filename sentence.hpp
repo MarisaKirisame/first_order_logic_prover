@@ -9,7 +9,6 @@
 #include "function_output_iterator.hpp"
 #include "constant.hpp"
 #include <boost/iterator/transform_iterator.hpp>
-#include "named_parameter.hpp"
 #include "forward/first_order_logic.hpp"
 #include "sentence_helper.hpp"
 #include "TMP.hpp"
