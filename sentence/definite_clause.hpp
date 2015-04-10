@@ -1,5 +1,5 @@
-#ifndef DEFINITE_CLAUSE_HPP
-#define DEFINITE_CLAUSE_HPP
+#ifndef FIRST_ORDER_LOGIC_SENTENCE_DEFINITE_CLAUSE_HPP
+#define FIRST_ORDER_LOGIC_SENTENCE_DEFINITE_CLAUSE_HPP
 #include "term.hpp"
 #include <vector>
 #include "substitution.hpp"
@@ -15,4 +15,4 @@ namespace first_order_logic
         { assert( p.size( ) != 0 ); }
     };
 }
-#endif // DEFINITE_CLAUSE_HPP
+#endif //FIRST_ORDER_LOGIC_SENTENCE_DEFINITE_CLAUSE_HPP

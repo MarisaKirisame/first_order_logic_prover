@@ -1,5 +1,5 @@
-#ifndef FIRST_ORDER_LOGIC_FUNCTION
-#define FIRST_ORDER_LOGIC_FUNCTION
+#ifndef FIRST_ORDER_LOGIC_SENTENCE_FIRST_ORDER_LOGIC_FUNCTION_HPP
+#define FIRST_ORDER_LOGIC_SENTENCE_FIRST_ORDER_LOGIC_FUNCTION_HPP
 #include <string>
 namespace first_order_logic
 {
@@ -12,4 +12,4 @@ namespace first_order_logic
         { return name < f.name || ( name == f.name && arity < f.arity ); }
     };
 }
-#endif //FIRST_ORDER_LOGIC_FUNCTION
+#endif //FIRST_ORDER_LOGIC_SENTENCE_FIRST_ORDER_LOGIC_FUNCTION_HPP

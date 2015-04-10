@@ -1,6 +1,6 @@
-#ifndef SUBSTITUTION_HPP
-#define SUBSTITUTION_HPP
-#include "sentence.hpp"
+#ifndef FIRST_ORDER_LOGIC_SENTENCE_SUBSTITUTION_HPP
+#define FIRST_ORDER_LOGIC_SENTENCE_SUBSTITUTION_HPP
+#include "sentence/sentence.hpp"
 #include <map>
 #include <string>
 #include "forward/first_order_logic.hpp"
@@ -392,4 +392,4 @@ namespace first_order_logic
         return unify( t ..., substitution( ) );
     }
 }
-#endif // SUBSTITUTION_HPP
+#endif //FIRST_ORDER_LOGIC_SENTENCE_SUBSTITUTION_HPP

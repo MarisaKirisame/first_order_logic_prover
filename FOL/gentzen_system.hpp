@@ -1,21 +1,20 @@
-#ifndef THEOREM_PROVER_FIRST_ORDER_LOGIC_DEDUCTION_TREE
-#define THEOREM_PROVER_FIRST_ORDER_LOGIC_DEDUCTION_TREE
+#ifndef FIRST_ORDER_LOGIC_FOL_GENTZEN_SYSTEM_HPP
+#define FIRST_ORDER_LOGIC_FOL_GENTZEN_SYSTEM_HPP
 #include "satisfiability.hpp"
-#include "predicate.hpp"
+#include "sentence/predicate.hpp"
 #include "memory"
 #include "utility"
 #include "term_generator.hpp"
 #include "boost/range.hpp"
 #include "boost/range/join.hpp"
 #include "boost/iterator/counting_iterator.hpp"
-#include "function.hpp"
-#include "predicate.hpp"
+#include "sentence/function.hpp"
 #include "proof_tree.hpp"
-#include "sentence.hpp"
+#include "sentence/sentence.hpp"
 #include "forward/first_order_logic.hpp"
-#include "substitution.hpp"
+#include "sentence/substitution.hpp"
 #include <boost/optional.hpp>
-#include "sentence_operations.hpp"
+#include "sentence/sentence_operations.hpp"
 namespace first_order_logic
 {
     struct gentzen_system
@@ -527,7 +526,7 @@ namespace first_order_logic
                 cv
                 (
                     t,
-                    make_function_output_iterator(
+                    common::make_function_output_iterator(
                         [&]( const term & t )
                         { cv_map.insert( std::make_pair( t, std::set< free_sentence >( ) ) ); } )
                 );
@@ -543,4 +542,4 @@ namespace first_order_logic
         }
     };
 }
-#endif //FIRST_ORDER_LOGIC_DEDUCTION_TREE
+#endif //FIRST_ORDER_LOGIC_FOL_GENTZEN_SYSTEM_HPP

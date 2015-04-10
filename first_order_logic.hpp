@@ -1,11 +1,11 @@
-#ifndef FIRST_ORDER_LOGIC_FIRST_ORDER_LOGIC
-#define FIRST_ORDER_LOGIC_FIRST_ORDER_LOGIC
-#include "sentence.hpp"
-#include "atomic_sentence.hpp"
-#include "term.hpp"
-#include "variable.hpp"
+#ifndef FIRST_ORDER_LOGIC_FIRST_ORDER_LOGIC_HPP
+#define FIRST_ORDER_LOGIC_FIRST_ORDER_LOGIC_HPP
+#include "sentence/sentence.hpp"
+#include "sentence/atomic_sentence.hpp"
+#include "sentence/term.hpp"
+#include "sentence/variable.hpp"
 #include "forward/first_order_logic.hpp"
-#include "sentence_helper.hpp"
+#include "sentence/sentence_helper.hpp"
 namespace first_order_logic
 {
     inline term make_function( const std::string & s, const std::vector< term > & t )
@@ -134,4 +134,4 @@ namespace first_order_logic
     T make_pass( const typename next_sentence_type< T >::type & t )
     { return T( sentence_type::pass, { t } ); }
 }
-#endif //FIRST_ORDER_LOGIC_FIRST_ORDER_LOGIC
+#endif //FIRST_ORDER_LOGIC_FIRST_ORDER_LOGIC_HPP

@@ -1,5 +1,5 @@
-#ifndef CONVERTER_HPP
-#define CONVERTER_HPP
+#ifndef FIRST_ORDER_LOGIC_SENTENCE_CONVERTER_HPP
+#define FIRST_ORDER_LOGIC_SENTENCE_CONVERTER_HPP
 #include "sentence_helper.hpp"
 #include "forward/first_order_logic.hpp"
 #include "../cpp_common/expansion.hpp"
@@ -661,4 +661,4 @@ namespace first_order_logic
         sentence< TO > operator ( )( const no_such_sentence & ) const { throw; }
     };
 }
-#endif // CONVERTER_HPP
+#endif //FIRST_ORDER_LOGIC_SENTENCE_CONVERTER_HPP

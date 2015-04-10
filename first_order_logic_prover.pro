@@ -6,33 +6,32 @@ QMAKE_CXXFLAGS += -std=c++1y -ftemplate-backtrace-limit=0
 SOURCES += main.cpp
 LIBS += -lboost_unit_test_framework
 HEADERS += \
-    function.hpp \
-    predicate.hpp \
-    proof_tree.hpp \
-    term_generator.hpp \
     test.hpp \
-    gentzen_system.hpp \
-    substitution.hpp \
-    term.hpp \
-    variable.hpp \
-    constant.hpp \
-    definite_clause.hpp \
-    sentence.hpp \
-    knowledge_base.hpp \
-    parser.hpp \
-    function_output_iterator.hpp \
     forward/first_order_logic.hpp \
     first_order_logic.hpp \
-    resolution.hpp \
-    atomic_sentence.hpp \
-    sentence_helper.hpp \
     TMP.hpp \
-    converter.hpp \
-    DPLL.hpp \
-    WALKSAT.hpp \
-    sentence_operations.hpp \
-    CNF.hpp \
-    satisfiability.hpp
+    satisfiability.hpp \
+    sentence/atomic_sentence.hpp \
+    sentence/constant.hpp \
+    sentence/converter.hpp \
+    sentence/function.hpp \
+    sentence/predicate.hpp \
+    sentence/sentence.hpp \
+    sentence/sentence_helper.hpp \
+    sentence/sentence_operations.hpp \
+    sentence/variable.hpp \
+    sentence/substitution.hpp \
+    sentence/term.hpp \
+    sentence/definite_clause.hpp \
+    sentence/parser.hpp \
+    FOL/gentzen_system.hpp \
+    FOL/knowledge_base.hpp \
+    FOL/proof_tree.hpp \
+    FOL/resolution.hpp \
+    SAT/DPLL.hpp \
+    SAT/WALKSAT.hpp \
+    sentence/CNF.hpp \
+    FOL/term_generator.hpp
 OTHER_FILES += \
     theorem_prover.pro.user \
     LICENSE \

@@ -1,5 +1,5 @@
-#ifndef SENTENCE_HELPER_HPP
-#define SENTENCE_HELPER_HPP
+#ifndef FIRST_ORDER_LOGIC_SENTENCE_SENTENCE_HELPER_HPP
+#define FIRST_ORDER_LOGIC_SENTENCE_SENTENCE_HELPER_HPP
 #include <type_traits>
 #include "TMP.hpp"
 namespace first_order_logic
@@ -292,4 +292,4 @@ namespace std
     };
 }
 
-#endif // SENTENCE_HELPER_HPP
+#endif //FIRST_ORDER_LOGIC_SENTENCE_SENTENCE_HELPER_HPP

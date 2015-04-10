@@ -1,12 +1,10 @@
-#ifndef FIRST_ORDER_LOGIC_COMPLEX_SENTENCE_HPP
-#define FIRST_ORDER_LOGIC_COMPLEX_SENTENCE_HPP
+#ifndef FIRST_ORDER_LOGIC_SENTENCE_SENTENCE_HPP
+#define FIRST_ORDER_LOGIC_SENTENCE_SENTENCE_HPP
 #include <type_traits>
 #include "function.hpp"
 #include "predicate.hpp"
 #include "term.hpp"
 #include <boost/variant.hpp>
-#include "proof_tree.hpp"
-#include "function_output_iterator.hpp"
 #include "constant.hpp"
 #include <boost/iterator/transform_iterator.hpp>
 #include "forward/first_order_logic.hpp"
@@ -466,4 +464,4 @@ namespace first_order_logic
     static_assert( not_sen_type::can_convert_to< sentence_type::logical_and, free_sentence >::value, "" );
     static_assert( ! std::is_convertible< free_sentence, not_sen_type >::value, "must be convertible to free sentence" );
 }
-#endif // FIRST_ORDER_LOGIC_COMPLEX_SENTENCE_HPP
+#endif // FIRST_ORDER_LOGIC_SENTENCE_SENTENCE_HPP

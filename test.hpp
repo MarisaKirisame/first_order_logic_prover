@@ -1,17 +1,16 @@
-#ifndef THEOREM_PROVER_EXAMPLE
-#define THEOREM_PROVER_EXAMPLE
+#ifndef FIRST_ORDER_LOGIC_TEST_HPP
+#define FIRST_ORDER_LOGIC_TEST_HPP
 #define BOOST_TEST_MAIN
 #define BOOST_TEST_DYN_LINK
 #include <boost/test/unit_test.hpp>
 #include "first_order_logic.hpp"
-#include "gentzen_system.hpp"
-#include "substitution.hpp"
-#include "definite_clause.hpp"
-#include "knowledge_base.hpp"
-#include "parser.hpp"
-#include "resolution.hpp"
-#include "DPLL.hpp"
-#include "WALKSAT.hpp"
+#include "FOL/gentzen_system.hpp"
+#include "sentence/substitution.hpp"
+#include "FOL/knowledge_base.hpp"
+#include "sentence/parser.hpp"
+#include "FOL/resolution.hpp"
+#include "SAT/DPLL.hpp"
+#include "SAT/WALKSAT.hpp"
 namespace first_order_logic
 {
     BOOST_AUTO_TEST_CASE( gentzen_system_test )
@@ -278,4 +277,4 @@ namespace first_order_logic
         { BOOST_CHECK_EQUAL( resolution( p.first ), p.second ); }
     }
 }
-#endif //THEOREM_PROVER_EXAMPLE
+#endif //FIRST_ORDER_LOGIC_TEST_HPP

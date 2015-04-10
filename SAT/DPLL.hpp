@@ -1,6 +1,5 @@
-#ifndef DPLL_HPP
-#define DPLL_HPP
-#include "resolution.hpp"
+#ifndef FIRST_ORDER_LOGIC_SAT_DPLL_HPP
+#define FIRST_ORDER_LOGIC_SAT_DPLL_HPP
 #include <algorithm>
 #include <map>
 #include <cassert>
@@ -87,4 +86,4 @@ namespace first_order_logic
     }
     satisfiability DPLL( const std::list< std::list< literal > > & cnf ) { return DPLL( cnf, { } ); }
 }
-#endif // DPLL_HPP
+#endif //FIRST_ORDER_LOGIC_SAT_DPLL_HPP

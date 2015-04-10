@@ -1,5 +1,5 @@
-#ifndef SATISFIABILITY_HPP
-#define SATISFIABILITY_HPP
+#ifndef FIRST_ORDER_LOGIC_SATISFIABILITY_HPP
+#define FIRST_ORDER_LOGIC_SATISFIABILITY_HPP
 #include <boost/optional/optional.hpp>
 namespace first_order_logic
 {
@@ -18,4 +18,4 @@ namespace first_order_logic
     boost::optional< bool > is_valid( satisfiability s )
     { return s == satisfiability::satisfiable ? boost::optional< bool >( ) : boost::optional< bool >( false ); }
 }
-#endif // SATISFIABILITY_HPP
+#endif //FIRST_ORDER_LOGIC_SATISFIABILITY_HPP

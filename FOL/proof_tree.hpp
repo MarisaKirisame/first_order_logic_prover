@@ -1,5 +1,5 @@
-#ifndef FIRST_ORDER_LOGIC_PROOF_TREE_HPP
-#define FIRST_ORDER_LOGIC_PROOF_TREE_HPP
+#ifndef FIRST_ORDER_LOGIC_FOL_PROOF_TREE_HPP
+#define FIRST_ORDER_LOGIC_FOL_PROOF_TREE_HPP
 #include <memory>
 #include <string>
 #include <vector>
@@ -51,4 +51,4 @@ namespace first_order_logic
         }
     };
 }
-#endif // THEOREM_PROVER_FIRST_ORDER_LOGIC_PROOF_TREE_HPP
+#endif //FIRST_ORDER_LOGIC_FOL_PROOF_TREE_HPP

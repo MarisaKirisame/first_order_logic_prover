@@ -1,12 +1,12 @@
-#ifndef RESOLUTION_HPP
-#define RESOLUTION_HPP
+#ifndef FIRST_ORDER_LOGIC_FOL_RESOLUTION_HPP
+#define FIRST_ORDER_LOGIC_FOL_RESOLUTION_HPP
 #include <boost/optional/optional.hpp>
-#include "sentence.hpp"
-#include "term.hpp"
+#include "sentence/sentence.hpp"
+#include "sentence/term.hpp"
 #include "TMP.hpp"
-#include "sentence_operations.hpp"
+#include "sentence/sentence_operations.hpp"
 #include "../cpp_common/iterator.hpp"
-#include "CNF.hpp"
+#include "sentence/CNF.hpp"
 #include "satisfiability.hpp"
 namespace first_order_logic
 {
@@ -74,4 +74,4 @@ namespace first_order_logic
                         restore_quantifier_universal( make_not( goal ) ) ) ) ) ) ) ) ) ? validity::invalid : validity::valid;
     }
 }
-#endif // RESOLUTION_HPP
+#endif //FIRST_ORDER_LOGIC_FOL_RESOLUTION_HPP

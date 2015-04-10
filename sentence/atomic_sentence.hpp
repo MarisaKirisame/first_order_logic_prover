@@ -1,5 +1,5 @@
-#ifndef ATOMIC_SENTENCE_HPP
-#define ATOMIC_SENTENCE_HPP
+#ifndef FIRST_ORDER_LOGIC_SENTENCE_ATOMIC_SENTENCE_HPP
+#define FIRST_ORDER_LOGIC_SENTENCE_ATOMIC_SENTENCE_HPP
 #include "term.hpp"
 namespace first_order_logic
 {
@@ -34,4 +34,4 @@ namespace first_order_logic
     OS & operator << ( OS & os, const atomic_sentence & st )
     { return os << static_cast< std::string >( st ); }
 }
-#endif // ATOMIC_SENTENCE_HPP
+#endif //FIRST_ORDER_LOGIC_SENTENCE_ATOMIC_SENTENCE_HPP

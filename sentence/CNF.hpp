@@ -1,6 +1,6 @@
-#ifndef CNF_HPP
-#define CNF_HPP
-#include "sentence.hpp"
+#ifndef FIRST_ORDER_LOGIC_SENTENCE_CNF_HPP
+#define FIRST_ORDER_LOGIC_SENTENCE_CNF_HPP
+#include "sentence/sentence.hpp"
 #include <list>
 #include <set>
 #include <iterator>
@@ -258,7 +258,7 @@ namespace first_order_logic
         std::list< literal > builder;
         to_CNF(
             sen,
-            make_function_output_iterator(
+            common::make_function_output_iterator(
                 [&]( const boost::optional< literal > & bl )
                 {
                     if ( bl ) { builder.push_back( bl.get( ) ); }
@@ -278,7 +278,7 @@ namespace first_order_logic
         std::set< literal > builder;
         to_CNF(
             sen,
-        make_function_output_iterator(
+        common::make_function_output_iterator(
             [&]( const boost::optional< literal > & bl )
             {
                 if ( bl ) { builder.insert( bl.get( ) ); }
@@ -312,4 +312,4 @@ namespace first_order_logic
         return std::set< std::set< T > >( boost::make_transform_iterator( c.begin( ), f ), boost::make_transform_iterator( c.end( ), f ) );
     }
 }
-#endif // CNF_HPP
+#endif //FIRST_ORDER_LOGIC_SENTENCE_CNF_HPP

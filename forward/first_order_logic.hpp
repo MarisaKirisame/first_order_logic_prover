@@ -1,9 +1,9 @@
-#ifndef FORWARD_FIRST_ORDER_LOGIC_H
-#define FORWARD_FIRST_ORDER_LOGIC_H
+#ifndef FIRST_ORDER_LOGIC_FORWARD_FIRST_ORDER_LOGIC_HPP
+#define FIRST_ORDER_LOGIC_FORWARD_FIRST_ORDER_LOGIC_HPP
 #include <string>
 #include <vector>
 #include <boost/mpl/vector.hpp>
-#include "../first_order_logic_prover/sentence_helper.hpp"
+#include "../first_order_logic_prover/sentence/sentence_helper.hpp"
 namespace first_order_logic
 {
     struct term;
@@ -75,4 +75,4 @@ namespace first_order_logic
 
 }
 
-#endif // FORWARD_FIRST_ORDER_LOGIC_H
+#endif //FIRST_ORDER_LOGIC_FORWARD_FIRST_ORDER_LOGIC_HPP

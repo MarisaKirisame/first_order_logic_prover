@@ -1,5 +1,5 @@
-#ifndef CONSTANTS_HPP
-#define CONSTANTS_HPP
+#ifndef FIRST_ORDER_LOGIC_SENTENCE_CONSTANTS_HPP
+#define FIRST_ORDER_LOGIC_SENTENCE_CONSTANTS_HPP
 #include "constant.hpp"
 namespace first_order_logic
 {
@@ -14,4 +14,4 @@ namespace first_order_logic
         bool operator < ( const constant & comp ) const { return name < comp.name; }
     };
 }
-#endif // CONSTANTS_HPP
+#endif //FIRST_ORDER_LOGIC_SENTENCE_CONSTANTS_HPP

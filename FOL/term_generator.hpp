@@ -1,6 +1,6 @@
-#ifndef FIRST_ORDER_LOGIC_TERM_GENERATOR
-#define FIRST_ORDER_LOGIC_TERM_GENERATOR
-#include "function.hpp"
+#ifndef FIRST_ORDER_LOGIC_TERM_GENERATOR_HPP
+#define FIRST_ORDER_LOGIC_TERM_GENERATOR_HPP
+#include "sentence/function.hpp"
 #include <set>
 #include <cassert>
 #include <map>
@@ -89,4 +89,4 @@ namespace first_order_logic
         }
     };
 }
-#endif //FIRST_ORDER_LOGIC_TERM_GENERATOR
+#endif //FIRST_ORDER_LOGIC_TERM_GENERATOR_HPP

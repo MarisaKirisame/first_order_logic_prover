@@ -1,5 +1,5 @@
-#ifndef TMP_HPP
-#define TMP_HPP
+#ifndef FIRST_ORDER_LOGIC_TMP_HPP
+#define FIRST_ORDER_LOGIC_TMP_HPP
 #include <type_traits>
 namespace first_order_logic
 {
@@ -135,4 +135,4 @@ namespace first_order_logic
     struct remove< set< ARG ... >, set< F, REM ... > > :
             remove< typename remove< set< ARG ... >, set< REM ... > >::type, set< F > > { };
 }
-#endif // TMP_HPP
+#endif //FIRST_ORDER_LOGIC_TMP_HPP

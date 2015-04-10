@@ -1,5 +1,5 @@
-#ifndef FIRST_ORDER_LOGIC_PARSER_HPP
-#define FIRST_ORDER_LOGIC_PARSER_HPP
+#ifndef FIRST_ORDER_LOGIC_SENTENCE_PARSER_HPP
+#define FIRST_ORDER_LOGIC_SENTENCE_PARSER_HPP
 #include "sentence.hpp"
 #include "forward/first_order_logic.hpp"
 #include <memory>
@@ -121,4 +121,4 @@ namespace first_order_logic
         return ret;
     }
 }
-#endif // FIRST_ORDER_LOGIC_PARSER_HPP
+#endif //FIRST_ORDER_LOGIC_SENTENCE_PARSER_HPP

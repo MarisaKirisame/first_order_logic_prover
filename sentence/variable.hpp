@@ -1,5 +1,5 @@
-#ifndef VARIABLE_HPP
-#define VARIABLE_HPP
+#ifndef FIRST_ORDER_LOGIC_SENTENCE_VARIABLE_HPP
+#define FIRST_ORDER_LOGIC_SENTENCE_VARIABLE_HPP
 #include "term.hpp"
 #include <string>
 namespace first_order_logic
@@ -17,4 +17,4 @@ namespace first_order_logic
         bool operator == ( const variable & comp ) const { return name == comp.name; }
     };
 }
-#endif // VARIABLE_HPP
+#endif //FIRST_ORDER_LOGIC_SENTENCE_VARIABLE_HPP

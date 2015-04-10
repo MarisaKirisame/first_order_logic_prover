@@ -1,14 +1,14 @@
-#ifndef TERM_HPP
-#define TERM_HPP
+#ifndef FIRST_ORDER_LOGIC_SENTENCE_TERM_HPP
+#define FIRST_ORDER_LOGIC_SENTENCE_TERM_HPP
 #include <cassert>
-#include "function_output_iterator.hpp"
-#include "function.hpp"
+#include "../cpp_common/iterator.hpp"
+#include "sentence/function.hpp"
 #include <vector>
 #include <memory>
 #include <algorithm>
 #include <set>
-#include "variable.hpp"
-#include "constant.hpp"
+#include "sentence/variable.hpp"
+#include "sentence/constant.hpp"
 namespace first_order_logic
 {
     struct term
@@ -150,4 +150,4 @@ namespace first_order_logic
         }
     };
 }
-#endif // TERM_HPP
+#endif //FIRST_ORDER_LOGIC_SENTENCE_TERM_HPP

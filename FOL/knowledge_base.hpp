@@ -1,8 +1,8 @@
-#ifndef KNOWLEDGE_BASE_HPP
-#define KNOWLEDGE_BASE_HPP
+#ifndef FIRST_ORDER_LOGIC_FOL_KNOWLEDGE_BASE_HPP
+#define FIRST_ORDER_LOGIC_FOL_KNOWLEDGE_BASE_HPP
 #include <list>
-#include "definite_clause.hpp"
-#include "substitution.hpp"
+#include "sentence/definite_clause.hpp"
+#include "sentence/substitution.hpp"
 #include "../cpp_common/combinator.hpp"
 namespace first_order_logic
 {
@@ -26,7 +26,7 @@ namespace first_order_logic
             std::set< std::string > ret;
             auto extract =
                     [&]( const atomic_sentence & s )
-            { cv( s, make_function_output_iterator( [&]( const term & t ){ ret.insert( t->name ); } ) ); };
+            { cv( s, common::make_function_output_iterator( [&]( const term & t ){ ret.insert( t->name ); } ) ); };
             for ( const definite_clause & dc : kb )
             {
                 std::for_each( dc.premise.begin( ), dc.premise.end( ), extract );
@@ -54,7 +54,7 @@ namespace first_order_logic
                         this->matching_facts(
                                 rename( premise[ gp.size( ) ] ),
                                 sub,
-                                make_function_output_iterator(
+                                common::make_function_output_iterator(
                                     [&]( const auto & p )
                                     {
                                         if ( ( new_known_facts.empty( ) ) ||
@@ -184,4 +184,4 @@ namespace first_order_logic
         }
     };
 }
-#endif // KNOWLEDGE_BASE_HPP
+#endif //FIRST_ORDER_LOGIC_FOL_KNOWLEDGE_BASE_HPP

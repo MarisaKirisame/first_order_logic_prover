@@ -1,5 +1,5 @@
-#ifndef SENTENCE_OPERATIONS_HPP
-#define SENTENCE_OPERATIONS_HPP
+#ifndef FIRST_ORDER_LOGIC_SENTENCE_SENTENCE_OPERATIONS_HPP
+#define FIRST_ORDER_LOGIC_SENTENCE_SENTENCE_OPERATIONS_HPP
 #include "sentence.hpp"
 #include "substitution.hpp"
 namespace first_order_logic
@@ -79,7 +79,7 @@ namespace first_order_logic
                     {
                         std::set< std::string > used;
                         cv( self,
-                            make_function_output_iterator(
+                            common::make_function_output_iterator(
                                 [&]( const term & t ){ used.insert( t->name ); } ) );
                         std::string unused = "_";
                         while ( used.count( unused ) != 0 ) { unused += "_"; }
@@ -89,7 +89,7 @@ namespace first_order_logic
                     {
                         std::set< std::string > fun;
                         functions( self,
-                                   make_function_output_iterator(
+                                   common::make_function_output_iterator(
                                        [&]( const function & f ){ fun.insert( f.name ); } ) );
                         std::string unused = "_";
                         while ( fun.count( unused ) != 0 ) { unused += "_"; }
@@ -715,7 +715,7 @@ namespace first_order_logic
     {
         free_variables(
             self,
-            constants( self, make_function_output_iterator( [&]( const auto & v ) { *result = term( v ); ++result; } ) ) );
+            constants( self, common::make_function_output_iterator( [&]( const auto & v ) { *result = term( v ); ++result; } ) ) );
         return result;
     }
 
@@ -759,9 +759,9 @@ namespace first_order_logic
         free_variables( self,
             constants(
                 self,
-                make_function_output_iterator(
+                common::make_function_output_iterator(
                     [&]( const auto & v ) { *result = term( v ); ++result; } ) ) );
         return result;
     }
 }
-#endif // SENTENCE_OPERATIONS_HPP
+#endif //FIRST_ORDER_LOGIC_SENTENCE_SENTENCE_OPERATIONS_HPP

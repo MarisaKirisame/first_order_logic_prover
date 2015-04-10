@@ -1,8 +1,7 @@
-#ifndef WALKSAT_HPP
-#define WALKSAT_HPP
+#ifndef FIRST_ORDER_LOGIC_SAT_WALKSAT_HPP
+#define FIRST_ORDER_LOGIC_SAT_WALKSAT_HPP
 #include <random>
 #include <iterator>
-#include "resolution.hpp"
 #include "satisfiability.hpp"
 namespace first_order_logic
 {
@@ -72,4 +71,4 @@ namespace first_order_logic
         return satisfiability::unsatisfiable;
     }
 }
-#endif // WALKSAT_HPP
+#endif //FIRST_ORDER_LOGIC_SAT_WALKSAT_HPP
