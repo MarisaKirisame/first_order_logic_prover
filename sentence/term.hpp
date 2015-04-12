@@ -9,6 +9,7 @@
 #include <set>
 #include "sentence/variable.hpp"
 #include "sentence/constant.hpp"
+#include <numeric>
 namespace first_order_logic
 {
     struct term

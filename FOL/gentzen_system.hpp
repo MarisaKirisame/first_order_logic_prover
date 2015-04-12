@@ -39,8 +39,8 @@ namespace first_order_logic
             size_t unused = 0;
             std::set< function > functions;
             std::set< predicate > predicates;
-            term_generator< sequence > tg;
-            std::vector< std::tuple< sequence, proof_tree, std::experimental::optional< validity > > > branch;
+            term_generator< std::function<term()> > tg;
+            std::vector< std::pair< std::pair< sequence, proof_tree >, std::experimental::optional< validity > > > branch;
             sequence * parent = nullptr;
             struct contradiction { proof_tree pt; };
             void try_insert(
@@ -275,32 +275,31 @@ namespace first_order_logic
                             if ( std::all_of(
                                     branch.begin( ),
                                     branch.end( ),
-                                    [&]( const auto & t ) { return std::get< 2 >( t ) == validity::valid; } ) )
+                                    [&]( const auto & t ) { return t.second == validity::valid; } ) )
                             {
                                 std::for_each(
                                     branch.begin( ),
                                     branch.end( ),
-                                    [&]( const auto & t ) { leaf.join( std::get< 1 >( t ) ); } );
+                                    [&]( const auto & t ) { leaf.join( t.first.second ); } );
                                 return validity::valid;
                             }
                             auto it =
                                 std::find_if(
                                     branch.begin( ),
                                     branch.end( ),
-                                    [&]( const auto & t ) { return std::get< 2 >( t ) == validity::invalid; } );
+                                    [&]( const auto & t ) { return t.second == validity::invalid; } );
                             if ( it != branch.end( ) )
                             {
-                                leaf.join( std::get< 1 >( * it ) );
+                                leaf.join( it->first.second );
                                 return validity::invalid;
                             }
                             return std::experimental::optional< validity >( );
                         };
                     for ( auto & p : branch )
                     {
-                        if ( ! std::get< 2 >( p ) )
+                        if ( ! p.second )
                         {
-                            std::get< 2 >( p ) =
-                                std::get< 0 >( p ).expand( std::get< 1 >( p ) );
+                            p.second = p.first.first.expand( p.first.second );
                             auto ret = try_join( );
                             if ( ret ) { return ret; }
                         }
@@ -410,10 +409,11 @@ namespace first_order_logic
                                                 l,
                                                 false );
                                             branch.push_back(
-                                                std::make_tuple
+                                                std::make_pair
                                                 (
-                                                    ldt,
-                                                    proof_tree( ),
+                                                    std::make_pair(
+                                                        ldt,
+                                                        proof_tree( )),
                                                     std::experimental::optional< validity >( )
                                                 ) );
                                         }
@@ -426,10 +426,11 @@ namespace first_order_logic
                                                 r,
                                                 false );
                                             branch.push_back(
-                                                std::make_tuple
+                                                std::make_pair
                                                 (
-                                                    rdt,
-                                                    proof_tree( ),
+                                                    std::make_pair(
+                                                        rdt,
+                                                        proof_tree( ) ),
                                                     std::experimental::optional< validity >( )
                                                 ) );
                                         }
@@ -452,10 +453,11 @@ namespace first_order_logic
                                                 l,
                                                 true );
                                             branch.push_back(
-                                                std::make_tuple
+                                                std::make_pair
                                                 (
-                                                    ldt,
-                                                    proof_tree( ),
+                                                    std::make_pair(
+                                                        ldt,
+                                                        proof_tree( )),
                                                     std::experimental::optional< validity >( )
                                                 ) );
                                         }
@@ -468,10 +470,11 @@ namespace first_order_logic
                                                 r,
                                                 true );
                                             branch.push_back(
-                                                std::make_tuple
+                                                std::make_pair
                                                 (
-                                                    rdt,
-                                                    proof_tree( ),
+                                                    std::make_pair(
+                                                        rdt,
+                                                        proof_tree( )),
                                                     std::experimental::optional< validity >( )
                                                 ) );
                                         }
@@ -494,13 +497,13 @@ namespace first_order_logic
                         leaf.join( con.pt );
                         return validity::valid;
                     }
-                    leaf = leaf.join( proof_tree( static_cast< std::string >( * this ) ) );
+                    leaf = leaf.join( proof_tree( this->operator std::string( ) ) );
                 }
                 return std::experimental::optional< validity >( );
             }
             validity is_valid( )
             {
-                pt = proof_tree( static_cast< std::string >( * this ) );
+                pt = proof_tree( this->operator std::string( ) );
                 proof_tree leaf = pt;
                 while ( true )
                 {
@@ -517,9 +520,9 @@ namespace first_order_logic
                 unused( t.unused ),
                 functions( t.functions ),
                 predicates( t.predicates ),
-                tg( this, 1, cv_map, functions ) { }
+                tg( [this](){return new_variable( );}, 1, cv_map, functions ) { }
             sequence( const free_sentence & t ) :
-                sequent( { { t, false } } ), tg( this, 1, cv_map, functions )
+                sequent( { { t, false } } ), tg( [this](){return new_variable( );}, 1, cv_map, functions )
             {
                 first_order_logic::functions( t, std::inserter( functions, functions.begin( ) ) );
                 first_order_logic::predicates( t, std::inserter( predicates, predicates.begin( ) ) );

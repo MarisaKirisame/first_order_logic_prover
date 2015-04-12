@@ -8,37 +8,37 @@
 #include <algorithm>
 namespace first_order_logic
 {
-    template< class deduction_tree >
+    template< class variable_maker >
     struct term_generator
     {
-        deduction_tree * that;
+        variable_maker vm;
         size_t arity;
         std::map< term, std::set< free_sentence > > & cv;
         std::set< term > term_map;
-        std::map< function, std::pair< term_generator, term_generator > > functions;
+        std::map< function, std::pair< std::unique_ptr< term_generator >, std::unique_ptr<term_generator> > > functions;
         const std::set< function > & original_functions;
         term_generator( const term_generator & tg ) :
-            that( tg.that ),
+            vm( tg.vm ),
             arity( tg.arity ),
             cv( tg.cv ),
             term_map( tg.term_map ),
             original_functions( tg.original_functions ),
             i( this->functions.begin( ) ) { }
         term_generator(
-                deduction_tree * that,
+                variable_maker vm,
                 size_t arity,
                 decltype( cv ) & cv,
                 const std::set< function > & functions )
-            : that( that ),
+            : vm( vm ),
               arity( arity ),
               cv( cv ),
               original_functions( functions ),
               i( this->functions.begin( ) ) { }
-        decltype( functions.begin( ) ) i;
+        decltype(functions.begin()) i;
         std::vector< term > generate( decltype( functions.begin( ) ) it )
         {
-            auto f = it->second.first.generate( );
-            auto s = it->second.second.generate( );
+            auto f = it->second.first->generate( );
+            auto s = it->second.second->generate( );
             f.reserve( f.size( ) + s.size( ) );
             std::copy( s.begin( ), s.end( ), std::back_inserter( f ) );
             if ( arity == 1 ) { return { make_function( it->first.name,  f ) }; }
@@ -49,7 +49,7 @@ namespace first_order_logic
             }
         }
         term_generator generate_term_generator( size_t a ) const
-        { return term_generator( that, a, cv, original_functions ); }
+        { return term_generator( vm, a, cv, original_functions ); }
         std::vector< term > generate( )
         {
             if ( arity == 0 ) { return { }; }
@@ -75,12 +75,12 @@ namespace first_order_logic
                         return std::make_pair(
                                     f,
                                     std::make_pair(
-                                        generate_term_generator( f.arity - 1 ),
-                                        generate_term_generator( 1 ) ) );
+                                        std::make_unique< term_generator >( generate_term_generator( f.arity - 1 ) ),
+                                        std::make_unique< term_generator >( generate_term_generator( 1 ) ) ) );
                     } );
                 }
                 if ( i == functions.end( ) ) { i = functions.begin( ); }
-                if ( i == functions.end( ) ) { return { that->new_variable( ) }; }
+                if ( i == functions.end( ) ) { return { vm( ) }; }
                 auto ret = generate( i );
                 if ( i != functions.end( ) ) { ++i; }
                 assert( ret.size( ) == arity );

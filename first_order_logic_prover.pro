@@ -2,7 +2,7 @@ TEMPLATE = app
 CONFIG += console
 CONFIG -= app_bundle
 CONFIG -= qt
-QMAKE_CXXFLAGS += -std=c++1y -ftemplate-backtrace-limit=0
+QMAKE_CXXFLAGS += -std=c++1y -stdlib=libc++ -ftemplate-backtrace-limit=0
 SOURCES += main.cpp
 LIBS += -lboost_unit_test_framework
 HEADERS += \
@@ -36,5 +36,6 @@ OTHER_FILES += \
     theorem_prover.pro.user \
     LICENSE \
     README.md
-
+INCLUDEPATH += GitSource/Idionne/hana/include
 PRECOMPILED_HEADER = $$HEADERS
+QMAKE_LFLAGS += -stdlib=libc++
