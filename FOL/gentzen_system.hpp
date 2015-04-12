@@ -13,7 +13,7 @@
 #include "sentence/sentence.hpp"
 #include "forward/first_order_logic.hpp"
 #include "sentence/substitution.hpp"
-#include <boost/optional.hpp>
+#include <experimental/optional>
 #include "sentence/sentence_operations.hpp"
 namespace first_order_logic
 {
@@ -40,7 +40,7 @@ namespace first_order_logic
             std::set< function > functions;
             std::set< predicate > predicates;
             term_generator< sequence > tg;
-            std::vector< std::tuple< sequence, proof_tree, boost::optional< validity > > > branch;
+            std::vector< std::tuple< sequence, proof_tree, std::experimental::optional< validity > > > branch;
             sequence * parent = nullptr;
             struct contradiction { proof_tree pt; };
             void try_insert(
@@ -265,12 +265,12 @@ namespace first_order_logic
                 std::for_each( expanded.begin( ), expanded.end( ), function );
                 return std::make_pair( postive, negative );
             }
-            boost::optional< validity > expand( proof_tree & leaf )
+            std::experimental::optional< validity > expand( proof_tree & leaf )
             {
                 if ( ! branch.empty( ) )
                 {
                     auto try_join =
-                        [&]( )->boost::optional< validity >
+                        [&]( )->std::experimental::optional< validity >
                         {
                             if ( std::all_of(
                                     branch.begin( ),
@@ -293,7 +293,7 @@ namespace first_order_logic
                                 leaf.join( std::get< 1 >( * it ) );
                                 return validity::invalid;
                             }
-                            return boost::optional< validity >( );
+                            return std::experimental::optional< validity >( );
                         };
                     for ( auto & p : branch )
                     {
@@ -414,7 +414,7 @@ namespace first_order_logic
                                                 (
                                                     ldt,
                                                     proof_tree( ),
-                                                    boost::optional< validity >( )
+                                                    std::experimental::optional< validity >( )
                                                 ) );
                                         }
                                         catch ( contradiction & con )
@@ -430,7 +430,7 @@ namespace first_order_logic
                                                 (
                                                     rdt,
                                                     proof_tree( ),
-                                                    boost::optional< validity >( )
+                                                    std::experimental::optional< validity >( )
                                                 ) );
                                         }
                                         catch ( contradiction & con )
@@ -456,7 +456,7 @@ namespace first_order_logic
                                                 (
                                                     ldt,
                                                     proof_tree( ),
-                                                    boost::optional< validity >( )
+                                                    std::experimental::optional< validity >( )
                                                 ) );
                                         }
                                         catch ( contradiction & con )
@@ -472,7 +472,7 @@ namespace first_order_logic
                                                 (
                                                     rdt,
                                                     proof_tree( ),
-                                                    boost::optional< validity >( )
+                                                    std::experimental::optional< validity >( )
                                                 ) );
                                         }
                                         catch ( contradiction & con )
@@ -496,7 +496,7 @@ namespace first_order_logic
                     }
                     leaf = leaf.join( proof_tree( static_cast< std::string >( * this ) ) );
                 }
-                return boost::optional< validity >( );
+                return std::experimental::optional< validity >( );
             }
             validity is_valid( )
             {

@@ -81,7 +81,7 @@ namespace first_order_logic
             }
             return ret;
         }
-        boost::optional< substitution > forward_chaining( const atomic_sentence & sen )
+        std::experimental::optional< substitution > forward_chaining( const atomic_sentence & sen )
         {
             for ( const atomic_sentence & se : known_facts )
             {
@@ -110,16 +110,16 @@ namespace first_order_logic
                     if ( ret ) { return ret; }
                 }
             }
-            return boost::optional< substitution >( );
+            return std::experimental::optional< substitution >( );
         }
-        boost::optional< substitution > backward_chaining( const atomic_sentence & sen )
+        std::experimental::optional< substitution > backward_chaining( const atomic_sentence & sen )
         {
             for ( const atomic_sentence & se : known_facts )
             {
                 auto ret = unify( se, sen );
                 if ( ret ) { return ret; }
             }
-            if ( known_facts.empty( ) ) { return boost::optional< substitution >( ); }
+            if ( known_facts.empty( ) ) { return std::experimental::optional< substitution >( ); }
             std::set< std::string > var_name = variable_name( );
             std::map< atomic_sentence, std::vector< std::vector< atomic_sentence > > > requiring_fact;
             bool progress = true;
@@ -180,7 +180,7 @@ namespace first_order_logic
                 }
                 std::for_each( add.begin( ), add.end( ), try_add );
             }
-            return boost::optional< substitution >( );
+            return std::experimental::optional< substitution >( );
         }
     };
 }

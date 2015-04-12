@@ -79,8 +79,8 @@ namespace first_order_logic
             if ( ! optimize.empty( ) ) { return DPLL( cnf, std::move( optimize ) ); }
             assert( cnf.begin( )->begin( ) != cnf.begin( )->end( ) );
             return
-                (is_satisfiable( DPLL( substitute( cnf, cnf.begin( )->begin( )->as, true ), optimize ) ).get( ) ||
-                is_satisfiable( DPLL( substitute( cnf, cnf.begin( )->begin( )->as, false ), optimize ) ).get( ) ) ?
+                (is_satisfiable( DPLL( substitute( cnf, cnf.begin( )->begin( )->as, true ), optimize ) ).value( ) ||
+                is_satisfiable( DPLL( substitute( cnf, cnf.begin( )->begin( )->as, false ), optimize ) ).value( ) ) ?
                         satisfiability::satisfiable : satisfiability::unsatisfiable;
         }
     }

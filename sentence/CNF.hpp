@@ -230,7 +230,7 @@ namespace first_order_logic
             [&]( const or_not_type & t )
             {
                 result = get_clause( t, result );
-                * result = boost::optional< literal >( );
+                * result = std::experimental::optional< literal >( );
                 ++result;
                 return result;
             };
@@ -259,9 +259,9 @@ namespace first_order_logic
         to_CNF(
             sen,
             common::make_function_output_iterator(
-                [&]( const boost::optional< literal > & bl )
+                [&]( const std::experimental::optional< literal > & bl )
                 {
-                    if ( bl ) { builder.push_back( bl.get( ) ); }
+                    if ( bl ) { builder.push_back( bl.value( ) ); }
                     else
                     {
                         std::list< literal > tem;
@@ -279,9 +279,9 @@ namespace first_order_logic
         to_CNF(
             sen,
         common::make_function_output_iterator(
-            [&]( const boost::optional< literal > & bl )
+            [&]( const std::experimental::optional< literal > & bl )
             {
-                if ( bl ) { builder.insert( bl.get( ) ); }
+                if ( bl ) { builder.insert( bl.value( ) ); }
                 else
                 {
                     std::set< literal > tem;

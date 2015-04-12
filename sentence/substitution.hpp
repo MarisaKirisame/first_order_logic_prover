@@ -5,7 +5,7 @@
 #include <string>
 #include "forward/first_order_logic.hpp"
 #include "algorithm"
-#include <boost/optional.hpp>
+#include <experimental/optional>
 #include "sentence.hpp"
 #include "atomic_sentence.hpp"
 #include "../cpp_common/combinator.hpp"
@@ -98,27 +98,27 @@ namespace first_order_logic
                 return it == data.end( ) && it->second == p.second;
             } );
         }
-        static boost::optional< substitution > join( const substitution & l, const substitution & r )
+        static std::experimental::optional< substitution > join( const substitution & l, const substitution & r )
         {
             if ( l.data.size( ) > r.data.size( ) ) { return join( r, l ); }
             substitution ret( r );
             for ( const std::pair< variable, term > & i : l.data )
             {
                 auto it = ret.data.insert( i );
-                if ( it.first->first != i.first ) { return boost::optional< substitution >( ); }
+                if ( it.first->first != i.first ) { return std::experimental::optional< substitution >( ); }
             }
             return ret;
         }
     };
-    boost::optional< substitution > unify( const term & p, const term & q, const substitution & sub );
-    boost::optional< substitution > unify(
+    std::experimental::optional< substitution > unify( const term & p, const term & q, const substitution & sub );
+    std::experimental::optional< substitution > unify(
             const std::vector< term > & p, const std::vector< term > & q, const substitution & sub )
     {
         substitution ret( sub );
         assert( p.size( ) == q.size( ) );
         for ( size_t i = 0; i < p.size( ); ++i )
         {
-            boost::optional< substitution > tem = unify( p[i], q[i], ret );
+            std::experimental::optional< substitution > tem = unify( p[i], q[i], ret );
             if ( tem )
             {
                 std::copy(
@@ -126,30 +126,30 @@ namespace first_order_logic
                     tem->data.end( ),
                     std::inserter( ret.data, ret.data.begin( ) ) );
             }
-            else { return boost::optional< substitution >( ); }
+            else { return std::experimental::optional< substitution >( ); }
         }
         return ret;
     }
-    boost::optional< substitution > unify(
+    std::experimental::optional< substitution > unify(
             const variable & var, const term & t, const substitution & sub );
-    boost::optional< substitution > unify( const term & p, const term & q, const substitution & sub )
+    std::experimental::optional< substitution > unify( const term & p, const term & q, const substitution & sub )
     {
         if ( p->term_type != term::type::variable && q->term_type == term::type::variable )
         { return unify( q, p, sub ); }
         switch ( p->term_type )
         {
         case term::type::constant:
-            return p == q ? sub : boost::optional< substitution >( );
+            return p == q ? sub : std::experimental::optional< substitution >( );
         case term::type::variable:
             return unify( variable( p->name ), q, sub );
         case term::type::function:
             if ( p->term_type == q->term_type && p->name == q->name )
             { return unify( p->arguments, q->arguments, sub ); }
-            return boost::optional< substitution >( );
+            return std::experimental::optional< substitution >( );
         }
         throw std::invalid_argument( "unknown enum type." );
     }
-    boost::optional< substitution > unify(
+    std::experimental::optional< substitution > unify(
             const variable & var, const term & t, const substitution & sub )
     {
         {
@@ -186,16 +186,16 @@ namespace first_order_logic
                             throw std::invalid_argument( "unknown enum type." );
                         } )( var, t );
             };
-        if ( ! occur_check( ) ) { return boost::optional< substitution >( ); }
+        if ( ! occur_check( ) ) { return std::experimental::optional< substitution >( ); }
         substitution ret( sub );
         auto it = ret.data.insert( { var, t } );
-        return it.first->second == t ? ret : boost::optional< substitution >( );
+        return it.first->second == t ? ret : std::experimental::optional< substitution >( );
     }
-    boost::optional< substitution > unify(
+    std::experimental::optional< substitution > unify(
             const atomic_sentence & p, const atomic_sentence & q, const substitution & sub )
     {
-        if ( p.name != q.name ) { return boost::optional< substitution >( ); }
-        boost::optional< substitution > ret;
+        if ( p.name != q.name ) { return std::experimental::optional< substitution >( ); }
+        std::experimental::optional< substitution > ret;
         assert( p.arguments.size( ) == q.arguments.size( ) );
         ret = sub;
         for ( size_t i = 0; i < p.arguments.size( ); ++i )
@@ -206,29 +206,29 @@ namespace first_order_logic
         return ret;
     }
     template< typename T >
-    boost::optional< substitution > unify(
+    std::experimental::optional< substitution > unify(
             const sentence< T > & p, const atomic_sentence & q, const substitution & sub )
     {
-        boost::optional< atomic_sentence > as;
+        std::experimental::optional< atomic_sentence > as;
         p.type_restore( make_atomic_actor(
                             [&]( const atomic_sentence & asen ) { as = asen; } ), common::error< >( ) );
-        return as ? unify( * as, q, sub ) : boost::optional< substitution >( );
+        return as ? unify( * as, q, sub ) : std::experimental::optional< substitution >( );
     }
     template< typename T >
-    boost::optional< substitution > unify(
+    std::experimental::optional< substitution > unify(
             const atomic_sentence & p, const sentence< T > & q, const substitution & sub )
             { return unify( q, p, sub ); }
     template< typename T >
-    boost::optional< substitution > unify(
+    std::experimental::optional< substitution > unify(
             const sentence< T > & p, const sentence< T > & q, const substitution & sub )
     {
         if ( p->sentence_type != q->sentence_type || p->name != q->name )
-        { return boost::optional< substitution >( ); }
+        { return std::experimental::optional< substitution >( ); }
         return p.type_restore_full(
                     make_all_actor(
                         [&]( const variable & var, const sentence< T > & sen )
                         {
-                            boost::optional< substitution > ret;
+                            std::experimental::optional< substitution > ret;
                             q.type_restore(
                                 make_all_actor(
                                     [&]( const variable & va, const sentence< T > & se )
@@ -243,7 +243,7 @@ namespace first_order_logic
                     make_some_actor(
                         [&]( const variable & var, const sentence< T > & sen )
                         {
-                            boost::optional< substitution > ret;
+                            std::experimental::optional< substitution > ret;
                             q.type_restore(
                                 make_some_actor(
                                     [&]( const variable & va, const sentence< T > & se )
@@ -259,7 +259,7 @@ namespace first_order_logic
                     make_and_actor(
                         [&]( const sentence< T > & l, const sentence< T > & r )
                         {
-                            boost::optional< substitution > ret;
+                            std::experimental::optional< substitution > ret;
                             q.type_restore(
                                 make_and_actor(
                                     [&]( const sentence< T > & ll, const sentence< T > & rr )
@@ -273,7 +273,7 @@ namespace first_order_logic
                     make_or_actor(
                         [&]( const sentence< T > & l, const sentence< T > & r )
                         {
-                            boost::optional< substitution > ret;
+                            std::experimental::optional< substitution > ret;
                             q.type_restore(
                                 make_or_actor(
                                     [&]( const sentence< T > & ll, const sentence< T > & rr )
@@ -287,7 +287,7 @@ namespace first_order_logic
                     make_not_actor(
                         [&]( const sentence< T > & sen )
                         {
-                            boost::optional< substitution > ret;
+                            std::experimental::optional< substitution > ret;
                             q.type_restore(
                                 make_not_actor(
                                     [&]( const sentence< T > & s ){ ret = unify( sen, s, sub ); } ),
@@ -297,7 +297,7 @@ namespace first_order_logic
                     make_atomic_actor(
                         [&]( const atomic_sentence & as1 )
                         {
-                            boost::optional< substitution > ret;
+                            std::experimental::optional< substitution > ret;
                             q.type_restore(
                                 make_atomic_actor(
                                     [&]( const atomic_sentence & as2 ){ ret = unify( as1, as2, sub ); } ),
@@ -375,7 +375,7 @@ namespace first_order_logic
         return ret;
     }
     template< typename ... T >
-    boost::optional< substitution > unify( const T & ... t )
+    std::experimental::optional< substitution > unify( const T & ... t )
     {
         static_assert(
             ! std::is_same

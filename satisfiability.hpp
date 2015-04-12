@@ -1,6 +1,6 @@
 #ifndef FIRST_ORDER_LOGIC_SATISFIABILITY_HPP
 #define FIRST_ORDER_LOGIC_SATISFIABILITY_HPP
-#include <boost/optional/optional.hpp>
+#include <experimental/optional>
 namespace first_order_logic
 {
     enum class satisfiability { satisfiable, unsatisfiable };
@@ -11,11 +11,11 @@ namespace first_order_logic
     template< typename OS >
     OS & operator << ( OS & os, validity s )
     { return os << (s == validity::valid ? "valid" : "invalid"); }
-    boost::optional< bool > is_satisfiable( satisfiability s ) { return s == satisfiability::satisfiable; }
-    boost::optional< bool > is_satisfiable( validity s )
-    { return s == validity::valid ? boost::optional< bool >( true ) : boost::optional< bool >( ); }
-    boost::optional< bool > is_valid( validity s ) { return s == validity::valid; }
-    boost::optional< bool > is_valid( satisfiability s )
-    { return s == satisfiability::satisfiable ? boost::optional< bool >( ) : boost::optional< bool >( false ); }
+    std::experimental::optional< bool > is_satisfiable( satisfiability s ) { return s == satisfiability::satisfiable; }
+    std::experimental::optional< bool > is_satisfiable( validity s )
+    { return s == validity::valid ? std::experimental::optional< bool >( true ) : std::experimental::optional< bool >( ); }
+    std::experimental::optional< bool > is_valid( validity s ) { return s == validity::valid; }
+    std::experimental::optional< bool > is_valid( satisfiability s )
+    { return s == satisfiability::satisfiable ? std::experimental::optional< bool >( ) : std::experimental::optional< bool >( false ); }
 }
 #endif //FIRST_ORDER_LOGIC_SATISFIABILITY_HPP

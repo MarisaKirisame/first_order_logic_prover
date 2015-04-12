@@ -17,6 +17,7 @@
 #include <boost/spirit/include/qi_char_class.hpp>
 #include <boost/phoenix/object/construct.hpp>
 #include "variable.hpp"
+#include <boost/optional.hpp>
 namespace first_order_logic
 {
     namespace
