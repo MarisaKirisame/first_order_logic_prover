@@ -3,9 +3,6 @@
 #include <type_traits>
 namespace first_order_logic
 {
-    //I KNOW I CAN USE BOOST::MPL
-    //AND I TRY BUT THE RESULT IS IMPOSSIBLE TO DEBUG
-    //SO I WILL REINVENT THE WHEEL UNTIL I CAN READ
     template< typename ... ELEMENT >
     struct set{ };
     template< typename SET, typename ELEMENT >
@@ -81,15 +78,14 @@ namespace first_order_logic
     template< typename T > struct pop_front;
     template< typename F, typename ... R >
     struct pop_front< vector< F, R ... > > { typedef vector< R ... > type; };
-    template< typename T > struct empty;
-    template< typename F, typename ... R >
-    struct empty< vector< F, R ... > > : std::false_type { };
-    template< >
-    struct empty< vector< > > : std::true_type { };
-    template< typename F, typename ... R >
-    struct empty< set< F, R ... > > : std::false_type { };
-    template< >
-    struct empty< set< > > : std::true_type { };
+
+    template< typename T > struct to_hana { };
+    template< typename ... T >
+    struct to_hana< vector< T ... > >
+    { constexpr static auto value = boost::hana::tuple_t< T ... >; };
+    template< typename ... T >
+    struct to_hana< set< T ... > >
+    { constexpr static auto value = boost::hana::set( boost::hana::type< T > ... ); };
     template< typename T > struct front;
     template< typename F, typename ... R >
     struct front< vector< F, R ... > > { typedef F type; };

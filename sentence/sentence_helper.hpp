@@ -1,6 +1,7 @@
 #ifndef FIRST_ORDER_LOGIC_SENTENCE_SENTENCE_HELPER_HPP
 #define FIRST_ORDER_LOGIC_SENTENCE_SENTENCE_HELPER_HPP
 #include <type_traits>
+#include <boost/hana.hpp>
 #include "TMP.hpp"
 namespace first_order_logic
 {
@@ -24,7 +25,7 @@ namespace first_order_logic
         typedef typename
         std::conditional
         <
-            empty< next_vec >::value,
+            (boost::hana::length( to_hana< next_vec >::value ) == boost::hana::size_t< 0 >),
             atomic_sentence,
             sentence< next_vec >
         >::type type;
@@ -137,7 +138,7 @@ namespace first_order_logic
         <
             typename std::conditional
             <
-                empty< top >::value,
+                (boost::hana::length( to_hana< top >::value ) == boost::hana::size_t< 0 >),
                 down,
                 typename push_front< down, top >::type
             >::type
