@@ -15,7 +15,8 @@ namespace first_order_logic
     template< typename T >
     struct current_set;
     template< typename T >
-    struct current_set< sentence< T > > { typedef typename front< T >::type type; };
+    struct current_set< sentence< T > >
+    { typedef decltype( strip_type( boost::hana::head( to_hana< T >::value ) ) ) type; };
     template< typename T >
     struct next_sentence_type;
     template< typename T >
@@ -75,7 +76,7 @@ namespace first_order_logic
         typedef typename
         std::conditional
         <
-            have< typename front< T >::type, set< ARG ... > >::value,
+            have< decltype( strip_type( boost::hana::head( to_hana< T >::value ) ) ), set< ARG ... > >::value,
             sentence< T >,
             sentence< typename push_front< T, set< ARG ... > >::type >
         >::type type;
@@ -91,7 +92,7 @@ namespace first_order_logic
         typedef typename
         std::conditional
         <
-            have< typename back< T >::type, set< ARG ... > >::value,
+            have< decltype( strip_type( boost::hana::last( to_hana< T >::value ) ) ), set< ARG ... > >::value,
             sentence< T >,
             sentence< typename push_back< T, set< ARG ... > >::type >
         >::type type;
@@ -120,18 +121,20 @@ namespace first_order_logic
     template< typename F, typename ... T, typename S >
     struct remove_operator< sentence< vector< F, T ... > >, S >
     {
-        typedef typename
-        back
-        <
-            typename sen2vec
-            <
-                typename remove_operator
-                <
-                    sentence< vector< F > >,
-                    S
-                >::type
-            >::type
-        >::type top;
+        typedef decltype(
+            strip_type(
+                boost::hana::head(
+                    to_hana
+                    <
+                        typename sen2vec
+                        <
+                            typename remove_operator
+                            <
+                                sentence< vector< F > >,
+                                S
+                            >::type
+                        >::type
+                    >::value ) ) ) top;
         typedef typename sen2vec< typename remove_operator< sentence< vector< T ... > >, S >::type >::type down;
         typedef
         sentence
@@ -224,8 +227,14 @@ namespace std
                 <
                     first_order_logic::sentence
                     < typename first_order_logic::pop_back< first_order_logic::vector< LL, LLL ... > >::type >,
-                    typename first_order_logic::join
-                    < typename first_order_logic::back< first_order_logic::vector< LL, LLL ... > >::type, RR >::type
+                    typename
+                        first_order_logic::join
+                        <
+                            decltype(
+                                first_order_logic::strip_type(
+                                    boost::hana::last( first_order_logic::to_hana< first_order_logic::vector< LL, LLL ... > >::value ) ) ),
+                            RR
+                        >::type
                 >::type type;
             };
             template< typename ... RRR, typename LL, typename RR >
@@ -268,14 +277,10 @@ namespace std
                     >::type,
                     typename first_order_logic::join
                     <
-                        typename first_order_logic::back
-                        <
-                            first_order_logic::vector< LLL ... >
-                        >::type,
-                        typename first_order_logic::back
-                        <
-                            first_order_logic::vector< RRR ... >
-                        >::type
+                        decltype( first_order_logic::strip_type(
+                                      boost::hana::last( first_order_logic::to_hana< first_order_logic::vector< LLL ... > >::value ) ) ),
+                        decltype( first_order_logic::strip_type(
+                                      boost::hana::last( first_order_logic::to_hana< first_order_logic::vector< RRR ... > >::value ) ) )
                     >::type
                 >::type type;
             };

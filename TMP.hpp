@@ -71,29 +71,14 @@ namespace first_order_logic
     using set_c = set< std::integral_constant< T, rest > ... >;
     template< typename ... T >
     struct vector;
-    template< typename T >
-    struct is_vector : std::false_type { };
-    template< typename ... T >
-    struct is_vector< vector< T ... > > : std::true_type { };
     template< typename T > struct pop_front;
     template< typename F, typename ... R >
     struct pop_front< vector< F, R ... > > { typedef vector< R ... > type; };
-
     template< typename T > struct to_hana { };
     template< typename ... T >
-    struct to_hana< vector< T ... > >
-    { constexpr static auto value = boost::hana::tuple_t< T ... >; };
+    struct to_hana< vector< T ... > > { constexpr static auto value = boost::hana::tuple_t< T ... >; };
     template< typename ... T >
-    struct to_hana< set< T ... > >
-    { constexpr static auto value = boost::hana::set( boost::hana::type< T > ... ); };
-    template< typename T > struct front;
-    template< typename F, typename ... R >
-    struct front< vector< F, R ... > > { typedef F type; };
-    template< typename T > struct back;
-    template< typename F >
-    struct back< vector< F > > { typedef F type; };
-    template< typename F, typename ... R >
-    struct back< vector< F, R ... > > { typedef typename back< vector< R ... > >::type type; };
+    struct to_hana< set< T ... > > { constexpr static auto value = boost::hana::set( boost::hana::type< T > ... ); };
     template< typename T, typename ADD > struct push_front;
     template< typename ADD, typename ... R >
     struct push_front< vector< R ... >, ADD > { typedef vector< ADD, R ... > type; };
@@ -130,5 +115,7 @@ namespace first_order_logic
     template< typename ... ARG, typename F, typename ... REM >
     struct remove< set< ARG ... >, set< F, REM ... > > :
             remove< typename remove< set< ARG ... >, set< REM ... > >::type, set< F > > { };
+    template< typename T >
+    auto strip_type( boost::hana::_type< T > ) -> T { }
 }
 #endif //FIRST_ORDER_LOGIC_TMP_HPP

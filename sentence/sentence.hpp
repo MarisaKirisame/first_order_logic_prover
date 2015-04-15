@@ -25,7 +25,6 @@ namespace first_order_logic
     template< typename T >
     struct sentence
     {
-        static_assert( is_vector< T >::value, "T should be vector" );
         struct internal
         {
             sentence_type type;
