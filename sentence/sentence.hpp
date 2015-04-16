@@ -156,7 +156,8 @@ namespace first_order_logic
         template
         <
             sentence_type st,
-            bool = have< typename current_set< sentence  >::type, set_c< sentence_type, st > >::value,
+            bool = boost::hana::elem(
+                    to_hana< typename current_set< sentence >::type >::value, boost::hana::type< std::integral_constant< sentence_type, st > > ),
             bool = std::is_same< typename next_sentence_type< sentence< T > >::type, atomic_sentence >::value
         >
         struct get_sentence_type;

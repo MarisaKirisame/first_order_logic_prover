@@ -1,12 +1,14 @@
 #ifndef FIRST_ORDER_LOGIC_TMP_HPP
 #define FIRST_ORDER_LOGIC_TMP_HPP
 #include <type_traits>
+//#define REMOVE_TMP
 namespace first_order_logic
 {
     template< typename ... ELEMENT >
     struct set{ };
     template< typename SET, typename ELEMENT >
     struct have;
+#ifndef REMOVE_TMP
     template< typename FIRST, typename ... REST, typename ELEMENT >
     struct have< set< FIRST, REST ... >, set< ELEMENT > > : have< set< REST ... >, set< ELEMENT > > { };
     template< typename ... REST, typename ELEMENT >
@@ -20,6 +22,7 @@ namespace first_order_logic
             std::integral_constant< bool, have< S, set< F > >::value && have< S, set< R ... > >::value > { };
     template< typename S >
     struct have< S, set< > > : std::true_type { };
+#endif
     template< typename L, typename R >
     struct subset;
     template< typename R >

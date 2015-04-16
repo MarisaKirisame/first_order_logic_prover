@@ -76,7 +76,8 @@ namespace first_order_logic
         typedef typename
         std::conditional
         <
-            have< decltype( strip_type( boost::hana::head( to_hana< T >::value ) ) ), set< ARG ... > >::value,
+            boost::hana::subset(
+                to_hana< set< ARG ... > >::value, to_hana< decltype( strip_type( boost::hana::head( to_hana< T >::value ) ) ) >::value ),
             sentence< T >,
             sentence< typename push_front< T, set< ARG ... > >::type >
         >::type type;
