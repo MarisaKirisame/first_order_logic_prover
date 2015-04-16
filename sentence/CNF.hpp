@@ -116,9 +116,6 @@ namespace first_order_logic
     static_assert( std::is_convertible< not_type, free_propositional_sentence >::value, "should be convertible" );
     static_assert( std::is_convertible< or_not_type, and_or_not_type >::value, "should be convertible" );
     static_assert( std::is_same< and_or_not_type::not_sentence_type, not_type >::value, "should be same" );
-    static_assert(
-        ! have< current_set< negation_in_type >::type, set_c< sentence_type, sentence_type::logical_not > >::value,
-        "should not have or" );
     and_or_not_type move_or_in( const negation_in_type & prop )
     {
         return prop.type_restore_full< and_or_not_type >(

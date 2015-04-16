@@ -1,27 +1,14 @@
 #ifndef FIRST_ORDER_LOGIC_TMP_HPP
 #define FIRST_ORDER_LOGIC_TMP_HPP
 #include <type_traits>
-//#define REMOVE_TMP
+#include <boost/hana.hpp>
+#define REMOVE_TMP
 namespace first_order_logic
 {
+    template< typename T > struct to_hana { };
     template< typename ... ELEMENT >
     struct set{ };
-    template< typename SET, typename ELEMENT >
-    struct have;
 #ifndef REMOVE_TMP
-    template< typename FIRST, typename ... REST, typename ELEMENT >
-    struct have< set< FIRST, REST ... >, set< ELEMENT > > : have< set< REST ... >, set< ELEMENT > > { };
-    template< typename ... REST, typename ELEMENT >
-    struct have< set< ELEMENT, REST ... >, set< ELEMENT > > : std::true_type { };
-    template< typename ELEMENT >
-    struct have< set< >, ELEMENT > : std::false_type { };
-    template< typename F, typename ... R >
-    struct have< set< >, set< F, R ... > > : std::false_type { };
-    template< typename F, typename ... R, typename S >
-    struct have< S, set< F, R ... > > :
-            std::integral_constant< bool, have< S, set< F > >::value && have< S, set< R ... > >::value > { };
-    template< typename S >
-    struct have< S, set< > > : std::true_type { };
 #endif
     template< typename L, typename R >
     struct subset;
@@ -36,10 +23,10 @@ namespace first_order_logic
     {
         typedef typename
         join
-        <	typename
+        <   typename
             std::conditional
             <
-                have< R, set< FIRST > >::value,
+                boost::hana::elem( to_hana< R >::value, boost::hana::type< FIRST > ),
                 set< FIRST >,
                 set< >
             >::type,
@@ -52,7 +39,7 @@ namespace first_order_logic
         typedef typename
         std::conditional
         <
-            have< set< L ... >, set< R > >::value,
+            boost::hana::elem( to_hana< set< L ... > >::value, boost::hana::type< R > ),
             set< L ... >,
             set< L ..., R >
         >::type type;
@@ -77,7 +64,6 @@ namespace first_order_logic
     template< typename T > struct pop_front;
     template< typename F, typename ... R >
     struct pop_front< vector< F, R ... > > { typedef vector< R ... > type; };
-    template< typename T > struct to_hana { };
     template< typename ... T >
     struct to_hana< vector< T ... > > { constexpr static auto value = boost::hana::tuple_t< T ... >; };
     template< typename ... T >

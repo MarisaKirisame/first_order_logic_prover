@@ -252,11 +252,12 @@ namespace first_order_logic
                             [&]( const std::true_type &, const auto & l, const auto & r )
                             { return and_func( l, r ); } )
                             (
-                                have
-                                <
-                                    typename current_set< sentence< T > >::type,
-                                    set_c< sentence_type, sentence_type::logical_and >
-                                >( ),
+                                boost::hana::if_(
+                                    boost::hana::elem(
+                                        to_hana< typename current_set< sentence< T > >::type >::value,
+                                        boost::hana::type< std::integral_constant< sentence_type, sentence_type::logical_and > >),
+                                        std::true_type( ),
+                                        std::false_type( ) ),
                                 boost::get< sentence< T > >( (*this)->arguments[0] ),
                                 boost::get< sentence< T > >( (*this)->arguments[1] )
                             );
@@ -266,11 +267,12 @@ namespace first_order_logic
                             []( const std::false_type &, const auto & ) { return common::error< RET >( )( ); },
                             [&]( const std::true_type &, const auto & s ) { return not_func( s ); } )
                             (
-                                have
-                                <
-                                    typename current_set< sentence< T >  >::type,
-                                    set_c< sentence_type, sentence_type::logical_not >
-                                >( ),
+                                boost::hana::if_(
+                                    boost::hana::elem(
+                                        to_hana< typename current_set< sentence< T > >::type >::value,
+                                        boost::hana::type< std::integral_constant< sentence_type, sentence_type::logical_not > >),
+                                        std::true_type( ),
+                                        std::false_type( ) ),
                                 boost::get< sentence< T > >( (*this)->arguments[0] )
                             );
                 case sentence_type::logical_or:
@@ -281,11 +283,12 @@ namespace first_order_logic
                             [&]( const std::true_type &, const auto & l, const auto & r )
                             { return or_func( l, r ); } )
                             (
-                                have
-                                <
-                                    typename current_set< sentence< T >  >::type,
-                                    set_c< sentence_type, sentence_type::logical_or >
-                                >( ),
+                                boost::hana::if_(
+                                    boost::hana::elem(
+                                        to_hana< typename current_set< sentence< T > >::type >::value,
+                                        boost::hana::type< std::integral_constant< sentence_type, sentence_type::logical_or > >),
+                                        std::true_type( ),
+                                        std::false_type( ) ),
                                 boost::get< sentence< T > >( (*this)->arguments[0] ),
                                 boost::get< sentence< T > >( (*this)->arguments[1] )
                             );
@@ -296,11 +299,12 @@ namespace first_order_logic
                             [&]( const std::true_type &, const auto & s )
                             { return all_func( variable( (*this)->name ), s ); } )
                             (
-                                have
-                                <
-                                    typename current_set< sentence< T >  >::type,
-                                    set_c< sentence_type, sentence_type::all >
-                                >( ),
+                                boost::hana::if_(
+                                    boost::hana::elem(
+                                        to_hana< typename current_set< sentence< T > >::type >::value,
+                                        boost::hana::type< std::integral_constant< sentence_type, sentence_type::all > >),
+                                        std::true_type( ),
+                                        std::false_type( ) ),
                                 boost::get< sentence< T > >( (*this)->arguments[0] )
                             );
                 case sentence_type::some:
@@ -310,11 +314,12 @@ namespace first_order_logic
                             [&]( const std::true_type &, const auto & s )
                             { return some_func( variable( (*this)->name ), s ); } )
                             (
-                                have
-                                <
-                                    typename current_set< sentence< T >  >::type,
-                                    set_c< sentence_type, sentence_type::some >
-                                >( ),
+                                boost::hana::if_(
+                                    boost::hana::elem(
+                                        to_hana< typename current_set< sentence< T > >::type >::value,
+                                        boost::hana::type< std::integral_constant< sentence_type, sentence_type::some > >),
+                                        std::true_type( ),
+                                        std::false_type( ) ),
                                 boost::get< sentence< T > >( (*this)->arguments[0] )
                             );
                 case sentence_type::pass:
