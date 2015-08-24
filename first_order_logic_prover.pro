@@ -37,5 +37,5 @@ OTHER_FILES += \
     theorem_prover.pro.user \
     LICENSE \
     README.md
-INCLUDEPATH += /home/marisa/Work/hana/include/
+INCLUDEPATH += ../hana/include/
 PRECOMPILED_HEADER = $$HEADERS

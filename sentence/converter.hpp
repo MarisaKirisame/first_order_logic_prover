@@ -273,8 +273,7 @@ namespace first_order_logic
                 >
         >
         void operator ( )( const variable &, const ARG & ) const { throw; }
-        sentence< TO > operator ( )( const variable &, const no_such_sentence & ) const
-        { throw; }
+        sentence< TO > operator ( )( const variable &, const no_such_sentence & ) const { throw; }
     };
 
     template< typename TO >

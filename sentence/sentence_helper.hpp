@@ -299,5 +299,4 @@ namespace std
         typedef typename inner< >::type type;
     };
 }
-
 #endif //FIRST_ORDER_LOGIC_SENTENCE_SENTENCE_HELPER_HPP
