@@ -2,7 +2,7 @@ TEMPLATE = app
 CONFIG += console
 CONFIG -= app_bundle
 CONFIG -= qt
-QMAKE_CXXFLAGS += -std=c++1y -stdlib=libc++ -ftemplate-backtrace-limit=0
+QMAKE_CXXFLAGS += -std=c++1y -stdlib=libc++
 QMAKE_LFLAGS += -stdlib=libc++
 SOURCES += main.cpp
 LIBS += -lboost_unit_test_framework

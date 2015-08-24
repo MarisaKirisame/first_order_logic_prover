@@ -6,6 +6,7 @@
 #include <iterator>
 #include <algorithm>
 #include <boost/iterator/transform_iterator.hpp>
+#include <experimental/optional>
 namespace first_order_logic
 {
     typedef sentence

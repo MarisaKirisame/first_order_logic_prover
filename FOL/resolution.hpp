@@ -1,6 +1,5 @@
 #ifndef FIRST_ORDER_LOGIC_FOL_RESOLUTION_HPP
 #define FIRST_ORDER_LOGIC_FOL_RESOLUTION_HPP
-#include <experimental/optional>
 #include "sentence/sentence.hpp"
 #include "sentence/term.hpp"
 #include "TMP.hpp"

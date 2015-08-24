@@ -13,7 +13,6 @@
 #include "sentence/sentence.hpp"
 #include "forward/first_order_logic.hpp"
 #include "sentence/substitution.hpp"
-#include <experimental/optional>
 #include "sentence/sentence_operations.hpp"
 namespace first_order_logic
 {
