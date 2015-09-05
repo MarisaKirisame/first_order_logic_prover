@@ -1,19 +1,19 @@
 #ifndef FIRST_ORDER_LOGIC_FOL_GENTZEN_SYSTEM_HPP
 #define FIRST_ORDER_LOGIC_FOL_GENTZEN_SYSTEM_HPP
-#include "satisfiability.hpp"
-#include "sentence/predicate.hpp"
+#include "../satisfiability.hpp"
+#include "../sentence/predicate.hpp"
 #include "memory"
 #include "utility"
 #include "term_generator.hpp"
 #include "boost/range.hpp"
 #include "boost/range/join.hpp"
 #include "boost/iterator/counting_iterator.hpp"
-#include "sentence/function.hpp"
+#include "../sentence/function.hpp"
 #include "proof_tree.hpp"
-#include "sentence/sentence.hpp"
-#include "forward/first_order_logic.hpp"
-#include "sentence/substitution.hpp"
-#include "sentence/sentence_operations.hpp"
+#include "../sentence/sentence.hpp"
+#include "../forward/first_order_logic.hpp"
+#include "../sentence/substitution.hpp"
+#include "../sentence/sentence_operations.hpp"
 namespace first_order_logic
 {
     struct gentzen_system

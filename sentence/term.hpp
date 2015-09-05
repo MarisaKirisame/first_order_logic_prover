@@ -2,13 +2,13 @@
 #define FIRST_ORDER_LOGIC_SENTENCE_TERM_HPP
 #include <cassert>
 #include "../cpp_common/iterator.hpp"
-#include "sentence/function.hpp"
+#include "function.hpp"
 #include <vector>
 #include <memory>
 #include <algorithm>
 #include <set>
-#include "sentence/variable.hpp"
-#include "sentence/constant.hpp"
+#include "variable.hpp"
+#include "constant.hpp"
 #include <numeric>
 namespace first_order_logic
 {

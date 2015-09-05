@@ -1,7 +1,7 @@
 #ifndef FIRST_ORDER_LOGIC_SENTENCE_CONVERTER_HPP
 #define FIRST_ORDER_LOGIC_SENTENCE_CONVERTER_HPP
 #include "sentence_helper.hpp"
-#include "forward/first_order_logic.hpp"
+#include "../forward/first_order_logic.hpp"
 #include "../cpp_common/expansion.hpp"
 namespace first_order_logic
 {

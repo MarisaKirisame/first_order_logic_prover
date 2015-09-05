@@ -1,6 +1,6 @@
 #ifndef FIRST_ORDER_LOGIC_TERM_GENERATOR_HPP
 #define FIRST_ORDER_LOGIC_TERM_GENERATOR_HPP
-#include "sentence/function.hpp"
+#include "../sentence/function.hpp"
 #include <set>
 #include <cassert>
 #include <map>

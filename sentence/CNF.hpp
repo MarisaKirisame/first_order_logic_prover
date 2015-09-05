@@ -1,6 +1,6 @@
 #ifndef FIRST_ORDER_LOGIC_SENTENCE_CNF_HPP
 #define FIRST_ORDER_LOGIC_SENTENCE_CNF_HPP
-#include "sentence/sentence.hpp"
+#include "../sentence/sentence.hpp"
 #include <list>
 #include <set>
 #include <iterator>

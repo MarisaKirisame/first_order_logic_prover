@@ -2,7 +2,7 @@
 #define FIRST_ORDER_LOGIC_SENTENCE_SENTENCE_HELPER_HPP
 #include <type_traits>
 #include <boost/hana.hpp>
-#include "TMP.hpp"
+#include "../TMP.hpp"
 namespace first_order_logic
 {
     template< typename T >

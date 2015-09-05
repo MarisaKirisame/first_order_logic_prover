@@ -1,9 +1,9 @@
 #ifndef FIRST_ORDER_LOGIC_SENTENCE_SUBSTITUTION_HPP
 #define FIRST_ORDER_LOGIC_SENTENCE_SUBSTITUTION_HPP
-#include "sentence/sentence.hpp"
+#include "../sentence/sentence.hpp"
 #include <map>
 #include <string>
-#include "forward/first_order_logic.hpp"
+#include "../forward/first_order_logic.hpp"
 #include "algorithm"
 #include <experimental/optional>
 #include "sentence.hpp"

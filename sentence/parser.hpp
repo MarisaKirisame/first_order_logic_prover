@@ -1,7 +1,7 @@
 #ifndef FIRST_ORDER_LOGIC_SENTENCE_PARSER_HPP
 #define FIRST_ORDER_LOGIC_SENTENCE_PARSER_HPP
 #include "sentence.hpp"
-#include "forward/first_order_logic.hpp"
+#include "../forward/first_order_logic.hpp"
 #include <memory>
 #define BOOST_SPIRIT_USE_PHOENIX_V3
 #define BOOST_SPIRIT_UNICODE

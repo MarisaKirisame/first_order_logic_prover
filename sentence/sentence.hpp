@@ -7,9 +7,9 @@
 #include <boost/variant.hpp>
 #include "constant.hpp"
 #include <boost/iterator/transform_iterator.hpp>
-#include "forward/first_order_logic.hpp"
+#include "../forward/first_order_logic.hpp"
 #include "sentence_helper.hpp"
-#include "TMP.hpp"
+#include "../TMP.hpp"
 #include "converter.hpp"
 #include "atomic_sentence.hpp"
 #include "../cpp_common/named_parameter.hpp"
