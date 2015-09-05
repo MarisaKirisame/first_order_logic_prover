@@ -268,44 +268,31 @@ namespace first_order_logic
             {
                 if ( ! branch.empty( ) )
                 {
-                    auto try_join =
-                        [&]( )->std::experimental::optional< validity >
-                        {
-                            if ( std::all_of(
-                                    branch.begin( ),
-                                    branch.end( ),
-                                    [&]( const auto & t ) { return t.second == validity::valid; } ) )
-                            {
-                                std::for_each(
-                                    branch.begin( ),
-                                    branch.end( ),
-                                    [&]( const auto & t ) { leaf.join( t.first.second ); } );
-                                return validity::valid;
-                            }
-                            auto it =
-                                std::find_if(
-                                    branch.begin( ),
-                                    branch.end( ),
-                                    [&]( const auto & t ) { return t.second == validity::invalid; } );
-                            if ( it != branch.end( ) )
-                            {
-                                leaf.join( it->first.second );
-                                return validity::invalid;
-                            }
-                            return std::experimental::optional< validity >( );
-                        };
-                    for ( auto & p : branch )
+                    for ( auto & p : branch ) { if ( ! p.second ) { p.second = p.first.first.expand( p.first.second ); } }
+                    if ( std::all_of(
+                            branch.begin( ),
+                            branch.end( ),
+                            [&]( const auto & t ) { return t.second == validity::valid; } ) )
                     {
-                        if ( ! p.second )
-                        {
-                            p.second = p.first.first.expand( p.first.second );
-                            auto ret = try_join( );
-                            if ( ret ) { return ret; }
-                        }
+                        std::for_each(
+                            branch.begin( ),
+                            branch.end( ),
+                            [&]( const auto & t ) { leaf.join( t.first.second ); } );
+                        return validity::valid;
                     }
-                    return try_join( );
+                    auto it =
+                        std::find_if(
+                            branch.begin( ),
+                            branch.end( ),
+                            [&]( const auto & t ) { return t.second == validity::invalid; } );
+                    if ( it != branch.end( ) )
+                    {
+                        leaf.join( it->first.second );
+                        return validity::invalid;
+                    }
+                    return std::experimental::optional< validity >( );
                 }
-                if ( sequent.empty( ) )
+                else if ( sequent.empty( ) )
                 {
                     sequent.swap( temp_sequent );
                     auto f = tg.generate( );
@@ -372,22 +359,16 @@ namespace first_order_logic
                             make_all_actor(
                                 [&]( const variable & var, const free_sentence & sen )
                                 {
-                                    if ( t.second )
-                                    { try_subsitute_term( true, var, sen ); }
-                                    else
-                                    { try_subsitute_skolem( false, var, sen ); }
+                                    if ( t.second ) { try_subsitute_term( true, var, sen ); }
+                                    else { try_subsitute_skolem( false, var, sen ); }
                                 } ),
                             make_some_actor(
                                 [&]( const variable & var, const free_sentence & sen )
                                 {
-                                    if ( t.second )
-                                    { try_subsitute_skolem( true, var, sen ); }
-                                    else
-                                    { try_subsitute_term( false, var, sen ); }
+                                    if ( t.second ) { try_subsitute_skolem( true, var, sen ); }
+                                    else { try_subsitute_term( false, var, sen ); }
                                 } ),
-                            make_atomic_actor(
-                                [&]( const atomic_sentence & as )
-                                { try_insert( expanded, as, t.second ); } ),
+                            make_atomic_actor( [&]( const atomic_sentence & as ) { try_insert( expanded, as, t.second ); } ),
                             make_and_actor(
                                 [&]( const free_sentence & l, const free_sentence & r )
                                 {
@@ -416,8 +397,7 @@ namespace first_order_logic
                                                     std::experimental::optional< validity >( )
                                                 ) );
                                         }
-                                        catch ( contradiction & con )
-                                        { pt.join( con.pt ); }
+                                        catch ( contradiction & con ) { pt.join( con.pt ); }
                                         try
                                         {
                                             rdt.try_insert(
@@ -433,8 +413,8 @@ namespace first_order_logic
                                                     std::experimental::optional< validity >( )
                                                 ) );
                                         }
-                                        catch ( contradiction & con )
-                                        { pt.join( con.pt ); }
+                                        catch ( contradiction & con ) { pt.join( con.pt ); }
+                                        if ( branch.empty( ) ) { throw contradiction { pt }; }
                                     }
                                 } ),
                             make_or_actor(
@@ -460,8 +440,7 @@ namespace first_order_logic
                                                     std::experimental::optional< validity >( )
                                                 ) );
                                         }
-                                        catch ( contradiction & con )
-                                        { pt.join( con.pt ); }
+                                        catch ( contradiction & con ) { pt.join( con.pt ); }
                                         try
                                         {
                                             rdt.try_insert(
@@ -477,8 +456,8 @@ namespace first_order_logic
                                                     std::experimental::optional< validity >( )
                                                 ) );
                                         }
-                                        catch ( contradiction & con )
-                                        { pt.join( con.pt ); }
+                                        catch ( contradiction & con ) { pt.join( con.pt ); }
+                                        if ( branch.empty( ) ) { throw contradiction { pt }; }
                                     }
                                     else
                                     {
@@ -486,9 +465,7 @@ namespace first_order_logic
                                         try_insert( sequent, r, false );
                                     }
                                 } ),
-                            make_not_actor(
-                                [&]( const free_sentence & sen )
-                                { try_insert( sequent, sen, ! t.second ); } )
+                            make_not_actor( [&]( const free_sentence & sen ) { try_insert( sequent, sen, ! t.second ); } )
                         );
                     }
                     catch ( contradiction & con )
