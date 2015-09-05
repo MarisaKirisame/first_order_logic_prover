@@ -73,14 +73,10 @@ namespace first_order_logic
                 make_predicate( "p", { make_function( "f", { make_variable( "x" ) } ) } )
             );
         free_sentence fol5 =
-            make_imply
+            make_iff
             (
                 make_predicate( "p", { make_variable( "x" ) } ),
-                make_imply
-                (
-                    make_predicate( "p", { make_variable( "x" ) } ),
-                    make_predicate( "p", { make_variable( "x" ) } )
-                )
+                make_predicate( "p", { make_variable( "x" ) } )
             );
         BOOST_CHECK_EQUAL( gentzen_system::is_valid( fol2 ).second, validity::valid );
         BOOST_CHECK_EQUAL( gentzen_system::is_valid( fol3 ).second, validity::valid );
